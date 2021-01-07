@@ -1,3 +1,4 @@
+import logging
 import tkinter.ttk as ttk
 
 
@@ -15,9 +16,13 @@ class WelcomeWindow:
         self.welcome_message.grid(row=0, column=0, columnspan=2, padx=padx, pady=pady)
 
         self.student_login = ttk.Button(self.main_frame,
-                                        text='Student Login')
+                                        text='Student Login',
+                                        command=lambda:
+                                        logging.info("'Student Login' button pressed"))
         self.student_login.grid(row=1, column=0, padx=padx, pady=pady)
 
         self.staff_login = ttk.Button(self.main_frame,
-                                      text='Staff Login')
+                                      text='Staff Login',
+                                      command=lambda:
+                                      logging.info("'Staff Login' button pressed"))
         self.staff_login.grid(row=1, column=1, padx=padx, pady=pady)
