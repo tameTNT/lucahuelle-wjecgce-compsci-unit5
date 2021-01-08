@@ -2,7 +2,7 @@ import logging
 import tkinter as tk
 from tkinter import messagebox
 
-from ui.welcome import WelcomeWindow
+from ui.welcome import WelcomeLoginWindow
 
 logging.basicConfig(filename='main_program.log',
                     filemode='w', level=logging.DEBUG,
@@ -22,7 +22,7 @@ def close_window_call():
 
 if __name__ == '__main__':
     root = tk.Tk()
-    logging.debug('WelcomeWindow initialised')
-    main_window = WelcomeWindow(master=root, padx=10, pady=2)
+    logging.debug('WelcomeLoginWindow initialised')
+    main_window = WelcomeLoginWindow(master=root, padx=10, pady=2)
     root.protocol("WM_DELETE_WINDOW", close_window_call)
     root.mainloop()
