@@ -113,18 +113,36 @@ class LoginPage(ttk.Frame):
 
         self.password_label = ttk.Label(self, text='Password:', justify='right')
         self.password_label.grid(row=3, column=0, pady=pady, sticky='e')
-        # TODO: hidden password entry and password reveal/view button
+
+        # === Password entry and show/hide button ===
+        self.password_frame = ttk.Frame(self)
+        self.password_frame.grid(row=3, column=1, pady=pady, sticky='w')
 
         self.password_var = tk.StringVar()
-        self.password_entry = ttk.Entry(self, textvariable=self.password_var)
-        self.password_entry.grid(row=3, column=1, pady=pady, sticky='w')
+        # \u2022 is a unicode bullet pt/dot
+        self.password_entry = ttk.Entry(self.password_frame,
+                                        textvariable=self.password_var, show='\u2022')
+        self.password_entry.grid(row=0, column=0, sticky='we')
+
+        self.show_pwd_button = ttk.Button(self.password_frame, text='👁',
+                                          width=2, command=self.toggle_show_password)
+        self.show_pwd_button.grid(row=0, column=1, sticky='w')
 
         self.login_button = ttk.Button(self, text='Login', command=self.login)
         self.login_button.grid(row=4, column=1, padx=padx, pady=pady, sticky='e')
 
         self.is_student = is_student
 
+    def toggle_show_password(self):
+        """Show/hide password with dot characters by changing Entry widget's show option"""
+        if self.password_entry['show'] == '\u2022':  # password currently hid
+            self.password_entry.config(show='')  # reveal password
+        else:  # password currently revealed
+            self.password_entry.config(show='\u2022')
+
     def login(self):
+        """Gets user's input and verifies their login details. Automatically advances application"""
+        # TODO: password verification logic using passwords.verify_pass_str etc.
         if self.is_student:
             logging.info('A student attempted to log in')
         else:
@@ -133,11 +151,11 @@ class LoginPage(ttk.Frame):
 
 class StudentLoginPage(LoginPage):
     def __init__(self, *args, is_student=True):
-        """The login page for students - is_student=True"""
+        """The login page for students - where is_student=True"""
         LoginPage.__init__(self, *args, is_student)
 
 
 class StaffLoginPage(LoginPage):
     def __init__(self, *args, is_student=False):
-        """The login page for staff - is_student=False"""
+        """The login page for staff - where is_student=False"""
         LoginPage.__init__(self, *args, is_student)
