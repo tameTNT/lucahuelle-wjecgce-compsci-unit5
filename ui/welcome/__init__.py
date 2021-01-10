@@ -1,50 +1,11 @@
 import logging
 import tkinter as tk
 import tkinter.ttk as ttk
+from typing import Union, Type
 
 
 # By CC attribution, this 'page-based approach' is based on the framework provided at
 # https://pythonprogramming.net/change-show-new-frame-tkinter/
-
-
-class WelcomeLoginWindow:
-    def __init__(self, master, padx=10, pady=5):
-        """
-        Initialises a WelcomeLoginWindow object: the main tkinter window which contains
-        the 'pages'/frames for student and staff login operations.
-        The user can navigate the different login pages using buttons.
-        These buttons call the change_page method which cycles through the layered frames
-        by elevating them to the top of the tkinter window.
-        :param master: tk.Tk() object to act as tkinter root
-        :param padx: padx value to use in .grid() calls
-        :param pady: pady value to use in .grid() calls
-        """
-        self.master = master
-        self.master.title('DofE - Login')
-
-        container_frame = ttk.Frame(self.master)
-        container_frame.pack(side='top', fill='both', expand=True)
-        container_frame.grid_rowconfigure(0, weight=1)
-        container_frame.grid_columnconfigure(0, weight=1)
-
-        # a dictionary of all the page objects/frames to be contained in the tkinter window
-        self.page_frames = dict()
-
-        # goes through each page object in turn and creates their frame in the window
-        for Page in (WelcomePage, StudentLoginPage, StaffLoginPage):
-            page_frame = Page(container_frame, self, padx, pady)
-            self.page_frames[Page] = page_frame  # adds page object to frame dictionary
-            page_frame.grid(row=0, column=0, sticky='nsew')
-
-        self.change_page(WelcomePage)  # sets the initial page to WelcomePage
-
-    def change_page(self, destination_page):
-        """Changes the page displayed in the tkinter window to destination_page"""
-        logging.debug('User changed displayed page in WelcomeLoginWindow')
-        next_frame = self.page_frames[destination_page]
-        next_frame.tkraise()  # elevates the frame to the top of frame stack/'changes pages'
-
-
 class WelcomePage(ttk.Frame):
     def __init__(self, parent_tk_obj, controller_obj, padx, pady):
         """
@@ -134,15 +95,22 @@ class LoginPage(ttk.Frame):
         self.is_student = is_student
 
     def toggle_show_password(self):
-        """Show/hide password with dot characters by changing Entry widget's show option"""
+        """
+        Show/hide password with dot characters by changing Entry widget's show option
+        """
         if self.password_entry['show'] == '\u2022':  # password currently hid
             self.password_entry.config(show='')  # reveal password
         else:  # password currently revealed
             self.password_entry.config(show='\u2022')
 
     def login(self):
-        """Gets user's input and verifies their login details. Automatically advances application"""
+        """
+        Gets user's input and verifies their login details. Automatically advances application
+        """
         # TODO: password verification logic using passwords.verify_pass_str etc.
+        input_username = self.username_var.get()
+        input_password = self.password_var.get()
+
         if self.is_student:
             logging.info('A student attempted to log in')
         else:
@@ -151,11 +119,56 @@ class LoginPage(ttk.Frame):
 
 class StudentLoginPage(LoginPage):
     def __init__(self, *args, is_student=True):
-        """The login page for students - where is_student=True"""
+        """
+        The login page for students - where is_student=True
+        """
         LoginPage.__init__(self, *args, is_student)
 
 
 class StaffLoginPage(LoginPage):
     def __init__(self, *args, is_student=False):
-        """The login page for staff - where is_student=False"""
+        """
+        The login page for staff - where is_student=False
+        """
         LoginPage.__init__(self, *args, is_student)
+
+
+class WelcomeLoginWindow:
+    def __init__(self, master: tk.Tk, padx=10, pady=5):
+        """
+        Initialises a WelcomeLoginWindow object: the main tkinter window which contains
+        the 'pages'/frames for student and staff login operations.
+        The user can navigate the different login pages using buttons.
+        These buttons call the change_page method which cycles through the layered frames
+        by elevating them to the top of the tkinter window.
+        :param master: tk.Tk() object to act as tkinter root
+        :param padx: padx value to use in .grid() calls
+        :param pady: pady value to use in .grid() calls
+        """
+        self.master = master
+        self.master.title('DofE - Login')
+
+        container_frame = ttk.Frame(self.master)
+        container_frame.pack(side='top', fill='both', expand=True)
+        container_frame.grid_rowconfigure(0, weight=1)
+        container_frame.grid_columnconfigure(0, weight=1)
+
+        # a dictionary of all the page objects/frames to be contained in the tkinter window
+        self.page_frames = dict()
+
+        # goes through each page object in turn and creates their frame in the window
+        for Page in (WelcomePage, StudentLoginPage, StaffLoginPage):
+            page_frame = Page(container_frame, self, padx, pady)
+            self.page_frames[Page] = page_frame  # adds page object to frame dictionary
+            page_frame.grid(row=0, column=0, sticky='nsew')
+
+        self.change_page(WelcomePage)  # sets the initial page to WelcomePage
+
+    def change_page(self, destination_page: Union[Type[WelcomePage], Type[StudentLoginPage],
+                                                  Type[StaffLoginPage]]) -> None:
+        """
+        Changes the page displayed in the tkinter window to destination_page
+        """
+        logging.debug('User changed displayed page in WelcomeLoginWindow')
+        next_frame = self.page_frames[destination_page]
+        next_frame.tkraise()  # elevates the frame to the top of frame stack/'changes pages'

@@ -6,7 +6,9 @@ import os
 # By CC attribution, the functions for hashing and verifying password are based on code at
 # https://www.vitoshacademy.com/hashing-passwords-in-python/
 def hash_pwd_str(provided_password: str) -> str:
-    """Returns a secure hash of the provided_password string to be stored."""
+    """
+    Returns a secure hash of the provided_password string to be stored.
+    """
     random_bytes = os.urandom(60)
     salt = hashlib.sha256(random_bytes).hexdigest().encode('ascii')
 
@@ -17,7 +19,9 @@ def hash_pwd_str(provided_password: str) -> str:
 
 
 def verify_pwd_str(provided_password: str, stored_hash: str) -> bool:
-    """Returns a boolean of whether provided_password matches the stored password/hash"""
+    """
+    Returns a boolean of whether provided_password matches the stored password/hash
+    """
     salt = stored_hash[:64].encode('ascii')
     stored_password = stored_hash[64:]
     provided_password = provided_password.encode('utf-8')
@@ -27,6 +31,8 @@ def verify_pwd_str(provided_password: str, stored_hash: str) -> bool:
 
 
 def enforce_strength(provided_password: str) -> bool:
-    """Returns a boolean of whether provided_password matches the program's strength requirements"""
+    """
+    Returns a boolean of whether provided_password matches the program's strength requirements
+    """
     # TODO: write function
     return bool(provided_password)
