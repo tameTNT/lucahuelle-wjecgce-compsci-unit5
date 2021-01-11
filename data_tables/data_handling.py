@@ -31,10 +31,11 @@ class StudentLoginTable:
         """
         :param start_table: (optional) an iterable of StudentLogin objects to populate self with
         """
-        self.rows = list()
+        self.rows = dict()
         if start_table:  # if an iterable of objects has been provided
-            for obj in start_table:
-                self.rows.append(obj)
+            for student_obj in start_table:
+                # objects stored in dictionary using primary key/field as key
+                self.rows[student_obj.username] = student_obj
 
     def __repr__(self):
         return f'<StudentLoginTable object with {len(self.rows)} row(s) of StudentLogin objects>'
@@ -50,7 +51,8 @@ class StudentLoginTable:
             for field in padded_fields:
                 obj_info.append(field.strip())  # remove padding whitespace
 
-            self.rows.append(StudentLogin(*obj_info))
+            new_student_obj = StudentLogin(*obj_info)
+            self.rows[new_student_obj.username] = new_student_obj
 
         logging.info('StudentLoginTable object successfully populated from file')
 
