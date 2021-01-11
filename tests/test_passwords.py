@@ -10,7 +10,12 @@ class PasswordTest(TestCase):
         for pwd_str in self.test_pwd_list:
             hash_str = passwords.hash_pwd_str(pwd_str)
             self.assertIsInstance(hash_str, str, 'Hash not a string')
-            self.assertEqual(len(hash_str), 192, 'Hash incorrect length')
+            self.assertEqual(len(hash_str), 128, 'Hash incorrect length')
+
+        with self.assertRaises(passwords.PasswordLengthError):
+            passwords.hash_pwd_str('a' * 101)  # 101 is longer than the 100 limit
+        passwords.hash_pwd_str(
+            'a' * 100)  # this call shouldn't fail - on boundary of accepted range
 
     def test_verify_password(self):
         pwd_hash_list = map(passwords.hash_pwd_str, self.test_pwd_list)

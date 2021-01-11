@@ -21,7 +21,7 @@ class StudentLogin:
         # TODO: write tests
         return_string = ''
         return_string += self.username.ljust(30) + r'\%s'
-        return_string += self.password.ljust(192) + r'\%s'
+        return_string += self.password.ljust(128) + r'\%s'
         return_string += str(self.user_id).ljust(4)
         return return_string
 
