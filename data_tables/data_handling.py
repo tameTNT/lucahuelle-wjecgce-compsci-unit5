@@ -1,13 +1,15 @@
 import logging
 from io import TextIOWrapper
-from typing import Iterable
+from typing import Iterable, Optional
 
 
+# TODO: write tests for classes and methods (including int validation)
 class StudentLogin:
     def __init__(self, username: str, password: str, user_id: int):
         self.username = username
         self.password = password
-        self.user_id = user_id
+        # user_id should be int but when parsed from txt file will be str so needs conversion
+        self.user_id = int(user_id)
         logging.info('New StudentLogin object successfully created')
 
     def __repr__(self):
@@ -18,16 +20,15 @@ class StudentLogin:
         """
         Returns a one line string of the object's data tabulated for text storage
         """
-        # TODO: write tests
         return_string = ''
         return_string += self.username.ljust(30) + r'\%s'
         return_string += self.password.ljust(128) + r'\%s'
         return_string += str(self.user_id).ljust(4)
-        return return_string
+        return return_string + '\n'
 
 
 class StudentLoginTable:
-    def __init__(self, start_table: Iterable[StudentLogin] = tuple()):
+    def __init__(self, start_table: Optional[Iterable[StudentLogin]] = tuple()):
         """
         :param start_table: (optional) an iterable of StudentLogin objects to populate self with
         """
@@ -36,6 +37,8 @@ class StudentLoginTable:
             for student_obj in start_table:
                 # objects stored in dictionary using primary key/field as key
                 self.rows[student_obj.username] = student_obj
+
+            logging.info('StudentLoginTable object successfully populated from iterable argument')
 
     def __repr__(self):
         return f'<StudentLoginTable object with {len(self.rows)} row(s) of StudentLogin objects>'
@@ -49,7 +52,7 @@ class StudentLoginTable:
 
             padded_fields = row.split(r'\%s')  # split line/row by separator
             for field in padded_fields:
-                obj_info.append(field.strip())  # remove padding whitespace
+                obj_info.append(field.strip())  # remove padding whitespace and newlines
 
             new_student_obj = StudentLogin(*obj_info)
             self.rows[new_student_obj.username] = new_student_obj
@@ -58,10 +61,12 @@ class StudentLoginTable:
 
     def save_to_file(self, txt_file: TextIOWrapper):
         """
-        Given the output from an open() method, writes to that text file the data within self
+        Given the file output from an open('w') method, writes to the file the data within self
         """
-        # TODO: write data to text file
-        return
+        for student_login_obj in self.rows.values():
+            txt_file.write(student_login_obj.tabulate())
+
+        logging.info('StudentLoginTable object successfully saved to file')
 
 
 class Section:
