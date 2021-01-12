@@ -152,14 +152,53 @@ class StudentLoginTable(TableClass):
 #     pass
 
 
-    @activity_status.getter
-    def activity_status(self):
-        return 'blah'
-
-
-class SectionTable:
+class Database:
     def __init__(self):
-        pass
+        """
+        TODO: Database obj docs for methods and init.
+        automatically initialises a instance of each table class in this file to be populated
+        """
+        table_list = TableClass.__subclasses__()
+        self.database = dict()
+        for table_cls in table_list:
+            # creates instance of table and adds to database
+            self.database[table_cls.__name__] = table_cls()
 
-    def load_from_file(self):
-        pass
+        logging.info(f'Database created these tables: {table_list}')  # TODO: f-string logging?
+
+    # TODO: add repr method
+
+    @staticmethod
+    def get_txt_database_dir():
+        if __name__ == '__main__':  # file is being executed in console
+            return Path.cwd()
+        else:  # normal operation from main.py
+            return Path.cwd() / 'data_tables'
+
+    def load_state_from_file(self):
+        load_path_list = list()
+        for table_name in self.database.keys():
+            load_path_list.append(self.get_txt_database_dir() / f'{table_name}.txt')
+            if not load_path_list[-1].exists():  # a table is missing
+                logging.debug(f'Table at path {load_path_list[-1]} not found. Table load aborted.')
+                raise FileNotFoundError(f'The file {load_path_list[-1]} does not exist but should.'
+                                        f'No tables loaded into memory.')
+
+        for load_path, table_obj in zip(load_path_list, self.database.values()):
+            with load_path.open(mode='r') as fobj:
+                # noinspection PyTypeChecker
+                table_obj.load_from_file(fobj)
+
+        logging.info(
+            f'All {len(load_path_list)} tables successfully loaded into database')  # TODO: f-string logging?
+
+    def save_state_to_file(self):
+        for table_name, table_obj in self.database.items():
+            save_path = self.get_txt_database_dir() / f'{table_name}.txt'
+
+            with save_path.open(mode='w+') as fobj:
+                # noinspection PyTypeChecker
+                table_obj.save_to_file(fobj)
+
+        logging.info(
+            f'All {len(self.database.items())} tables successfully saved to txt files')  # TODO: f-string logging?
