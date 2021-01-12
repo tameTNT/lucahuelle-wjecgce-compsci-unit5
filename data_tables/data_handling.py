@@ -68,7 +68,7 @@ class StudentLogin(RowClass):
 
         # user_id should be int but when parsed from txt file will be str so needs conversion
         self.user_id = int(user_id)
-        logging.info('New StudentLogin object successfully created')
+        logging.info(f'New StudentLogin object successfully created - username={self.username!r}')
 
     def __repr__(self):
         # only first 10 chars of hash shown
@@ -93,7 +93,9 @@ class StudentLoginTable(TableClass):
             for student_obj in start_table:
                 self.add_row(student_obj)
 
-            logging.info('StudentLoginTable object successfully populated from iterable argument')
+            # noinspection PyTypeChecker
+            logging.info('StudentLoginTable object successfully populated from iterable argument - '
+                         f'{len(start_table)} object(s) added.')
 
     def __repr__(self):
         return f'<StudentLoginTable object with {len(self.rows)} row(s) of StudentLogin objects>'
@@ -109,7 +111,8 @@ class StudentLoginTable(TableClass):
         if primary_key not in self.rows.keys():
             self.rows[primary_key] = new_student_obj
         else:
-            raise KeyError('You tried to add an object to the table with a non-unique primary key')
+            raise KeyError(
+                f'Tried to add an object to table with a non-unique primary key - {primary_key}')
 
     def load_from_file(self, txt_file: TextIOWrapper):
         txt_lines = txt_file.readlines()
@@ -122,7 +125,8 @@ class StudentLoginTable(TableClass):
 
             self.add_row(*obj_info)  # add new row/StudentLogin obj to table
 
-        logging.info('StudentLoginTable object successfully populated from file')
+        logging.info(f'StudentLoginTable object successfully populated from file - '
+                     f'added {len(txt_lines)} StudentLogin objects')
 
     def save_to_file(self, txt_file: TextIOWrapper):
         for student_login_obj in self.rows.values():
@@ -164,9 +168,12 @@ class Database:
             # creates instance of table and adds to database
             self.database[table_cls.__name__] = table_cls()
 
-        logging.info(f'Database created these tables: {table_list}')  # TODO: f-string logging?
+        logging.debug(f'Database created {len(table_list)} table(s) automatically: '
+                      f'{",".join(self.database)}')
 
-    # TODO: add repr method
+    def __repr__(self):
+        return f'<Database object with {len(self.database)} table(s): ' \
+               f'{",".join(self.database.keys())}>'
 
     @staticmethod
     def get_txt_database_dir():
@@ -190,7 +197,7 @@ class Database:
                 table_obj.load_from_file(fobj)
 
         logging.info(
-            f'All {len(load_path_list)} tables successfully loaded into database')  # TODO: f-string logging?
+            f'{len(load_path_list)} table(s) successfully loaded into Database object')
 
     def save_state_to_file(self):
         for table_name, table_obj in self.database.items():
@@ -201,4 +208,4 @@ class Database:
                 table_obj.save_to_file(fobj)
 
         logging.info(
-            f'All {len(self.database.items())} tables successfully saved to txt files')  # TODO: f-string logging?
+            f'All {len(self.database.items())} tables successfully saved to txt files')

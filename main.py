@@ -21,7 +21,7 @@ def close_window_call(db_obj: data_handling.Database):
                                       "This will save all stored data."):
         logging.debug('User chose to destroy window and exit program')
         # saves current database state from memory to file before closing
-        db_obj.save_state_to_file()  # TODO: trial saving to file
+        db_obj.save_state_to_file()
         root.destroy()
     else:
         logging.debug('User chose not to exit')
