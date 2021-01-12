@@ -3,6 +3,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from typing import Union, Type
 
+from processes import password_logic
+
 
 # By CC attribution, this 'page-based approach' is based on the framework provided at
 # https://pythonprogramming.net/change-show-new-frame-tkinter/
@@ -107,14 +109,15 @@ class LoginPage(ttk.Frame):
         """
         Gets user's input and verifies their login details. Automatically advances application
         """
-        # TODO: password verification logic using passwords.verify_pass_str etc.
         input_username = self.username_var.get()
         input_password = self.password_var.get()
 
+        # TODO: password verification logic using password_logic.verify_pass_str() etc.
         if self.is_student:
-            logging.info('A student attempted to log in')
+            password_logic.verify_pwd_str('temp', 'temp')
+            logging.debug('A student attempted to log in')
         else:
-            logging.info('A staff member attempted to log in')
+            logging.debug('A staff member attempted to log in')
 
 
 class StudentLoginPage(LoginPage):
