@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from data_tables import data_handling
+from ui.welcome import WelcomeLoginWindow
 
 logging.basicConfig(filename='main_program.log',
                     filemode='w', level=logging.DEBUG,
@@ -31,7 +32,6 @@ if __name__ == '__main__':
     main_database_obj = data_handling.Database()
     main_database_obj.load_state_from_file()  # loads last database state from file into memory
     logging.debug('WelcomeLoginWindow initialised')
-    # TODO: trial loading from file using main_database_obj.load_state_from_file()
-    # main_window = WelcomeLoginWindow(master=root, padx=10, pady=2)
-    # root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(main_database_obj))
-    # root.mainloop()
+    main_window = WelcomeLoginWindow(master=root, padx=10, pady=2)
+    root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(main_database_obj))
+    root.mainloop()

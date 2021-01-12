@@ -3,8 +3,6 @@ from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
 from typing import Iterable, Optional  # type hints in function definitions
 
-from processes import password_logic
-
 
 class RowClass:
     """
@@ -40,11 +38,11 @@ class TableClass:
         """
         pass
 
-    def add_row(self, new_obj=None, *args):
+    def add_row(self, *args):
         """
         Add a new row/object to table.
-        If an object is provided, that is added directly.
-        Otherwise, a new object is initialised (using args) and then added.
+        If an object is provided first, that is added directly - all other arguments are ignored.
+        Otherwise, a new object is initialised (using all args) and then added.
         Raises KeyError if attempting to add an object with a non-unique key field.
         """
         pass
@@ -64,10 +62,9 @@ class TableClass:
 
 # TODO: write tests for classes and methods (including int validation)
 class StudentLogin(RowClass):
-    def __init__(self, username: str, plain_password: str, user_id: int):
+    def __init__(self, username: str, password_hash: str, user_id: int):
         self.username = username
-        self.password = password_logic.hash_pwd_str(plain_password)  # pwd not stored in plaintext
-        logging.debug('Password hashed successfully')
+        self.password = password_hash
 
         # user_id should be int but when parsed from txt file will be str so needs conversion
         self.user_id = int(user_id)
@@ -101,9 +98,11 @@ class StudentLoginTable(TableClass):
     def __repr__(self):
         return f'<StudentLoginTable object with {len(self.rows)} row(s) of StudentLogin objects>'
 
-    def add_row(self, new_student_obj: StudentLogin = None, *args):
+    def add_row(self, *args):
+        if isinstance(args[0], StudentLogin):  # first argument is a StudentLogin object
+            new_student_obj = args[0]
         # if no object passed to function then initialisation arguments have been passed instead
-        if not object:
+        else:
             new_student_obj = StudentLogin(*args)
 
         primary_key = new_student_obj.username
@@ -113,14 +112,15 @@ class StudentLoginTable(TableClass):
             raise KeyError('You tried to add an object to the table with a non-unique primary key')
 
     def load_from_file(self, txt_file: TextIOWrapper):
-        for row in txt_file.readlines():
+        txt_lines = txt_file.readlines()
+        for row in txt_lines:
             obj_info = list()
 
             padded_fields = row.split(r'\%s')  # split line/row by separator
             for field in padded_fields:
                 obj_info.append(field.strip())  # remove padding whitespace and newlines
 
-            self.add_row(*obj_info)  # add new row/StudentLogin object to table
+            self.add_row(*obj_info)  # add new row/StudentLogin obj to table
 
         logging.info('StudentLoginTable object successfully populated from file')
 
