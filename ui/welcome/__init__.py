@@ -12,9 +12,10 @@ class WelcomePage(ttk.Frame):
     def __init__(self, parent_tk_obj, controller_obj, padx, pady):
         """
         The initial landing page of the application
+
         :param parent_tk_obj: a frame object in which to pack/grid this page/frame object
         :param controller_obj: the parent object which is in charge of managing
-        which page is displayed. Has a change_page method
+            which page is displayed. Has a change_page method
         :param padx: padx value to use in .grid() calls
         :param pady: pady value to use in .grid() calls
         """
@@ -48,13 +49,14 @@ class LoginPage(ttk.Frame):
         The base class for the login page objects of StudentLoginPage and StaffLoginPage.
         Allows the user to return back to the welcome screen
         or enter their username and password in order to access the system.
+
         :param parent_tk_obj: a frame object in which to pack/grid this page/frame object
-        :param controller_obj: the parent object which is in charge of managing
-        which page is displayed. Has a change_page method
+        :param controller_obj: the parent object which is in charge of managing which page is
+            displayed. Has a change_page method
         :param padx: padx value to use in .grid() calls
         :param pady: pady value to use in .grid() calls
         :param is_student: boolean to differentiate between StudentLoginPage and StaffLoginPage
-        objects' initialisation.Determines which part of the application the user is directed to
+            objects' initialisation. Determines where the user is directed to on login
         """
         ttk.Frame.__init__(self, master=parent_tk_obj)
 
@@ -144,6 +146,7 @@ class WelcomeLoginWindow:
         The user can navigate the different login pages using buttons.
         These buttons call the change_page method which cycles through the layered frames
         by elevating them to the top of the tkinter window.
+
         :param master: tk.Tk() object to act as tkinter root
         :param padx: padx value to use in .grid() calls
         :param pady: pady value to use in .grid() calls

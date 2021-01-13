@@ -7,6 +7,7 @@ class PasswordLengthError(Exception):
     def __init__(self, password_len, message='provided_password string argument too long'):
         """
         Exception raised for when provided_password string is too long.
+
         :param password_len: length of provided_password string
         :param message: error message explanation to be raised
         """

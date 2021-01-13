@@ -68,7 +68,7 @@ class StudentLogin(RowClass):
 
         # user_id should be int but when parsed from txt file will be str so needs conversion
         self.user_id = int(user_id)
-        logging.info(f'New StudentLogin object successfully created - username={self.username!r}')
+        logging.debug(f'New StudentLogin object successfully created - username={self.username!r}')
 
     def __repr__(self):
         # only first 10 chars of hash shown
@@ -159,13 +159,13 @@ class StudentLoginTable(TableClass):
 class Database:
     def __init__(self):
         """
-        TODO: Database obj docs for methods and init.
-        automatically initialises a instance of each table class in this file to be populated
+        When initialised, automatically initialises one instance of each 'Table' in this .py file
+        These are all added to self.database for access. (Therefore functions like an SQL database)
         """
         table_list = TableClass.__subclasses__()
         self.database = dict()
         for table_cls in table_list:
-            # creates instance of table and adds to database
+            # creates instance of table and adds to database with key of table name
             self.database[table_cls.__name__] = table_cls()
 
         logging.debug(f'Database created {len(table_list)} table(s) automatically: '
@@ -175,14 +175,23 @@ class Database:
         return f'<Database object with {len(self.database)} table(s): ' \
                f'{",".join(self.database.keys())}>'
 
-    @staticmethod
+    @staticmethod  # since it doesn't use any attributes
     def get_txt_database_dir():
-        if __name__ == '__main__':  # file is being executed in console
+        """
+        Returns the absolute path to the directory in which to store the database txt files.
+        """
+        if __name__ == '__main__':  # file is being executed in console/directly
             return Path.cwd()
         else:  # normal operation from main.py
             return Path.cwd() / 'data_tables'
 
     def load_state_from_file(self):
+        """
+        Loads the entire database state from txt files into memory.
+        Handled using each Table object's load_from_file method.
+        If even one table is missing, no tables are loaded (due to links between tables)
+        and a FileNotFoundError is raised.
+        """
         load_path_list = list()
         for table_name in self.database.keys():
             load_path_list.append(self.get_txt_database_dir() / f'{table_name}.txt')
@@ -200,6 +209,10 @@ class Database:
             f'{len(load_path_list)} table(s) successfully loaded into Database object')
 
     def save_state_to_file(self):
+        """
+        Saves the entire database state to txt files from memory.
+        Handled using each Table object's save_to_file method.
+        """
         for table_name, table_obj in self.database.items():
             save_path = self.get_txt_database_dir() / f'{table_name}.txt'
 
