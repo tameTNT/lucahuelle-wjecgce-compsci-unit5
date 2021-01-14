@@ -34,6 +34,6 @@ if __name__ == '__main__':
     main_database_obj = data_handling.Database()
     main_database_obj.load_state_from_file()  # loads last database state from file into memory
     logging.debug('WelcomeLoginWindow initialised')
-    main_window = WelcomeLoginWindow(master=root, padx=10, pady=2)
+    main_window = WelcomeLoginWindow(master=root, db=main_database_obj, padx=10, pady=2)
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(main_database_obj, root))
     root.mainloop()

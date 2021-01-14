@@ -1,8 +1,10 @@
 import logging
 import tkinter as tk
+import tkinter.messagebox as msg
 import tkinter.ttk as ttk
 from typing import Union, Type
 
+from data_tables import data_handling
 from processes import password_logic
 
 
@@ -50,6 +52,7 @@ class LoginPage(ttk.Frame):
         Allows the user to return back to the welcome screen
         or enter their username and password in order to access the system.
 
+        :type controller_obj: WelcomeLoginWindow
         :param parent_tk_obj: a frame object in which to pack/grid this page/frame object
         :param controller_obj: the parent object which is in charge of managing which page is
             displayed. Has a change_page method
@@ -59,9 +62,10 @@ class LoginPage(ttk.Frame):
             objects' initialisation. Determines where the user is directed to on login
         """
         ttk.Frame.__init__(self, master=parent_tk_obj)
+        self.controller_obj = controller_obj
 
         self.back_button = ttk.Button(self, text='Back',
-                                      command=lambda: controller_obj.change_page(WelcomePage))
+                                      command=lambda: self.controller_obj.change_page(WelcomePage))
         self.back_button.grid(row=0, column=0, padx=padx, pady=pady, sticky='w')
 
         self.message = ttk.Label(self,
@@ -114,11 +118,18 @@ class LoginPage(ttk.Frame):
         input_username = self.username_var.get()
         input_password = self.password_var.get()
 
-        # TODO: password verification logic using password_logic.verify_pass_str() etc.
         if self.is_student:
-            password_logic.verify_pwd_str('temp', 'temp')
             logging.debug('A student attempted to log in')
+            login_username_dict = self.controller_obj.get_table_from_db('StudentLoginTable').rows
+            if input_username in login_username_dict.keys():
+                if password_logic.verify_pwd_str(input_password,
+                                                 login_username_dict[input_username].password):
+                    msg.showinfo('Successful login', f'Welcome {input_username}!')
+                    logging.debug('A student successfully logged in')
+                    return  # TODO: reroute user to application window
+            msg.showerror('Login Failed', 'Username and/or password incorrect')
         else:
+            # TODO: password verification for staff
             logging.debug('A staff member attempted to log in')
 
 
@@ -139,7 +150,7 @@ class StaffLoginPage(LoginPage):
 
 
 class WelcomeLoginWindow:
-    def __init__(self, master: tk.Tk, padx=10, pady=5):
+    def __init__(self, master: tk.Tk, db: data_handling.Database, padx=10, pady=5):
         """
         Initialises a WelcomeLoginWindow object: the main tkinter window which contains
         the 'pages'/frames for student and staff login operations.
@@ -148,9 +159,12 @@ class WelcomeLoginWindow:
         by elevating them to the top of the tkinter window.
 
         :param master: tk.Tk() object to act as tkinter root
+        :param db: main database object to manipulate throughout application
         :param padx: padx value to use in .grid() calls
         :param pady: pady value to use in .grid() calls
         """
+        self.db = db
+
         self.master = master
         self.master.title('DofE - Login')
 
@@ -178,3 +192,15 @@ class WelcomeLoginWindow:
         logging.debug('User changed displayed page in WelcomeLoginWindow')
         next_frame = self.page_frames[destination_page]
         next_frame.tkraise()  # elevates the frame to the top of frame stack/'changes pages'
+
+    def get_table_from_db(self, table_name) -> data_handling.TableClass:
+        """
+        Returns the table object from the database dictionary from
+        database of application for queries and editing etc.
+        If the table_name is not a valid table name then a KeyError is raised.
+        """
+        if table_name in self.db.database.keys():
+            return self.db.database[table_name]
+        else:
+            raise KeyError(f'{table_name} is not a valid table name. '
+                           f'Valid options: {"".join(self.db.database.keys())}')
