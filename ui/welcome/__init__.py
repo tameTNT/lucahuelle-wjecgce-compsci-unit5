@@ -126,7 +126,7 @@ class LoginPage(ttk.Frame):
                                                  login_username_dict[input_username].password):
                     msg.showinfo('Successful login', f'Welcome {input_username}!')
                     logging.debug('A student successfully logged in')
-                    return  # TODO: reroute user to application window
+                    return  # TODO: reroute user to application window - start new branch
             msg.showerror('Login Failed', 'Username and/or password incorrect')
         else:
             # TODO: password verification for staff

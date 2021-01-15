@@ -60,7 +60,6 @@ class TableClass:
         pass
 
 
-# TODO: write tests for classes and methods (including int validation)
 class StudentLogin(RowClass):
     def __init__(self, username: str, password_hash: str, user_id: int):
         self.username = username
