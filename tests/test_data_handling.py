@@ -2,21 +2,27 @@ from copy import deepcopy
 from pathlib import Path
 from unittest import TestCase
 
-from data_tables.data_handling import StudentLogin, StudentLoginTable
+from data_tables.data_handling import StudentLogin, StudentLoginTable, ValidationError
 
 TEST_STUDENT_SAVE_STRING = f'{"test name".ljust(30)}\\%s' \
                            f'{"test pwd hash".ljust(128)}\\%s{"1".ljust(4)}\n'
 
 
 class TestStudentLogin(TestCase):
-    # noinspection PyTypeChecker
     test_student = StudentLogin('test name', 'test pwd hash', '01')
 
     def test_init(self):
-        with self.assertRaises(ValueError):
-            # noinspection PyTypeChecker
+        with self.assertRaises(ValidationError) as cm:
+            StudentLogin('t', 'test pwd hash', 10)
+        if 'username' not in str(cm.exception):
+            self.fail('Error message text for string length validation incorrect.')
+
+        with self.assertRaises(ValidationError) as cm:
             StudentLogin('test name', 'test pwd hash', 'test int')
-        StudentLogin('test name', 'test pwd hash', 10)
+        if 'user_id' not in str(cm.exception):
+            self.fail('Error message text for int validation incorrect.')
+
+        StudentLogin('test name', 'test pwd hash', 10)  # shouldn't fail
 
     def test_tabulate(self):
         tabulate_output = TestStudentLogin.test_student.tabulate()
@@ -25,7 +31,6 @@ class TestStudentLogin(TestCase):
 
 
 class TestStudentLoginTable(TestCase):
-    # noinspection PyTypeChecker
     test_student = StudentLogin('test name', 'test pwd hash', '02')
     test_login_table = StudentLoginTable([test_student])
 

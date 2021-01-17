@@ -123,7 +123,7 @@ class LoginPage(ttk.Frame):
             login_username_dict = self.controller_obj.get_table_from_db('StudentLoginTable').rows
             if input_username in login_username_dict.keys():
                 if password_logic.verify_pwd_str(input_password,
-                                                 login_username_dict[input_username].password):
+                                                 login_username_dict[input_username].password_hash):
                     msg.showinfo('Successful login', f'Welcome {input_username}!')
                     logging.debug('A student successfully logged in')
                     return  # TODO: reroute user to application window - start new branch
