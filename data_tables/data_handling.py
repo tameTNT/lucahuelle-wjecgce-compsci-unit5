@@ -1,15 +1,14 @@
 import datetime as dt
 import logging  # logging functionality
-import re
 from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
-from typing import Iterable, Optional, Union, Set, TypedDict  # type hints in function definitions
+from typing import Iterable, Optional, Union  # type hints in function definitions
+
+from processes.date_logic import convert_str_to_dict
+from processes.validation import validate_int, validate_length, validate_lookup, \
+    validate_date, validate_regex
 
 EMAIL_RE_PATTERN = r'[^@]+@[^@.]+.[^@.]+'
-
-
-class ValidationError(Exception):
-    pass
 
 
 class RowClass:
@@ -66,96 +65,6 @@ class TableClass:
         Given the file output from an open('w') method, writes to the file the data within self
         """
         pass
-
-
-def validate_int(value: Union[str, int], attribute_name: str):
-    """
-    Attempts to return int(value).
-    If this fails, a ValidationError is raised with a descriptive error message.
-    """
-    try:
-        return int(value)
-    except ValueError:
-        raise ValidationError(f'{attribute_name} provided ({value}) '
-                              f'is not an integer.')
-
-
-def validate_length(value: str, min_len: int, max_len: int, attribute_name: str) -> str:
-    """
-    Verifies that string is between min and max characters (inclusive) in length.
-    If this is not the case, a ValidationError is raised with a descriptive error message.
-    """
-    if min_len <= len(value) <= max_len:
-        return value
-    else:
-        raise ValidationError(f'{attribute_name} provided ({value}) '
-                              f'is not between {min_len} and {max_len} characters long.')
-
-
-def validate_lookup(value: str, lookup_set: Set[str], attribute_name: str) -> str:
-    """
-    Validates whether value is in lookup_set.
-    If this fails, a ValidationError is raised with a descriptive error message.
-    """
-    if value in lookup_set:
-        return value
-    else:
-        raise ValidationError(f'{attribute_name} provided ({value}) '
-                              f'is not in the list of possible options: '
-                              f'{", ".join(lookup_set)}')
-
-
-class DateInfoDict(TypedDict):
-    year: int
-    month: int
-    day: int
-
-
-def convert_str_to_dict(date_str) -> DateInfoDict:
-    # TODO: when saving dates to file insert dashes
-    value_list = list(map(int, date_str.split('-')))
-    return {'year': value_list[0], 'month': value_list[1], 'day': value_list[2]}
-
-
-def validate_date(date_str: str, earliest_offset: Union[float, int],
-                  latest_offset: Union[float, int], attribute_name: str) -> dt.datetime:
-    """
-    Validates a date - is it a valid date and does it fall within the given range?
-    :param date_str: A date str in the form 'YEAR-MONTH-DAY'
-    :param earliest_offset: Number of days into the future (-ve for past) from which to accept date
-    :param latest_offset: Number of days into the future (-ve for past) up to which to accept date
-        Note that therefore, earliest_offset should ALWAYS be less than latest_offset
-    :param attribute_name: Name of attribute which is being validated - for error message output
-    """
-    date_dict = convert_str_to_dict(date_str)
-    try:
-        valid_date = dt.datetime(**date_dict)
-    except ValueError:
-        raise ValidationError(f'Date information provided for {attribute_name} is'
-                              f'logically invalid; i.e. the date specified '
-                              f'({date_dict["year"]}-{date_dict["month"]}-{date_dict["day"]}) '
-                              f'does not exist')
-
-    now = dt.datetime.now()
-    earliest_offset = dt.timedelta(days=earliest_offset)
-    earliest_date = now + earliest_offset
-    latest_offset = dt.timedelta(days=latest_offset)
-    latest_date = now + latest_offset
-    if earliest_date < valid_date < latest_date:
-        return valid_date
-    else:
-        raise ValidationError(f'Date information provided for {attribute_name} '
-                              f'({date_dict["year"]}-{date_dict["month"]}-{date_dict["day"]}) is '
-                              f'not within accepted range from '
-                              f'{earliest_date:%Y-%m-%d} to {latest_date:%Y-%m-%d}')
-
-
-def validate_regex(value: str, pattern: str, attribute_name: str) -> str:
-    if re.fullmatch(pattern, value):
-        return value
-    else:
-        raise ValidationError(f'Value entered for {attribute_name}, '
-                              f'does not match expected (regex) pattern: {pattern}')
 
 
 class StudentLogin(RowClass):
@@ -288,33 +197,31 @@ class Student(RowClass):
             self.vol_info_id = ''
 
         logging.debug(f'New Student object successfully created - student_id={self.student_id!r}')
-        # TODO: methods - tabulate and repr
+        # TODO: Student method - repr
+        # TODO: Student method - tabulate
 
 
-class StudentTable(TableClass):
-    # TODO: table of students
-    pass
+# class StudentTable(TableClass):
+# TODO: table of students
 
 
 # class Section(RowClass):
-#     def __init__(self, activity_status):
-#         self._activity_status = activity_status
-#
-#     @property
-#     def activity_status(self):
-#         return self._activity_status
-#
-#     @activity_status.setter
-#     def activity_status(self, new_value):
-#         return
-#
-#     @activity_status.getter
-#     def activity_status(self):
-#         return 'blah'
-#
-#
+# TODO: section/activity table
+    # def __init__(self, activity_status):
+    #     self._activity_status = activity_status
+    #
+    # @property
+    # def activity_status(self):
+    #     return self._activity_status
+    #
+    # @activity_status.getter
+    # def activity_status(self):
+    #     TODO: GENERATE SECTION STATUS method
+    #     return 'blah'
+
+
 # class SectionTable(TableClass):
-#     pass
+# TODO: table of activities
 
 
 class Database:
@@ -358,7 +265,7 @@ class Database:
             load_path_list.append(self.get_txt_database_dir() / f'{table_name}.txt')
             if not load_path_list[-1].exists():  # a table is missing
                 logging.debug(f'Table at path {load_path_list[-1]} not found. Table load aborted.')
-                raise FileNotFoundError(f'The file {load_path_list[-1]} does not exist but should.'
+                raise FileNotFoundError(f'The file {load_path_list[-1]} does not exist but should. '
                                         f'No tables loaded into memory.')
 
         for load_path, table_obj in zip(load_path_list, self.database.values()):

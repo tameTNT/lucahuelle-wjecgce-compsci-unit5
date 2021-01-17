@@ -2,7 +2,8 @@ from copy import deepcopy
 from pathlib import Path
 from unittest import TestCase
 
-from data_tables.data_handling import StudentLogin, StudentLoginTable, ValidationError
+from data_tables.data_handling import StudentLogin, StudentLoginTable
+from processes.validation import ValidationError
 
 TEST_STUDENT_SAVE_STRING = f'{"test name".ljust(30)}\\%s' \
                            f'{"test pwd hash".ljust(128)}\\%s{"1".ljust(4)}\n'
