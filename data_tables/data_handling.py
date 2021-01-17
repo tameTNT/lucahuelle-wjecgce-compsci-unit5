@@ -233,6 +233,69 @@ class StudentLoginTable(TableClass):
         logging.info('StudentLoginTable object successfully saved to file')
 
 
+class Student(RowClass):
+    def __init__(self, student_id: Union[int, str], fullname: str, centre_id: Union[int, str],
+                 year_group: Union[int, str], award_level: str, gender: str,
+                 date_of_birth: str, address: str, phone_primary: str,
+                 email_primary: str, phone_emergency: str, primary_lang: str,
+                 enrolment_date: str, skill_info_id: Union[int, str, None],
+                 phys_info_id: Union[int, str, None], vol_info_id: Union[int, str, None]):
+
+        # student_id should be int but when parsed from txt file will be str so needs conversion
+        self.student_id = validate_int(student_id, 'student_id')
+
+        self.fullname = validate_length(fullname, 2, 30, 'fullname')
+
+        self.centre_id = validate_int(centre_id, 'centre_id')
+
+        year_group = str(validate_int(year_group, 'year_group'))
+        self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'year_group')
+
+        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'award_level')
+
+        # pnts = prefer not to say
+        self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'}, 'gender')
+
+        # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
+        self.date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
+                                           'date_of_birth')
+
+        self.address = validate_length(address, 5, 100, 'address')
+
+        self.phone_primary = validate_length(phone_primary, 9, 11, 'phone_primary')
+
+        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary')
+
+        self.phone_emergency = validate_length(phone_emergency, 9, 11, 'phone_emergency')
+
+        self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'}, 'primary-lang')
+
+        self.enrolment_date = dt.datetime(**convert_str_to_dict(enrolment_date))
+
+        if skill_info_id:
+            self.skill_info_id = validate_int(skill_info_id, 'skill_info_id')
+        else:
+            self.skill_info_id = ''  # Null value if not provided
+
+        if phys_info_id:
+            self.phys_info_id = validate_int(phys_info_id, 'phys_info_id')
+        else:
+            self.phys_info_id = ''
+
+        if vol_info_id:
+            self.vol_info_id = validate_int(vol_info_id, 'vol_info_id')
+        else:
+            self.vol_info_id = ''
+
+        logging.debug(f'New Student object successfully created - student_id={self.student_id!r}')
+        # TODO: methods - tabulate and repr
+
+
+class StudentTable(TableClass):
+    # TODO: table of students
+    pass
+
+
 # class Section(RowClass):
 #     def __init__(self, activity_status):
 #         self._activity_status = activity_status
