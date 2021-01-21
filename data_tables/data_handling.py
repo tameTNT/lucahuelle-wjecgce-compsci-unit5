@@ -2,7 +2,7 @@ import datetime as dt
 import logging  # logging functionality
 from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
-from typing import Iterable, Optional, Union  # type hints in function definitions
+from typing import Collection, Optional, Union  # type hints in function and class definitions
 
 from processes.date_logic import convert_str_to_dict
 from processes.validation import validate_int, validate_length, validate_lookup, \
@@ -14,20 +14,27 @@ EMAIL_RE_PATTERN = r'[^@]+@[^@.]+.[^@.]+'
 class RowClass:
     """
     Base class for row classes/data objects to be stored within tables.
+    Must have a key_field which needs to be unique for each row/record/object in a table
     """
+
+    key_field = ''
 
     def __repr__(self) -> str:
         """
         Returns a string representation of object in form:
-        '<ClassName object key_field={self.key_field!r}> field_2={self.field_2!r} ...'
+        f'<ClassName object key_field="{self.key_field!r}" field_2="{self.field_2!r}" ...>'
         """
         pass
 
-    def tabulate(self) -> str:
+    def tabulate(self, padding_values: dict) -> str:
         """
         Returns a one line string of the object's data tabulated for text storage
+        :param padding_values: dictionary of field_name (str): padding_value (int) pairs
         """
-        pass
+        return_string = ''
+        for attr_name, attr_val in self.__dict__.items():
+            return_string += str(attr_val).ljust(padding_values[attr_name]) + r'\%s'
+        return return_string + '\n'
 
 
 class TableClass:
@@ -35,15 +42,30 @@ class TableClass:
     Base class for table classes which are then stored within a Database object.
     """
 
-    def __init__(self):
-        self.rows = dict()  # objects are stored in dictionary using primary key/field as key
+    row_class = RowClass  # indicates what row objs will be stored within this table
+
+    # a Collection is just a sized iterable
+    def __init__(self, start_table: Optional[Collection[RowClass]] = tuple()):
+        """
+        :param start_table: (optional) an iterable of row objects
+            (children of RowClass) to populate self with
+        """
+
+        # objects are stored in dictionary using key_field of self.row_class as key
+        self.rows = dict()
+        if start_table:  # if a collection of objects has been provided
+            for row_obj in start_table:
+                self.add_row(row_obj)
+
+            logging.info(f'{type(self).__name__} object successfully populated from iterable '
+                         f'argument - {len(start_table)} {self.row_class.__name__} object(s) added')
 
     def __repr__(self) -> str:
         """
-        Returns a string representation of object in form:
-        '<ClassName object with {len(self.rows)} row(s) of ClassRow objects>'
+        Returns a string representation of object.
         """
-        pass
+        return f'<{type(self).__name__} object with {len(self.rows)} row(s) ' \
+               f'of {self.row_class} objects>'
 
     def add_row(self, *args):
         """
@@ -52,22 +74,57 @@ class TableClass:
         Otherwise, a new object is initialised (using all args) and then added.
         Raises KeyError if attempting to add an object with a non-unique key field.
         """
-        pass
+        if isinstance(args[0], self.row_class):  # if first argument is a row object
+            new_row_obj = args[0]
+        else:
+            # if no object passed to function then
+            # object initialisation arguments have been passed instead
+            # so row_class __init__() method is called
+
+            # noinspection PyArgumentList
+            new_row_obj = self.row_class(*args)
+
+        key_field = self.row_class.key_field
+        primary_key = new_row_obj.__getattribute__(key_field)
+        if primary_key not in self.rows.keys():
+            self.rows[primary_key] = new_row_obj
+        else:
+            error_str = f'Tried to add an object to {type(self).__name__} with a ' \
+                        f'non-unique primary key - value of "{primary_key}" for field "{key_field}"'
+            logging.error(error_str)
+            raise KeyError(error_str)
 
     def load_from_file(self, txt_file: TextIOWrapper):
         """
         Given the output from an open() method, populates self with data from lines of text file
         """
-        pass
+        txt_lines = txt_file.readlines()
+        for row in txt_lines:
+            obj_info = list()
+
+            padded_fields = row.split(r'\%s')  # split line/row by separator
+            for field in padded_fields:
+                if field != '\n':
+                    obj_info.append(field.strip())  # remove padding whitespace
+
+            self.add_row(*obj_info)  # add new row/obj to table
+
+        logging.info(f'{type(self).__name__} object successfully populated from file - '
+                     f'added {len(txt_lines)} StudentLogin objects')
 
     def save_to_file(self, txt_file: TextIOWrapper):
         """
         Given the file output from an open('w') method, writes to the file the data within self
         """
-        pass
+        for row_object in self.rows.values():
+            txt_file.write(row_object.tabulate())
+
+        logging.info(f'{type(self).__name__} object successfully saved to file')
 
 
 class StudentLogin(RowClass):
+    key_field = 'username'
+
     def __init__(self, username: str, password_hash: str, user_id: Union[int, str]):
         self.username = validate_length(username, 2, 30, 'username')
         self.password_hash = password_hash
@@ -79,70 +136,25 @@ class StudentLogin(RowClass):
 
     def __repr__(self):
         # only first 10 chars of hash shown
-        return f'<StudentLogin object username={self.username!r} ' \
-               f'password_hash={self.password_hash[:10] + "..."!r} user_id={self.user_id!r}>'
+        return f'<StudentLogin object username="{self.username!r}" ' \
+               f'password_hash="{self.password_hash[:10] + "..."!r}" user_id="{self.user_id!r}">'
 
-    def tabulate(self):
-        return_string = ''
-        return_string += self.username.ljust(30) + r'\%s'
-        return_string += self.password_hash.ljust(128) + r'\%s'
-        return_string += str(self.user_id).ljust(4)
-        return return_string + '\n'
+    def tabulate(self, padding_values=None):
+        padding_values = {
+            'username': 30,
+            'password_hash': 128,
+            'user_id': 4
+        }
+        return super().tabulate(padding_values)
 
 
 class StudentLoginTable(TableClass):
-    def __init__(self, start_table: Optional[Iterable[StudentLogin]] = tuple()):
-        """
-        :param start_table: (optional) an iterable of StudentLogin objects to populate self with
-        """
-        super().__init__()
-        if start_table:  # if an iterable of objects has been provided
-            for student_obj in start_table:
-                self.add_row(student_obj)
-
-            # noinspection PyTypeChecker
-            logging.info('StudentLoginTable object successfully populated from iterable argument - '
-                         f'{len(start_table)} object(s) added.')
-
-    def __repr__(self):
-        return f'<StudentLoginTable object with {len(self.rows)} row(s) of StudentLogin objects>'
-
-    def add_row(self, *args):
-        if isinstance(args[0], StudentLogin):  # first argument is a StudentLogin object
-            new_student_obj = args[0]
-        # if no object passed to function then initialisation arguments have been passed instead
-        else:
-            new_student_obj = StudentLogin(*args)
-
-        primary_key = new_student_obj.username
-        if primary_key not in self.rows.keys():
-            self.rows[primary_key] = new_student_obj
-        else:
-            raise KeyError(
-                f'Tried to add an object to table with a non-unique primary key - {primary_key}')
-
-    def load_from_file(self, txt_file: TextIOWrapper):
-        txt_lines = txt_file.readlines()
-        for row in txt_lines:
-            obj_info = list()
-
-            padded_fields = row.split(r'\%s')  # split line/row by separator
-            for field in padded_fields:
-                obj_info.append(field.strip())  # remove padding whitespace and newlines
-
-            self.add_row(*obj_info)  # add new row/StudentLogin obj to table
-
-        logging.info(f'StudentLoginTable object successfully populated from file - '
-                     f'added {len(txt_lines)} StudentLogin objects')
-
-    def save_to_file(self, txt_file: TextIOWrapper):
-        for student_login_obj in self.rows.values():
-            txt_file.write(student_login_obj.tabulate())
-
-        logging.info('StudentLoginTable object successfully saved to file')
+    row_class = StudentLogin
 
 
 class Student(RowClass):
+    key_field = 'student_id'
+
     def __init__(self, student_id: Union[int, str], fullname: str, centre_id: Union[int, str],
                  year_group: Union[int, str], award_level: str, gender: str,
                  date_of_birth: str, address: str, phone_primary: str,
@@ -197,12 +209,21 @@ class Student(RowClass):
             self.vol_info_id = ''
 
         logging.debug(f'New Student object successfully created - student_id={self.student_id!r}')
-        # TODO: Student method - repr
-        # TODO: Student method - tabulate
+
+    def __repr__(self):
+        return f'<Student object student_id={self.student_id!r} ' \
+               f'fullname={self.fullname!r} year_group={self.year_group!r}> ' \
+               f'award_level={self.award_level!r} date_of_birth={self.date_of_birth!s}'
+
+    def tabulate(self, padding_values=None):
+        padding_values = {
+            # TODO: tabulate method padding
+        }
+        return super().tabulate(padding_values)
 
 
 # class StudentTable(TableClass):
-# TODO: table of students
+#     row_class = Student
 
 
 # class Section(RowClass):
@@ -221,7 +242,7 @@ class Student(RowClass):
 
 
 # class SectionTable(TableClass):
-# TODO: table of activities
+#     row_class = Section
 
 
 class Database:
@@ -236,8 +257,8 @@ class Database:
             # creates instance of table and adds to database with key of table name
             self.database[table_cls.__name__] = table_cls()
 
-        logging.debug(f'Database created {len(table_list)} table(s) automatically: '
-                      f'{",".join(self.database)}')
+        logging.debug(f'Database initialisation created {len(table_list)} '
+                      f'table(s) automatically: {",".join(self.database)}')
 
     def __repr__(self):
         return f'<Database object with {len(self.database)} table(s): ' \
@@ -255,7 +276,8 @@ class Database:
 
     def load_state_from_file(self):
         """
-        Loads the entire database state from txt files into memory.
+        Loads the entire database state from txt files into memory
+        after clearing current state.
         Handled using each Table object's load_from_file method.
         If even one table is missing, no tables are loaded (due to links between tables)
         and a FileNotFoundError is raised.
@@ -270,8 +292,11 @@ class Database:
                 raise FileNotFoundError(error_str)
 
         for load_path, table_obj in zip(load_path_list, self.database.values()):
-            with load_path.open(mode='r') as fobj:
-                # noinspection PyTypeChecker
+            previous_row_count = len(table_obj.rows)
+            table_obj.rows = dict()  # clears table
+            logging.debug(f'Cleared {previous_row_count} rows/{table_obj.row_class.__name__} '
+                          f'object(s) from {type(table_obj).__name__} table successfully')
+            with load_path.open(mode='r') as fobj:  # type: TextIOWrapper
                 table_obj.load_from_file(fobj)
 
         logging.info(
