@@ -264,9 +264,10 @@ class Database:
         for table_name in self.database.keys():
             load_path_list.append(self.get_txt_database_dir() / f'{table_name}.txt')
             if not load_path_list[-1].exists():  # a table is missing
-                logging.debug(f'Table at path {load_path_list[-1]} not found. Table load aborted.')
-                raise FileNotFoundError(f'The file {load_path_list[-1]} does not exist but should. '
-                                        f'No tables loaded into memory.')
+                error_str = f'The file {load_path_list[-1]} does not exist but should. ' \
+                            f'Table load aborted and no tables loaded into memory.'
+                logging.error(error_str)
+                raise FileNotFoundError(error_str)
 
         for load_path, table_obj in zip(load_path_list, self.database.values()):
             with load_path.open(mode='r') as fobj:
@@ -284,8 +285,7 @@ class Database:
         for table_name, table_obj in self.database.items():
             save_path = self.get_txt_database_dir() / f'{table_name}.txt'
 
-            with save_path.open(mode='w+') as fobj:
-                # noinspection PyTypeChecker
+            with save_path.open(mode='w+') as fobj:  # type: TextIOWrapper
                 table_obj.save_to_file(fobj)
 
         logging.info(

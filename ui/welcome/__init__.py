@@ -202,5 +202,7 @@ class WelcomeLoginWindow:
         if table_name in self.db.database.keys():
             return self.db.database[table_name]
         else:
-            raise KeyError(f'{table_name} is not a valid table name. '
-                           f'Valid options: {"".join(self.db.database.keys())}')
+            error_str = f'{table_name} is not a valid table name. ' \
+                        f'Valid options: {"".join(self.db.database.keys())}'
+            logging.error(error_str)
+            raise KeyError(error_str)
