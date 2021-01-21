@@ -2,16 +2,19 @@ import datetime as dt
 import logging  # logging functionality
 from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
-from typing import Collection, Optional, Union  # type hints in function and class definitions
+from typing import Collection, Union  # type hints in function and class definitions
 
-from processes.date_logic import convert_str_to_dict
+from processes.date_logic import str_to_date_dict, datetime_to_str
 from processes.validation import validate_int, validate_length, validate_lookup, \
     validate_date, validate_regex
 
+# simplistic and naive regular expression for validating emails
 EMAIL_RE_PATTERN = r'[^@]+@[^@.]+.[^@.]+'
+# length of internal user_id, student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
+INTERNAL_ID_LEN = 5
 
 
-class RowClass:
+class Row:
     """
     Base class for row classes/data objects to be stored within tables.
     Must have a key_field which needs to be unique for each row/record/object in a table
@@ -24,31 +27,42 @@ class RowClass:
         Returns a string representation of object in form:
         f'<ClassName object key_field="{self.key_field!r}" field_2="{self.field_2!r}" ...>'
         """
-        pass
+        return '<Instance of Row class. Has a tabulate method.>'
 
-    def tabulate(self, padding_values: dict) -> str:
+    def tabulate(self, padding_values: dict = None, special_str_funcs: dict = None) -> str:
         """
         Returns a one line string of the object's data tabulated for text storage
         :param padding_values: dictionary of field_name (str): padding_value (int) pairs
+        :param special_str_funcs: dictionary of fields with a custom func for a str representation.
+            Each function should take one argument, the field's value and return a string.
+            e.g. needed for date formatting
         """
+        if padding_values is None:
+            padding_values = {}
+        if special_str_funcs is None:
+            special_str_funcs = {}
+
         return_string = ''
         for attr_name, attr_val in self.__dict__.items():
-            return_string += str(attr_val).ljust(padding_values[attr_name]) + r'\%s'
+            str_func = str
+            if attr_name in special_str_funcs:
+                str_func = special_str_funcs[attr_name]
+            return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
         return return_string + '\n'
 
 
-class TableClass:
+class Table:
     """
     Base class for table classes which are then stored within a Database object.
     """
 
-    row_class = RowClass  # indicates what row objs will be stored within this table
+    row_class = Row  # indicates what Row objs will be stored within this table
 
     # a Collection is just a sized iterable
-    def __init__(self, start_table: Optional[Collection[RowClass]] = tuple()):
+    def __init__(self, start_table: Collection[row_class] = None):
         """
-        :param start_table: (optional) an iterable of row objects
-            (children of RowClass) to populate self with
+        :param start_table: an iterable of row objects (children of Row class)
+            to populate self with
         """
 
         # objects are stored in dictionary using key_field of self.row_class as key
@@ -110,7 +124,7 @@ class TableClass:
             self.add_row(*obj_info)  # add new row/obj to table
 
         logging.info(f'{type(self).__name__} object successfully populated from file - '
-                     f'added {len(txt_lines)} StudentLogin objects')
+                     f'added {len(txt_lines)} {self.row_class.__name__} objects')
 
     def save_to_file(self, txt_file: TextIOWrapper):
         """
@@ -122,7 +136,7 @@ class TableClass:
         logging.info(f'{type(self).__name__} object successfully saved to file')
 
 
-class StudentLogin(RowClass):
+class StudentLogin(Row):
     key_field = 'username'
 
     def __init__(self, username: str, password_hash: str, user_id: Union[int, str]):
@@ -139,20 +153,20 @@ class StudentLogin(RowClass):
         return f'<StudentLogin object username="{self.username!r}" ' \
                f'password_hash="{self.password_hash[:10] + "..."!r}" user_id="{self.user_id!r}">'
 
-    def tabulate(self, padding_values=None):
+    def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
             'username': 30,
             'password_hash': 128,
-            'user_id': 4
+            'user_id': INTERNAL_ID_LEN,
         }
-        return super().tabulate(padding_values)
+        return super().tabulate(padding_values, special_str_funcs)
 
 
-class StudentLoginTable(TableClass):
+class StudentLoginTable(Table):
     row_class = StudentLogin
 
 
-class Student(RowClass):
+class Student(Row):
     key_field = 'student_id'
 
     def __init__(self, student_id: Union[int, str], fullname: str, centre_id: Union[int, str],
@@ -191,7 +205,7 @@ class Student(RowClass):
 
         self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'}, 'primary-lang')
 
-        self.enrolment_date = dt.datetime(**convert_str_to_dict(enrolment_date))
+        self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date))
 
         if skill_info_id:
             self.skill_info_id = validate_int(skill_info_id, 'skill_info_id')
@@ -215,18 +229,37 @@ class Student(RowClass):
                f'fullname={self.fullname!r} year_group={self.year_group!r}> ' \
                f'award_level={self.award_level!r} date_of_birth={self.date_of_birth!s}'
 
-    def tabulate(self, padding_values=None):
+    def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
-            # TODO: tabulate method padding
+            'student_id': INTERNAL_ID_LEN,
+            'fullname': 30,
+            'centre_id': 10,
+            'year_group': 2,
+            'award_level': 6,
+            'gender': 6,
+            'date_of_birth': 10,
+            'address': 100,
+            'phone_primary': 11,
+            'email_primary': 40,
+            'phone_emergency': 11,
+            'primary_lang': 7,
+            'enrolment_date': 10,
+            'skill_info_id': INTERNAL_ID_LEN,
+            'phys_info_id': INTERNAL_ID_LEN,
+            'vol_info_id': INTERNAL_ID_LEN,
         }
-        return super().tabulate(padding_values)
+        special_str_funcs = {
+            'date_of_birth': datetime_to_str,
+            'enrolment_date': datetime_to_str,
+        }
+        return super().tabulate(padding_values, special_str_funcs)
 
 
-# class StudentTable(TableClass):
-#     row_class = Student
+class StudentTable(Table):
+    row_class = Student
 
 
-# class Section(RowClass):
+# class Section(Row):
 # TODO: section/activity table
     # def __init__(self, activity_status):
     #     self._activity_status = activity_status
@@ -241,7 +274,7 @@ class Student(RowClass):
     #     return 'blah'
 
 
-# class SectionTable(TableClass):
+# class SectionTable(Table):
 #     row_class = Section
 
 
@@ -251,18 +284,18 @@ class Database:
         When initialised, automatically initialises one instance of each 'Table' in this .py file
         These are all added to self.database for access. (Therefore functions like an SQL database)
         """
-        table_list = TableClass.__subclasses__()
+        table_list = Table.__subclasses__()
         self.database = dict()
         for table_cls in table_list:
             # creates instance of table and adds to database with key of table name
             self.database[table_cls.__name__] = table_cls()
 
         logging.debug(f'Database initialisation created {len(table_list)} '
-                      f'table(s) automatically: {",".join(self.database)}')
+                      f'table(s) automatically: {", ".join(self.database)}')
 
     def __repr__(self):
         return f'<Database object with {len(self.database)} table(s): ' \
-               f'{",".join(self.database.keys())}>'
+               f'{", ".join(self.database.keys())}>'
 
     @staticmethod  # since it doesn't use any attributes
     def get_txt_database_dir():
@@ -300,7 +333,7 @@ class Database:
                 table_obj.load_from_file(fobj)
 
         logging.info(
-            f'{len(load_path_list)} table(s) successfully loaded into Database object')
+            f'{len(load_path_list)} populated table(s) successfully loaded into Database object')
 
     def save_state_to_file(self):
         """
@@ -314,4 +347,4 @@ class Database:
                 table_obj.save_to_file(fobj)
 
         logging.info(
-            f'All {len(self.database.items())} tables successfully saved to txt files')
+            f'All {len(self.database.items())} table(s) successfully saved to txt files')

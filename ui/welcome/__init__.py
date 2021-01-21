@@ -193,7 +193,7 @@ class WelcomeLoginWindow:
         next_frame = self.page_frames[destination_page]
         next_frame.tkraise()  # elevates the frame to the top of frame stack/'changes pages'
 
-    def get_table_from_db(self, table_name) -> data_handling.TableClass:
+    def get_table_from_db(self, table_name) -> data_handling.Table:
         """
         Returns the table object from the database dictionary from
         database of application for queries and editing etc.

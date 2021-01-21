@@ -3,7 +3,7 @@ import logging
 import re
 from typing import Union, Set
 
-from processes.date_logic import convert_str_to_dict
+from processes.date_logic import str_to_date_dict
 
 
 class ValidationError(Exception):
@@ -63,7 +63,7 @@ def validate_date(date_str: str, earliest_offset: Union[float, int],
         Note that therefore, earliest_offset should ALWAYS be less than latest_offset
     :param attribute_name: Name of attribute which is being validated - for error message output
     """
-    date_dict = convert_str_to_dict(date_str)
+    date_dict = str_to_date_dict(date_str)
     try:
         valid_date = dt.datetime(**date_dict)
     except ValueError:
