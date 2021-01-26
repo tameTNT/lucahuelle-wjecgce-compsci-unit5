@@ -9,7 +9,8 @@ from processes.validation import validate_int, validate_length, validate_lookup,
     validate_date, validate_regex
 
 # simplistic and naive regular expression for validating emails
-EMAIL_RE_PATTERN = r'[^@]+@[^@.]+.[^@.]+'
+EMAIL_MAX_LEN = 50  # should match 5,??? above
+EMAIL_RE_PATTERN = r'^(?=.{5,%(len)s}$)[^@]+@[^@.]+.[^@.]+$' % {'len': EMAIL_MAX_LEN}
 # length of internal user_id, student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
@@ -25,7 +26,9 @@ class Row:
     def __repr__(self) -> str:
         """
         Returns a string representation of object in form:
-        f'<ClassName object key_field="{self.key_field!r}" field_2="{self.field_2!r}" ...>'
+        f'<ClassName object key_field="{self.key_field}" field_2="{self.field_2}" ...>'
+        Not all fields need be included - since only for debugging and clarity
+        and not for saving/duplicating/etc.
         """
         return '<Instance of Row class. Has a tabulate method.>'
 
@@ -133,7 +136,7 @@ class Table:
         for row_object in self.rows.values():
             txt_file.write(row_object.tabulate())
 
-        logging.info(f'{type(self).__name__} object successfully saved to file')
+        logging.debug(f'{type(self).__name__} object successfully saved to file')
 
 
 class StudentLogin(Row):
@@ -146,12 +149,12 @@ class StudentLogin(Row):
         # user_id should be int but when parsed from txt file will be str so needs conversion
         self.user_id = validate_int(user_id, 'user_id')
 
-        logging.debug(f'New StudentLogin object successfully created - username={self.username!r}')
+        logging.debug(f'New StudentLogin object successfully created - username={self.username}')
 
     def __repr__(self):
         # only first 10 chars of hash shown
-        return f'<StudentLogin object username="{self.username!r}" ' \
-               f'password_hash="{self.password_hash[:10] + "..."!r}" user_id="{self.user_id!r}">'
+        return f'<StudentLogin object username="{self.username}" ' \
+               f'password_hash="{self.password_hash[:10] + "..."}" user_id="{self.user_id}">'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
@@ -173,8 +176,8 @@ class Student(Row):
                  year_group: Union[int, str], award_level: str, gender: str,
                  date_of_birth: str, address: str, phone_primary: str,
                  email_primary: str, phone_emergency: str, primary_lang: str,
-                 enrolment_date: str, skill_info_id: Union[int, str, None],
-                 phys_info_id: Union[int, str, None], vol_info_id: Union[int, str, None]):
+                 enrolment_date: str, skill_info_id: Union[int, str],
+                 phys_info_id: Union[int, str], vol_info_id: Union[int, str]):
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'student_id')
@@ -222,12 +225,12 @@ class Student(Row):
         else:
             self.vol_info_id = ''
 
-        logging.debug(f'New Student object successfully created - student_id={self.student_id!r}')
+        logging.debug(f'New Student object successfully created - student_id={self.student_id}')
 
     def __repr__(self):
-        return f'<Student object student_id={self.student_id!r} ' \
-               f'fullname={self.fullname!r} year_group={self.year_group!r}> ' \
-               f'award_level={self.award_level!r} date_of_birth={self.date_of_birth!s}'
+        return f'<Student object student_id={self.student_id} ' \
+               f'fullname={self.fullname} year_group={self.year_group}> ' \
+               f'award_level={self.award_level} date_of_birth={self.date_of_birth!s}'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
@@ -240,7 +243,7 @@ class Student(Row):
             'date_of_birth': 10,
             'address': 100,
             'phone_primary': 11,
-            'email_primary': 40,
+            'email_primary': EMAIL_MAX_LEN,
             'phone_emergency': 11,
             'primary_lang': 7,
             'enrolment_date': 10,
@@ -259,23 +262,80 @@ class StudentTable(Table):
     row_class = Student
 
 
-# class Section(Row):
-# TODO: section/activity table
-    # def __init__(self, activity_status):
-    #     self._activity_status = activity_status
-    #
-    # @property
-    # def activity_status(self):
-    #     return self._activity_status
-    #
-    # @activity_status.getter
-    # def activity_status(self):
-    #     TODO: GENERATE SECTION STATUS method
-    #     return 'blah'
+class Section(Row):
+    key_field = 'section_id'
+
+    def __init__(self, section_id: Union[int, str], section_type: str,
+                 activity_start_date: str, activity_length: Union[int, str],
+                 activity_type: str, activity_details: str, activity_goals: str,
+                 assessor_fullname: str, assessor_phone: str, assessor_email: str):
+        self.section_id = validate_int(section_id, 'section_id')
+
+        self.section_type = validate_lookup(section_type, {'phys', 'skill', 'vol'}, 'section_type')
+
+        # A valid start date can be up to 1 year in the future
+        self.activity_start_date = validate_date(activity_start_date, 0, 365.25,
+                                                 'activity_start_date')
+
+        activity_length = str(validate_int(activity_length, 'activity_length'))
+        self.activity_length = validate_lookup(activity_length, {'90', '180', '360'},
+                                               'activity_length')
+
+        self.activity_type = validate_length(activity_type, 3, 20, 'activity_type')
+
+        self.activity_details = validate_length(activity_details, 10, 200, 'activity_details')
+
+        self.activity_goals = validate_length(activity_goals, 10, 100, 'activity_goals')
+
+        self.assessor_fullname = validate_length(assessor_fullname, 2, 30, 'assessor_fullname')
+
+        self.assessor_phone = validate_length(assessor_phone, 9, 11, 'assessor_phone')
+
+        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'assessor_email')
+
+        # This is a private attribute and as such is only updated when it is accessed.
+        # This can not be set manually
+        self._activity_status = ''
+
+        logging.debug(f'New Section object successfully created - section_id={self.section_id}')
+
+    def __repr__(self):
+        return f'<Section object section_id="{self.section_id}" ' \
+               f'section_type="{self.section_type}" ' \
+               f'activity_start_date="{self.activity_start_date!s}" ' \
+               f'activity_length="{self.activity_length}" activity_type="{self.activity_type}" ' \
+               f'assessor_fullname="{self.assessor_fullname}'
+
+    def tabulate(self, padding_values=None, special_str_funcs=None):
+        padding_values = {
+            'section_id': INTERNAL_ID_LEN,
+            'section_type': 5,
+            'activity_start_date': 10,
+            'activity_length': 3,
+            'activity_type': 20,
+            'activity_details': 200,
+            'activity_goals': 100,
+            'assessor_fullname': 30,
+            'assessor_phone': 11,
+            'assessor_email': EMAIL_MAX_LEN,
+        }
+        special_str_funcs = {
+            'activity_start_date': datetime_to_str,
+        }
+        return super().tabulate(padding_values, special_str_funcs)
+
+    @property
+    def activity_status(self):
+        return self._activity_status
+
+    @activity_status.getter
+    def activity_status(self):
+        # TODO: GENERATE SECTION STATUS method
+        return 'Not Implemented'
 
 
-# class SectionTable(Table):
-#     row_class = Section
+class SectionTable(Table):
+    row_class = Section
 
 
 class Database:
@@ -347,4 +407,5 @@ class Database:
                 table_obj.save_to_file(fobj)
 
         logging.info(
-            f'All {len(self.database.items())} table(s) successfully saved to txt files')
+            f'All {len(self.database.items())} table(s) in Database object '
+            f'successfully saved to txt files')
