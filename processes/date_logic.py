@@ -14,7 +14,7 @@ def str_to_date_dict(date_str) -> DateInfoDict:
     to dictionary in format {'year': ???, 'month': ???, 'day': ???}
     """
     value_list = list(map(int, date_str.split('-')))
-    return {'year': value_list[0], 'month': value_list[1], 'day': value_list[2]}
+    return DateInfoDict(year=value_list[0], month=value_list[1], day=value_list[2])
 
 
 def datetime_to_str(datetime_obj: dt.datetime) -> str:

@@ -2,7 +2,7 @@ import datetime as dt
 import logging  # logging functionality
 from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
-from typing import Collection, Union  # type hints in function and class definitions
+from typing import Collection, Union, Dict  # type hints in function and class definitions
 
 from processes.date_logic import str_to_date_dict, datetime_to_str
 from processes.validation import validate_int, validate_length, validate_lookup, \
@@ -11,7 +11,7 @@ from processes.validation import validate_int, validate_length, validate_lookup,
 # simplistic and naive regular expression for validating emails
 EMAIL_MAX_LEN = 50  # should match 5,??? above
 EMAIL_RE_PATTERN = r'^(?=.{5,%(len)s}$)[^@]+@[^@.]+.[^@.]+$' % {'len': EMAIL_MAX_LEN}
-# length of internal user_id, student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
+# length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
 
@@ -60,6 +60,8 @@ class Table:
     """
 
     row_class = Row  # indicates what Row objs will be stored within this table
+    # objects are stored in dictionary using key_field of self.row_class as key
+    row_dict: Dict[str, Row]
 
     # a Collection is just a sized iterable
     def __init__(self, start_table: Collection[row_class] = None):
@@ -68,8 +70,7 @@ class Table:
             to populate self with
         """
 
-        # objects are stored in dictionary using key_field of self.row_class as key
-        self.rows = dict()
+        self.row_dict = dict()
         if start_table:  # if a collection of objects has been provided
             for row_obj in start_table:
                 self.add_row(row_obj)
@@ -81,7 +82,7 @@ class Table:
         """
         Returns a string representation of object.
         """
-        return f'<{type(self).__name__} object with {len(self.rows)} row(s) ' \
+        return f'<{type(self).__name__} object with {len(self.row_dict)} row(s) ' \
                f'of {self.row_class} objects>'
 
     def add_row(self, *args):
@@ -103,8 +104,8 @@ class Table:
 
         key_field = self.row_class.key_field
         primary_key = new_row_obj.__getattribute__(key_field)
-        if primary_key not in self.rows.keys():
-            self.rows[primary_key] = new_row_obj
+        if primary_key not in self.row_dict.keys():
+            self.row_dict[primary_key] = new_row_obj
         else:
             error_str = f'Tried to add an object to {type(self).__name__} with a ' \
                         f'non-unique primary key - value of "{primary_key}" for field "{key_field}"'
@@ -133,7 +134,7 @@ class Table:
         """
         Given the file output from an open('w') method, writes to the file the data within self
         """
-        for row_object in self.rows.values():
+        for row_object in self.row_dict.values():
             txt_file.write(row_object.tabulate())
 
         logging.debug(f'{type(self).__name__} object successfully saved to file')
@@ -142,31 +143,32 @@ class Table:
 class StudentLogin(Row):
     key_field = 'username'
 
-    def __init__(self, username: str, password_hash: str, user_id: Union[int, str]):
+    def __init__(self, username: str, password_hash: str, student_id: Union[int, str]):
         self.username = validate_length(username, 2, 30, 'username')
         self.password_hash = password_hash
 
-        # user_id should be int but when parsed from txt file will be str so needs conversion
-        self.user_id = validate_int(user_id, 'user_id')
+        # student_id should be int but when parsed from txt file will be str so needs conversion
+        self.student_id = validate_int(student_id, 'student_id')
 
         logging.debug(f'New StudentLogin object successfully created - username={self.username}')
 
     def __repr__(self):
         # only first 10 chars of hash shown
         return f'<StudentLogin object username="{self.username}" ' \
-               f'password_hash="{self.password_hash[:10] + "..."}" user_id="{self.user_id}">'
+               f'password_hash="{self.password_hash[:10] + "..."}" student_id="{self.student_id}">'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
             'username': 30,
             'password_hash': 128,
-            'user_id': INTERNAL_ID_LEN,
+            'student_id': INTERNAL_ID_LEN,
         }
         return super().tabulate(padding_values, special_str_funcs)
 
 
 class StudentLoginTable(Table):
     row_class = StudentLogin
+    row_dict: Dict[str, StudentLogin]
 
 
 class Student(Row):
@@ -260,6 +262,7 @@ class Student(Row):
 
 class StudentTable(Table):
     row_class = Student
+    row_dict: Dict[str, Student]
 
 
 class Section(Row):
@@ -336,6 +339,7 @@ class Section(Row):
 
 class SectionTable(Table):
     row_class = Section
+    row_dict: Dict[str, Section]
 
 
 class Database:
@@ -345,7 +349,7 @@ class Database:
         These are all added to self.database for access. (Therefore functions like an SQL database)
         """
         table_list = Table.__subclasses__()
-        self.database = dict()
+        self.database: Dict[str, Table] = dict()
         for table_cls in table_list:
             # creates instance of table and adds to database with key of table name
             self.database[table_cls.__name__] = table_cls()
@@ -385,8 +389,8 @@ class Database:
                 raise FileNotFoundError(error_str)
 
         for load_path, table_obj in zip(load_path_list, self.database.values()):
-            previous_row_count = len(table_obj.rows)
-            table_obj.rows = dict()  # clears table
+            previous_row_count = len(table_obj.row_dict)
+            table_obj.row_dict = dict()  # clears table
             logging.debug(f'Cleared {previous_row_count} rows/{table_obj.row_class.__name__} '
                           f'object(s) from {type(table_obj).__name__} table successfully')
             with load_path.open(mode='r') as fobj:  # type: TextIOWrapper
@@ -409,3 +413,19 @@ class Database:
         logging.info(
             f'All {len(self.database.items())} table(s) in Database object '
             f'successfully saved to txt files')
+
+    def get_table_by_name(self, table_name) -> Table:
+        """
+        Returns the table_name Table object from the database
+        for queries and editing etc.
+        If the table_name is not a valid table name then a KeyError is raised.
+        """
+        if table_name in self.database.keys():
+            return self.database[table_name]
+        else:
+            error_str = f'{table_name} is not a valid table name. ' \
+                        f'Valid options: {", ".join(self.database.keys())}'
+            logging.error(error_str)
+            raise KeyError(error_str)
+
+    # TODO: new method to submit row name/PK and handle any errors raised

@@ -22,6 +22,7 @@ class PasswordTest(TestCase):
             self.assertTrue(password_logic.verify_pwd_str(pwd_str, pwd_hash),
                             'Password verification failed on correct match')
 
+        # noinspection PyRedundantParentheses
         for pwd_str, pwd_hash in zip(('test') * len(self.test_pwd_list), pwd_hash_list):
             self.assertFalse(password_logic.verify_pwd_str(pwd_str, pwd_hash),
                              "Password verification should have failed but didn't")

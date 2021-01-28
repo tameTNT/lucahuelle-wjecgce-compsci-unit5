@@ -10,7 +10,7 @@ class ValidationError(Exception):
     pass
 
 
-def validate_int(value: Union[str, int], attribute_name: str):
+def validate_int(value: Union[int, str], attribute_name: str):
     """
     Attempts to return int(value).
     If this fails, a ValidationError is raised with a descriptive error message.
@@ -57,10 +57,10 @@ def validate_date(date_str: str, earliest_offset: Union[float, int],
     Validates a date - is it a valid date and does it fall within the given range?
     If this fails, a ValidationError is raised with a descriptive error message.
 
-    :param date_str: A date str in the form 'YEAR-MONTH-DAY'
+    :param date_str: A date str in the form 'YYYY-MM-DD'
     :param earliest_offset: Number of days into the future (-ve for past) from which to accept date
-    :param latest_offset: Number of days into the future (-ve for past) up to which to accept date
-        Note that therefore, earliest_offset should ALWAYS be less than latest_offset
+    :param latest_offset: Number of days into the future (-ve for past) up to which to accept date.
+        Note that, therefore, earliest_offset should ALWAYS be less than latest_offset
     :param attribute_name: Name of attribute which is being validated - for error message output
     """
     date_dict = str_to_date_dict(date_str)
