@@ -60,9 +60,16 @@ class Login(ui.GenericPage):
                                          text=f'{"Student" if self.is_student else "Staff"} Login')
         self.user_type_label.grid(row=1, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
-        self.message = ttk.Label(self,
-                                 text='Please enter your username and password.',
-                                 justify='center')
+        if self.is_student:
+            login_message = 'These will be given to you by your teacher.'
+        else:
+            login_message = 'Contact the system admin to create an account.'
+
+        self.message = ttk.Label(
+            self,
+            text=f'Please enter your username and password.\n\n{login_message}',
+            justify='center'
+        )
         self.message.grid(row=2, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         self.user_detail_frame = ttk.Frame(self)
@@ -74,7 +81,7 @@ class Login(ui.GenericPage):
 
         self.username_var = tk.StringVar()
         self.username_entry = ttk.Entry(self.user_detail_frame, textvariable=self.username_var)
-        self.username_entry.grid(row=0, column=1, pady=self.pady, sticky='we')
+        self.username_entry.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
 
         self.password_label = ttk.Label(self.user_detail_frame, text='Password:', justify='right')
         self.password_label.grid(row=1, column=0, pady=self.pady, sticky='e')
