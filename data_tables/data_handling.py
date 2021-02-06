@@ -178,8 +178,8 @@ class Student(Row):
                  year_group: Union[int, str], award_level: str, gender: str,
                  date_of_birth: str, address: str, phone_primary: str,
                  email_primary: str, phone_emergency: str, primary_lang: str,
-                 enrolment_date: str, skill_info_id: Union[int, str],
-                 phys_info_id: Union[int, str], vol_info_id: Union[int, str]):
+                 enrolment_date: str, vol_info_id: Union[int, str],
+                 skill_info_id: Union[int, str], phys_info_id: Union[int, str]):
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'student_id')
@@ -212,6 +212,11 @@ class Student(Row):
 
         self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date))
 
+        if vol_info_id:
+            self.vol_info_id = validate_int(vol_info_id, 'vol_info_id')
+        else:
+            self.vol_info_id = ''
+
         if skill_info_id:
             self.skill_info_id = validate_int(skill_info_id, 'skill_info_id')
         else:
@@ -221,11 +226,6 @@ class Student(Row):
             self.phys_info_id = validate_int(phys_info_id, 'phys_info_id')
         else:
             self.phys_info_id = ''
-
-        if vol_info_id:
-            self.vol_info_id = validate_int(vol_info_id, 'vol_info_id')
-        else:
-            self.vol_info_id = ''
 
         logging.debug(f'New Student object successfully created - student_id={self.student_id}')
 
@@ -249,9 +249,9 @@ class Student(Row):
             'phone_emergency': 11,
             'primary_lang': 7,
             'enrolment_date': 10,
+            'vol_info_id': INTERNAL_ID_LEN,
             'skill_info_id': INTERNAL_ID_LEN,
             'phys_info_id': INTERNAL_ID_LEN,
-            'vol_info_id': INTERNAL_ID_LEN,
         }
         special_str_funcs = {
             'date_of_birth': datetime_to_str,
@@ -269,7 +269,7 @@ class Section(Row):
     key_field = 'section_id'
 
     def __init__(self, section_id: Union[int, str], section_type: str,
-                 activity_start_date: str, activity_length: Union[int, str],
+                 activity_start_date: str, activity_length: str,
                  activity_type: str, activity_details: str, activity_goals: str,
                  assessor_fullname: str, assessor_phone: str, assessor_email: str):
         self.section_id = validate_int(section_id, 'section_id')
@@ -280,7 +280,6 @@ class Section(Row):
         self.activity_start_date = validate_date(activity_start_date, 0, 365.25,
                                                  'activity_start_date')
 
-        activity_length = str(validate_int(activity_length, 'activity_length'))
         self.activity_length = validate_lookup(activity_length, {'90', '180', '360'},
                                                'activity_length')
 
@@ -427,5 +426,3 @@ class Database:
                         f'Valid options: {", ".join(self.database.keys())}'
             logging.error(error_str)
             raise KeyError(error_str)
-
-    # TODO: new method to submit row name/PK and handle any errors raised
