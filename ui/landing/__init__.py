@@ -19,7 +19,7 @@ class Welcome(ui.GenericPage):
 
         self.message = ttk.Label(self,
                                  text='Welcome to the\n'
-                                      'DofE Scheme Management Application.\n'
+                                      'DofE Scheme Management Application.\n\n'
                                       'Please select your login method:',
                                  justify='center')
         self.message.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
@@ -57,7 +57,8 @@ class Login(ui.GenericPage):
         self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady, sticky='w')
 
         self.user_type_label = ttk.Label(self,
-                                         text=f'{"Student" if self.is_student else "Staff"} Login')
+                                         text=f'{"Student" if self.is_student else "Staff"} Login',
+                                         font='TkHeadingFont 15')
         self.user_type_label.grid(row=1, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         if self.is_student:
@@ -68,13 +69,12 @@ class Login(ui.GenericPage):
         self.message = ttk.Label(
             self,
             text=f'Please enter your username and password.\n\n{login_message}',
-            justify='center'
+            justify='center', font='TkCaptionFont 10'
         )
         self.message.grid(row=2, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         self.user_detail_frame = ttk.Frame(self)
         self.user_detail_frame.grid(row=3, column=0, columnspan=2, pady=self.pady)
-
         # === username/password entry and show/hide button frame contents ===
         self.username_label = ttk.Label(self.user_detail_frame, text='Username:', justify='right')
         self.username_label.grid(row=0, column=0, pady=self.pady, sticky='e')
@@ -151,7 +151,7 @@ class Login(ui.GenericPage):
 
     def back(self):
         """
-        Returns the user back to the Welcome page after reseting the pwd visibility
+        Returns the user back to the Welcome page after resetting the pwd visibility
         """
         self.password_entry.config(show='\u2022')
         self.pager_frame.change_to_page(Welcome)

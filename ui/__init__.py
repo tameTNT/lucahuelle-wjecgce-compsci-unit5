@@ -158,7 +158,7 @@ class PagedMainFrame(ttk.Frame):
         self.padx = self.master_root.padx
         self.pady = self.master_root.pady
 
-        # ensures that layered frames are packed/grided seemlessly
+        # ensures that layered frames are packed/gridded seamlessly
         # into this main controller/'pager' frame
         self.pack(side='top', fill='both', expand=True)
         self.grid_rowconfigure(0, weight=1)
