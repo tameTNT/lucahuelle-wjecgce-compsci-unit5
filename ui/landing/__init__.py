@@ -94,7 +94,8 @@ class Login(ui.GenericPage):
         self.show_pwd_button = ttk.Button(self.user_detail_frame, text='👁',
                                           width=2, command=self.toggle_show_password)
         self.show_pwd_button.grid(row=1, column=2, sticky='w')
-        # === End of frame ===
+        ui.create_tooltip(self.show_pwd_button, 'Show/Hide password')
+        # === end of frame ===
 
         self.login_button = ttk.Button(self, text='Login', command=self.login)
         self.login_button.grid(row=4, column=1, padx=self.padx, pady=self.pady, sticky='e')

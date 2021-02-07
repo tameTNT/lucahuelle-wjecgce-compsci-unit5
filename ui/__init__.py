@@ -8,6 +8,57 @@ from typing import Iterable, Type
 from data_tables import data_handling
 
 
+# By CC attribution, this Tooltip class and create_tooltip func are adapted from
+# https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
+class ToolTip:
+    def __init__(self, widget: tk.Widget):
+        self.widget = widget
+        self.tip_window = None
+        self.id = None
+        self.text = ''
+        self.x = self.y = 0
+
+    def show_tooltip(self, text: str):
+        """
+        Display text in a tooltip window
+        """
+        self.text = text
+        if self.tip_window or not self.text:
+            return
+        x = self.widget.winfo_pointerx() + 5
+        y = self.widget.winfo_pointery() + 5
+        self.tip_window = tk.Toplevel(self.widget)
+        self.tip_window.wm_overrideredirect(1)
+        self.tip_window.wm_geometry(f'+{x}+{y}')
+        label = ttk.Label(self.tip_window, text=self.text, justify='left',
+                          background='#ffffff', relief='solid', borderwidth=2,
+                          font='TkTooltipFont 9')
+        label.pack(ipadx=1)
+
+    def hide_tooltip(self):
+        if self.tip_window:
+            self.tip_window.destroy()
+        self.tip_window = None
+
+
+def create_tooltip(widget: tk.Widget, text: str):
+    """
+    Create a tooltip with text that is shown when the user hovers over widget.
+    """
+    tool_tip = ToolTip(widget)
+
+    # noinspection PyUnusedLocal
+    def enter(event):
+        tool_tip.show_tooltip(text)
+
+    # noinspection PyUnusedLocal
+    def leave(event):
+        tool_tip.hide_tooltip()
+
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)
+
+
 # By CC attribution, this 'page-based approach' is based on the framework provided at
 # https://pythonprogramming.net/change-show-new-frame-tkinter/ and
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
