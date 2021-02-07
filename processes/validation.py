@@ -18,8 +18,8 @@ def validate_int(value: Union[int, str], attribute_name: str):
     try:
         return int(value)
     except ValueError:
-        error_str = f'{attribute_name} provided ({value}) is not an integer.'
-        logging.error(error_str)
+        error_str = f'{attribute_name} provided ("{value}") is not an integer.'
+        logging.error(error_str)  # todo: log errors on error catching not within func
         raise ValidationError(error_str)
 
 
@@ -31,7 +31,7 @@ def validate_length(value: str, min_len: int, max_len: int, attribute_name: str)
     if min_len <= len(value) <= max_len:
         return value
     else:
-        error_str = f'{attribute_name} provided ({value}) ' \
+        error_str = f'{attribute_name} provided ("{value}") ' \
                     f'is not between {min_len} and {max_len} characters long.'
         logging.error(error_str)
         raise ValidationError(error_str)
@@ -45,7 +45,7 @@ def validate_lookup(value: str, lookup_set: Set[str], attribute_name: str) -> st
     if value in lookup_set:
         return value
     else:
-        error_str = f'{attribute_name} provided ({value}) ' \
+        error_str = f'{attribute_name} provided ("{value}") ' \
                     f'is not in the list of possible options: {", ".join(lookup_set)}'
         logging.error(error_str)
         raise ValidationError(error_str)
@@ -67,7 +67,7 @@ def validate_date(date_str: str, earliest_offset: Union[float, int],
     try:
         valid_date = dt.datetime(**date_dict)
     except ValueError:
-        error_str = f'Date information provided for {attribute_name} is' \
+        error_str = f'Date information provided for {attribute_name} is ' \
                     f'logically invalid; i.e. the date specified ' \
                     f'({date_dict["year"]}-{date_dict["month"]}-{date_dict["day"]}) ' \
                     f'does not exist'
@@ -98,7 +98,7 @@ def validate_regex(value: str, pattern: str, attribute_name: str) -> str:
     if re.fullmatch(pattern, value):
         return value
     else:
-        error_str = f'Value entered for {attribute_name}, does not match ' \
+        error_str = f'Value entered for {attribute_name} ("{value}"), does not match ' \
                     f'expected (regex) pattern: {pattern}'
         logging.error(error_str)
         raise ValidationError(error_str)
