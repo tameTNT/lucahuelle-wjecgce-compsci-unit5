@@ -38,12 +38,14 @@ if __name__ == '__main__':
 
     main_window = RootWindow(tk_root=root, db=main_database_obj)  # initialises tkinter root/base
 
-    PAGE_OBJ_LIST = (
-        ui.landing.Welcome,
-        ui.landing.StudentLogin,
-        ui.landing.StaffLogin,
-        ui.student.StudentAwardDashboard,
-    )  # TODO: a way to smartly collect all of these GenericPage classes?
+    PAGE_OBJ_LIST = list()
+    for cls in ui.GenericPage.__subclasses__():
+        subcls_list = cls.__subclasses__()
+        if subcls_list:  # subclasses of subclasses exist (e.g. Student/StaffLogin pages)
+            for subcls in subcls_list:
+                PAGE_OBJ_LIST.append(subcls)
+        else:
+            PAGE_OBJ_LIST.append(cls)
 
     # initialises actual tkinter window on Welcome page
     main_window.initialise_window(page_obj_list=PAGE_OBJ_LIST, start_page=ui.landing.Welcome)
