@@ -175,58 +175,116 @@ class StudentLoginTable(Table):
 class Student(Row):
     key_field = 'student_id'
 
-    def __init__(self, student_id: Union[int, str], fullname: str, centre_id: Union[int, str],
-                 year_group: Union[int, str], award_level: str, gender: str,
-                 date_of_birth: str, address: str, phone_primary: str,
-                 email_primary: str, phone_emergency: str, primary_lang: str,
-                 enrolment_date: str, vol_info_id: Union[int, str],
-                 skill_info_id: Union[int, str], phys_info_id: Union[int, str]):
+    def __init__(self, student_id: Union[int, str], centre_id: Union[int, str], award_level: str,
+                 year_group: Union[int, str], fullname: str = '', gender: str = '',
+                 date_of_birth: str = '', address: str = '', phone_primary: str = '',
+                 email_primary: str = '', phone_emergency: str = '', primary_lang: str = '',
+                 enrolment_date: str = '', vol_info_id: Union[int, str] = '',
+                 skill_info_id: Union[int, str] = '', phys_info_id: Union[int, str] = '',
+                 approved: Union[int, str] = ''):
+        """
+        Only the first 4 parameters are provided by staff.
+        The rest are filled in by the student at a later date
+        and hence default to '' on initial creation.
+        """
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'student_id')
 
         self.centre_id = validate_int(centre_id, 'centre_id')
 
+        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'award_level')
+
         year_group = str(validate_int(year_group, 'year_group'))
         self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'year_group')
 
-        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'award_level')
+        # All following attributes are null ('') if a full name is not provided -
+        # indicating initial creation and not student completing enrolment/loading
+
+        self.fullname = validate_length(fullname, 2, 30, 'fullname') if fullname else ''
 
         # pnts = prefer not to say
-        self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'}, 'gender')
+        self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
+                                      'gender') if fullname else ''
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
         self.date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
-                                           'date_of_birth')
+                                           'date_of_birth') if fullname else ''
 
-        self.address = validate_length(address, 5, 100, 'address')
+        self.address = validate_length(address, 5, 100,
+                                       'address') if fullname else ''
 
-        self.phone_primary = validate_length(phone_primary, 9, 11, 'phone_primary')
+        self.phone_primary = validate_length(phone_primary, 9, 11,
+                                             'phone_primary') if fullname else ''
 
-        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary')
+        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary',
+                                            'abc@def.ghi') if fullname else ''
 
-        self.phone_emergency = validate_length(phone_emergency, 9, 11, 'phone_emergency')
+        self.phone_emergency = validate_length(phone_emergency, 9, 11,
+                                               'phone_emergency') if fullname else ''
 
-        self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'}, 'primary-lang')
+        self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
+                                            'primary-lang') if fullname else ''
 
-        self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date))
+        self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date)) if fullname else ''
 
-        if vol_info_id:
-            self.vol_info_id = validate_int(vol_info_id, 'vol_info_id')
-        else:
-            self.vol_info_id = ''
+        self.vol_info_id = validate_int(vol_info_id, 'vol_info_id') if vol_info_id else ''
 
-        if skill_info_id:
-            self.skill_info_id = validate_int(skill_info_id, 'skill_info_id')
-        else:
-            self.skill_info_id = ''  # Null value if not provided
+        self.skill_info_id = validate_int(skill_info_id, 'skill_info_id') if skill_info_id else ''
 
-        if phys_info_id:
-            self.phys_info_id = validate_int(phys_info_id, 'phys_info_id')
-        else:
-            self.phys_info_id = ''
+        self.phys_info_id = validate_int(phys_info_id, 'phys_info_id') if phys_info_id else ''
 
-        logging.debug(f'New Student object successfully created - student_id={self.student_id}')
+        self.approved = int(approved) if approved else 0
+
+        logging.debug(f'New Student object {"fully" if fullname else "partially"} created '
+                      f'- student_id={self.student_id}')
+
+    def complete_enrolment(self, fullname: str, gender: str,
+                           date_of_birth: str, address: str, phone_primary: str,
+                           email_primary: str, phone_emergency: str, primary_lang: str):
+        fullname = validate_length(fullname, 2, 30, 'fullname')
+
+        # pnts = prefer not to say
+        gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
+                                 'gender')
+
+        # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
+        date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
+                                      'date_of_birth')
+
+        address = validate_length(address, 5, 100,
+                                  'address')
+
+        phone_primary = validate_length(phone_primary, 9, 11,
+                                        'phone_primary')
+
+        email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary',
+                                       'abc@def.ghi')
+
+        phone_emergency = validate_length(phone_emergency, 9, 11,
+                                          'phone_emergency')
+
+        primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
+                                       'primary-lang')
+
+        enrolment_date = dt.datetime(**str_to_date_dict(datetime_to_str()))
+
+        logging.debug('All validation checks passed on input data for student enrollment.')
+
+        self.fullname = fullname
+        self.gender = gender
+        self.date_of_birth = date_of_birth
+        self.address = address
+        self.phone_primary = phone_primary
+        self.email_primary = email_primary
+        self.phone_emergency = phone_emergency
+        self.primary_lang = primary_lang
+        self.enrolment_date = enrolment_date
+
+        logging.debug(f'New Student object fully created '
+                      f'- student_id={self.student_id} fullname={self.fullname!r}')
+
+        # TODO: method for staff to 'approve' student - i.e. set self.approved = 1
 
     def __repr__(self):
         return f'<Student object student_id={self.student_id} ' \
@@ -237,6 +295,9 @@ class Student(Row):
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
             'student_id': INTERNAL_ID_LEN,
+            'centre_id': 10,
+            'award_level': 6,
+            'year_group': 2,
             'fullname': 30,
             'gender': 6,
             'date_of_birth': 10,
@@ -249,6 +310,7 @@ class Student(Row):
             'vol_info_id': INTERNAL_ID_LEN,
             'skill_info_id': INTERNAL_ID_LEN,
             'phys_info_id': INTERNAL_ID_LEN,
+            'approved': 1,
         }
         special_str_funcs = {
             'date_of_birth': datetime_to_str,
