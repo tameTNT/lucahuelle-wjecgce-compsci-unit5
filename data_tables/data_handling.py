@@ -10,7 +10,8 @@ from processes.validation import validate_int, validate_length, validate_lookup,
 
 # simplistic and naive regular expression for validating emails
 EMAIL_MAX_LEN = 50  # should match 5,??? above
-EMAIL_RE_PATTERN = r'^(?=.{5,%(len)s}$)[^@]+@[^@.]+.[^@.]+$' % {'len': EMAIL_MAX_LEN}
+# matches abc@def.ghi
+EMAIL_RE_PATTERN = r'^(?=.{5,%(len)s}$)[^@]+@[^@.]+\.[^@.]+$' % {'len': EMAIL_MAX_LEN}
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
@@ -26,7 +27,7 @@ class Row:
     def __repr__(self) -> str:
         """
         Returns a string representation of object in form:
-        f'<ClassName object key_field="{self.key_field}" field_2="{self.field_2}" ...>'
+        f'<ClassName object key_field={self.key_field!r} field_2={self.field_2!r} ...>'
         Not all fields need be included - since only for debugging and clarity
         and not for saving/duplicating/etc.
         """
@@ -150,12 +151,12 @@ class StudentLogin(Row):
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'student_id')
 
-        logging.debug(f'New StudentLogin object successfully created - username={self.username}')
+        logging.debug(f'New StudentLogin object successfully created - username={self.username!r}')
 
     def __repr__(self):
         # only first 10 chars of hash shown
-        return f'<StudentLogin object username="{self.username}" ' \
-               f'password_hash="{self.password_hash[:10] + "..."}" student_id="{self.student_id}">'
+        return f'<StudentLogin object username={self.username!r} ' \
+               f'password_hash={(self.password_hash[:10] + "...")!r} student_id={self.student_id}>'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
@@ -183,8 +184,6 @@ class Student(Row):
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'student_id')
-
-        self.fullname = validate_length(fullname, 2, 30, 'fullname')
 
         self.centre_id = validate_int(centre_id, 'centre_id')
 
@@ -231,16 +230,14 @@ class Student(Row):
 
     def __repr__(self):
         return f'<Student object student_id={self.student_id} ' \
-               f'fullname={self.fullname} year_group={self.year_group}> ' \
-               f'award_level={self.award_level} date_of_birth={self.date_of_birth!s}'
+               f'fullname={self.fullname!r} year_group={self.year_group!r} ' \
+               f"award_level={self.award_level!r} date_of_birth='{self.date_of_birth!s}' " \
+               f"approved={self.approved}>"
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
             'student_id': INTERNAL_ID_LEN,
             'fullname': 30,
-            'centre_id': 10,
-            'year_group': 2,
-            'award_level': 6,
             'gender': 6,
             'date_of_birth': 10,
             'address': 100,
@@ -293,7 +290,8 @@ class Section(Row):
 
         self.assessor_phone = validate_length(assessor_phone, 9, 11, 'assessor_phone')
 
-        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'assessor_email')
+        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'assessor_email',
+                                             'abc@def.ghi')
 
         # This is a private attribute and as such is only updated when it is accessed.
         # This can not be set manually
@@ -302,11 +300,11 @@ class Section(Row):
         logging.debug(f'New Section object successfully created - section_id={self.section_id}')
 
     def __repr__(self):
-        return f'<Section object section_id="{self.section_id}" ' \
-               f'section_type="{self.section_type}" ' \
-               f'activity_start_date="{self.activity_start_date!s}" ' \
-               f'activity_length="{self.activity_length}" activity_type="{self.activity_type}" ' \
-               f'assessor_fullname="{self.assessor_fullname}'
+        return f'<Section object section_id={self.section_id} ' \
+               f'section_type={self.section_type!r} ' \
+               f'activity_start_date={self.activity_start_date!s} ' \
+               f'activity_length={self.activity_length!r} activity_type={self.activity_type!r} ' \
+               f'assessor_fullname={self.assessor_fullname!r}'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {

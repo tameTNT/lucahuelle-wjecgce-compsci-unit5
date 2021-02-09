@@ -90,15 +90,16 @@ def validate_date(date_str: str, earliest_offset: Union[float, int],
         raise ValidationError(error_str)
 
 
-def validate_regex(value: str, pattern: str, attribute_name: str) -> str:
+def validate_regex(value: str, pattern: str, attribute_name: str, pretty_format: str) -> str:
     """
     Validates whether value FULLY matches the regex pattern provided.
     If this fails, a ValidationError is raised with a descriptive error message.
+    This error uses pretty format for user convenience and the regex pattern provided.
     """
     if re.fullmatch(pattern, value):
         return value
     else:
         error_str = f'Value entered for {attribute_name} ("{value}"), does not match ' \
-                    f'expected (regex) pattern: {pattern}'
+                    f'expected format: "{pretty_format}". (DEBUG - regex format: "{pattern}")'
         logging.error(error_str)
         raise ValidationError(error_str)
