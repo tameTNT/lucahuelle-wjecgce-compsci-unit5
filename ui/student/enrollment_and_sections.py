@@ -25,26 +25,20 @@ class Enrollment(ui.GenericPage):
         self.existing_info_frame = ttk.Frame(self)
         self.existing_info_frame.grid(row=2, column=0, padx=self.padx, pady=self.pady)
         # === existing_info_frame contents ===
-        self.student_id_var = tk.StringVar(value='Null')
-        self.student_id = ttk.Label(self.existing_info_frame, textvariable=self.student_id_var)
-        self.student_id.pack(padx=self.padx, pady=self.pady)
+        for label_name in ('student_id', 'centre_id', 'award_level', 'year_group'):
+            var_name = f'{label_name}_var'
+            self.__setattr__(var_name, tk.StringVar())  # e.g. self.student_id_var
 
-        self.centre_id_var = tk.StringVar(value='Null')
-        self.centre_id = ttk.Label(self.existing_info_frame, textvariable=self.centre_id_var)
-        self.centre_id.pack(padx=self.padx, pady=self.pady)
-
-        self.award_level_var = tk.StringVar(value='Null')
-        self.award_level = ttk.Label(self.existing_info_frame, textvariable=self.award_level_var)
-        self.award_level.pack(padx=self.padx, pady=self.pady)
-
-        self.year_group_var = tk.StringVar(value='Null')
-        self.year_group = ttk.Label(self.existing_info_frame, textvariable=self.year_group_var)
-        self.year_group.pack(padx=self.padx, pady=self.pady)
+            label_obj = ttk.Label(self.existing_info_frame,
+                                  textvariable=self.__getattribute__(var_name))
+            self.__setattr__(label_name, label_obj)  # e.g. self.student_id
+            self.__getattribute__(label_name).pack(padx=self.padx, pady=self.pady)
         # === end of frame ===
 
+        # === info_submission_frame contents ===
         self.info_submission_frame = ttk.Frame(self)
         self.info_submission_frame.grid(row=2, column=1, padx=self.padx, pady=self.pady)
-        # === info_submission_frame contents ===
+
         # -full name entry
         self.full_name_label = ttk.Label(self.info_submission_frame,
                                          text='Full Name:', justify='right')
