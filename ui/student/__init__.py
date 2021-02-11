@@ -19,12 +19,12 @@ class StudentAwardDashboard(ui.GenericPage):
 
         # all variable fields start with a null value before being updated
         # with student info when update_attributes is called
-        self.welcome_text_var = tk.StringVar(value='Null')
+        self.welcome_text_var = tk.StringVar()
         self.welcome_text = ttk.Label(self, textvariable=self.welcome_text_var, justify='center',
-                                      font='TkHeadingFont 15')
+                                      font=ui.HEADER_FONT)
         self.welcome_text.pack(padx=self.padx, pady=self.pady)
 
-        self.current_level_var = tk.StringVar(value='Null')
+        self.current_level_var = tk.StringVar()
         self.current_level = ttk.Label(self, textvariable=self.current_level_var, justify='center')
         self.current_level.pack(padx=self.padx, pady=self.pady)
 
@@ -90,7 +90,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.student_username = username
         self.page_name = f'{self.student_username} Award Dashboard'
 
-        # === updates tkinter StringVars with new information received ===
+        # === updates tkinter StringVar with new information received ===
         if self.student.fullname:  # registration complete
             if self.student.approved:  # teacher has approved enrolment
                 self.welcome_text_var.set(f'Welcome, {self.student.fullname}!')
@@ -113,9 +113,8 @@ class StudentAwardDashboard(ui.GenericPage):
         def str_days_to_months(str_days):
             return int(str_days) // 30
 
-        section_name_map = {'vol': 'Volunteering', 'skill': 'Skill', 'phys': 'Physical'}
         # Goes through each section one by one and updates the GUI's labels
-        for section_type, long_name in section_name_map.items():
+        for section_type, long_name in ui.SECTION_NAME_MAPPING.items():
             # fetches the tk.StringVar attributes to update with new info
 
             # self.student.vol_info_id, self.student.skill_info_id, self.student.phys_info_id
@@ -135,7 +134,7 @@ class StudentAwardDashboard(ui.GenericPage):
                 title_var.set(long_name)
                 status_var.set('Not started')
 
-        logging.info(f'Username "{self.student_username}" entered the student dashboard.'
+        logging.info(f'Username "{self.student_username}" entered the student dashboard. '
                      f'They have {"already" if self.student.fullname else "not yet"} '
                      f'completed their enrollment.')
 

@@ -284,7 +284,8 @@ class Student(Row):
         logging.debug(f'New Student object fully created '
                       f'- student_id={self.student_id} fullname={self.fullname!r}')
 
-        # TODO: method for staff to 'approve' student - i.e. set self.approved = 1
+        # TODO: method for staff to 'approve' student -
+        #  approval sets self.approved = 1, deny clears fullname attr
 
     def __repr__(self):
         return f'<Student object student_id={self.student_id} ' \
@@ -333,7 +334,7 @@ class Section(Row):
                  assessor_fullname: str, assessor_phone: str, assessor_email: str):
         self.section_id = validate_int(section_id, 'section_id')
 
-        self.section_type = validate_lookup(section_type, {'phys', 'skill', 'vol'}, 'section_type')
+        self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'section_type')
 
         # A valid start date can be up to 1 year in the future
         self.activity_start_date = validate_date(activity_start_date, 0, 365.25,

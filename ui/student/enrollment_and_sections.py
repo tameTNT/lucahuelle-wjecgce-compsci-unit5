@@ -3,6 +3,7 @@ import tkinter as tk
 import tkinter.messagebox as msg
 import tkinter.ttk as ttk
 
+import processes
 import ui
 from data_tables import data_handling
 from processes import date_logic, validation
@@ -18,7 +19,7 @@ class Enrollment(ui.GenericPage):
         self.back_button.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         self.sign_up_label = ttk.Label(self, text='Complete Enrollment',
-                                       font='TkHeadingFont 15')
+                                       font=ui.HEADER_FONT)
         self.sign_up_label.grid(row=1, column=0, padx=self.padx, pady=self.pady)
 
         self.existing_info_frame = ttk.Frame(self)
@@ -130,7 +131,7 @@ class Enrollment(ui.GenericPage):
         # === end of frame ===
 
         self.current_date = ttk.Label(self, text=f'Current Date: {date_logic.datetime_to_str()}',
-                                      font='TkCaptionFont 10')
+                                      font=ui.CAPTION_FONT)
         self.current_date.grid(row=3, column=0, padx=self.padx, pady=self.pady)
 
         self.complete_button = ttk.Button(self, text='Complete Enrollment',
@@ -145,9 +146,6 @@ class Enrollment(ui.GenericPage):
         self.student = student
         self.student_username = username
 
-        def readable_name(var_name: str):
-            return ' '.join(var_name.split('_')).capitalize()
-
         for attr_name in ('student_id', 'centre_id', 'award_level', 'year_group'):
             # self.student.student_id, self.student.centre_id,
             # self.student.award_level, self.student.year_group
@@ -155,9 +153,10 @@ class Enrollment(ui.GenericPage):
 
             # self.student_id_var, self.centre_id_var,
             # self.award_level_var, self.year_group_var
-            tk_var = self.__getattribute__(f'{attr_name}_var')
+            tk_label_var = self.__getattribute__(f'{attr_name}_var')
 
-            tk_var.set(f'{readable_name(attr_name)}: {str(current_val).capitalize()}')
+            tk_label_var.set(f'{processes.make_readable_name(attr_name)}: '
+                             f'{str(current_val).capitalize()}')
 
         # sets default values for fields
         self.date_of_birth_var.set('YYYY-MM-DD')

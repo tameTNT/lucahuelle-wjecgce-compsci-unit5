@@ -7,6 +7,14 @@ from typing import Iterable, Type
 
 from data_tables import data_handling
 
+# Font constants
+HEADER_FONT = 'TkHeadingFont 15'
+CAPTION_FONT = 'TkCaptionFont 10'
+TOOLTIP_FONT = 'TkTooltipFont 9'
+
+# Misc. constants
+SECTION_NAME_MAPPING = {'vol': 'Volunteering', 'skill': 'Skill', 'phys': 'Physical'}
+
 
 # By CC attribution, this Tooltip class and create_tooltip func are adapted from
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
@@ -32,7 +40,7 @@ class ToolTip:
         self.tip_window.wm_geometry(f'+{x}+{y}')
         label = ttk.Label(self.tip_window, text=self.text, justify='left',
                           background='#ffffff', relief='solid', borderwidth=2,
-                          font='TkTooltipFont 9')
+                          font=TOOLTIP_FONT)
         label.pack(ipadx=1)
 
     def hide_tooltip(self):
