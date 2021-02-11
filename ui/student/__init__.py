@@ -153,3 +153,11 @@ class StudentAwardDashboard(ui.GenericPage):
             student=self.student,
             username=self.student_username,
         )
+
+    def edit_section(self, section_type_short):
+        self.pager_frame.change_to_page(
+            destination_page=ui.student.enrollment_and_sections.SectionInfo,
+            student=self.student,
+            username=self.student_username,
+            section_type_short=section_type_short,
+        )

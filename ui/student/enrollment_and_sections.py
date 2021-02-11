@@ -188,5 +188,58 @@ class Enrollment(ui.GenericPage):
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
         else:
-            msg.showinfo('Enrollment successful', 'Information submitted to staff for approval')
+            msg.showinfo('Enrollment successful', 'Information submitted to staff for approval.')
+            self.back()
+
+
+class SectionInfo(ui.GenericPage):
+    page_name = 'Student Section Details'
+
+    def __init__(self, pager_frame: ui.PagedMainFrame):
+        super().__init__(pager_frame=pager_frame)
+
+        # todo: Section submission/editing and evidence upload pages
+        self.back_button = ttk.Button(self, text='Back', command=self.back)
+        self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady)
+
+        self.header_var = tk.StringVar()
+        self.header = ttk.Label(self, textvariable=self.header_var, font=ui.HEADER_FONT)
+        self.header.grid(row=1, column=0, padx=self.padx, pady=self.pady)
+
+        self.student = None
+        self.student_username = ''
+        self.section_type_short = ''
+
+    def update_attributes(self, student: data_handling.Student, username: str,
+                          section_type_short: str):
+        # updates attributes with submitted parameters
+        self.student = student
+        self.student_username = username
+        self.section_type_short = section_type_short
+
+        self.page_name = f'{self.student_username} Section Details'
+
+        self.header_var.set(f'{ui.SECTION_NAME_MAPPING[self.section_type_short]}')
+
+    def back(self):
+        """
+        Returns the student to the dashboard page
+        """
+        self.pager_frame.change_to_page(
+            destination_page=ui.student.StudentAwardDashboard,
+            student=self.student,
+            username=self.student_username,
+        )
+
+    def attempt_section_table_update(self):
+        try:
+            new_section_entry = None  # data_handling.Section()  # todo: get section input arguments
+        except validation.ValidationError as e:
+            msg.showerror('Error with field data', str(e))
+        else:
+            self.pager_frame.master_root.db.get_table_by_name('SectionTable') \
+                .add_row(new_section_entry)
+            msg.showinfo('Section information submission successful',
+                         'Section information successfully submitted. '
+                         'You can now start work on this section!')
             self.back()
