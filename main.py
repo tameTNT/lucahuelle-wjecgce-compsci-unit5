@@ -49,7 +49,8 @@ if __name__ == '__main__':
             PAGE_OBJ_LIST.append(cls)
 
     # initialises actual tkinter window on Welcome page
-    main_window.initialise_window(page_obj_list=PAGE_OBJ_LIST, start_page=ui.landing.Welcome)
+    # todo: change start_page back to ui.landing.Welcome
+    main_window.initialise_window(page_obj_list=PAGE_OBJ_LIST, start_page=ui.landing.StudentLogin)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(main_database_obj, root))
     root.mainloop()

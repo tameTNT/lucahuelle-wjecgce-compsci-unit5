@@ -145,7 +145,7 @@ class Login(ui.GenericPage):
 
             msg.showerror('Login Failed', 'Username and/or password incorrect')
         else:
-            # TODO: password verification for staff - way to merge with above code?
+            # TODO: password verification for staff - way to merge with code above?
             logging.debug(f'A staff member attempted to log in with username "{input_username}"')
             return
 

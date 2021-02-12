@@ -195,6 +195,7 @@ class SectionInfo(ui.GenericPage):
         # todo: Section submission/editing and evidence upload pages
         self.back_button = ttk.Button(self, text='Back', command=self.back)
         self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady)
+        # todo: consistency of buttons to quick navigate between pages
 
         self.header_var = tk.StringVar()
         self.header = ttk.Label(self, textvariable=self.header_var, font=ui.HEADER_FONT)
