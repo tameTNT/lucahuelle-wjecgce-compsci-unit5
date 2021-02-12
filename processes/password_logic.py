@@ -1,5 +1,6 @@
 import binascii
 import hashlib
+import logging
 import os
 
 
@@ -13,6 +14,7 @@ class PasswordLengthError(Exception):
         """
         self.password_len = password_len
         self.message = message
+        logging.error(str(self))
         super().__init__(self.message)
 
     def __str__(self):
