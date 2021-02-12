@@ -11,7 +11,7 @@ from processes.validation import validate_int, validate_length, validate_lookup,
 # simplistic and naive regular expression for validating emails
 EMAIL_MAX_LEN = 50  # should match 5,??? above
 # matches abc@def.ghi
-EMAIL_RE_PATTERN = r'^(?=.{5,%(len)s}$)[^@]+@[^@.]+\.[^@.]+$' % {'len': EMAIL_MAX_LEN}
+EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
@@ -208,8 +208,8 @@ class Student(Row):
                                       'gender') if fullname else ''
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-        self.date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
-                                           'date_of_birth') if fullname else ''
+        self.date_of_birth = validate_date(date_of_birth, 'date_of_birth',
+                                           offset_range=(-365.25 * 25, -365.25 * 10)) if fullname else ''
 
         self.address = validate_length(address, 5, 100,
                                        'address') if fullname else ''
@@ -249,8 +249,8 @@ class Student(Row):
                                  'gender')
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-        date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
-                                      'date_of_birth')
+        date_of_birth = validate_date(date_of_birth, 'date_of_birth',
+                                      offset_range=(-365.25 * 25, -365.25 * 10))
 
         address = validate_length(address, 5, 100,
                                   'address')
@@ -337,8 +337,8 @@ class Section(Row):
         self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'section_type')
 
         # A valid start date can be up to 1 year in the future
-        self.activity_start_date = validate_date(activity_start_date, 0, 365.25,
-                                                 'activity_start_date')
+        self.activity_start_date = validate_date(activity_start_date, 'activity_start_date',
+                                                 offset_range=(0, 365.25))
 
         self.activity_length = validate_lookup(activity_length, {'90', '180', '360'},
                                                'activity_length')

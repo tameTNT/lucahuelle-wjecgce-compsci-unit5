@@ -70,7 +70,7 @@ class Enrollment(ui.GenericPage):
         self.date_of_birth = ttk.Entry(self.info_submission_frame,
                                        textvariable=self.date_of_birth_var)
         self.date_of_birth.grid(row=2, column=1, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.date_of_birth, 'Enter in format YYYY-MM-DD')
+        ui.create_tooltip(self.date_of_birth, 'Enter in format YYYY/MM/DD')
 
         # -address
         self.address_label = ttk.Label(self.info_submission_frame, text='Address:')
@@ -153,7 +153,7 @@ class Enrollment(ui.GenericPage):
                              f'{str(current_val).capitalize()}')
 
         # sets default values for fields
-        self.date_of_birth_var.set('YYYY-MM-DD')
+        self.date_of_birth_var.set('YYYY/MM/DD')
         self.gender_selection_var.set('Female')
         self.language_selection_var.set('English')
 
