@@ -207,6 +207,13 @@ class PagedMainFrame(ttk.Frame):
             for str_var in str_var_list:
                 str_var.set('')  # clears each field collected above in turn
 
+            # collects all tk.Text fields in current page
+            text_field_list = [var for var in self.current_page.__dict__.values()
+                               if isinstance(var, tk.Text)]
+
+            for text_field in text_field_list:
+                text_field.delete('1.0', 'end')
+
         next_frame = self.page_frames[destination_page]  # gets the specified next page/frame
         next_frame.update_attributes(**kwargs)  # updates the page's variables if necessary
 
