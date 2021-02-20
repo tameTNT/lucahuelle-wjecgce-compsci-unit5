@@ -136,9 +136,6 @@ class StudentAwardDashboard(ui.GenericPage):
 
         self.current_level_var.set(f'Current level: {self.student.award_level.capitalize()}')
 
-        def str_days_to_months(str_days):
-            return int(str_days) // 30
-
         # Goes through each section one by one and updates the GUI's labels
         for section_type, long_name in ui.SECTION_NAME_MAPPING.items():
             # fetches the tk.StringVar attributes to update with new info
@@ -151,9 +148,11 @@ class StudentAwardDashboard(ui.GenericPage):
             status_var = self.__getattribute__(f'{section_type}_status_var')
 
             if section_id:  # if the link between tables exists then the section has been started
-                section_length = str_days_to_months(self.section_table[section_id].activity_length)
-                title_var.set(f'{long_name} ({section_length})')
-                status_var.set(self.section_table[section_id].activity_status)
+                # noinspection PyTypeChecker
+                section_obj: data_handling.Section = self.section_table_dict[section_id]
+                section_length = int(section_obj.activity_length) // 30
+                title_var.set(f'{long_name}\n({section_length} months)')
+                status_var.set(section_obj.activity_status)
             else:
                 title_var.set(long_name)
                 status_var.set('Not started')
