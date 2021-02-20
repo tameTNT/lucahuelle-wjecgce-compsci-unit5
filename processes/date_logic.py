@@ -52,7 +52,7 @@ def datetime_to_str(datetime_obj: dt.datetime = dt.datetime.now(), sep: str = DA
         return ''
 
 
-def calculate_end_date(time_offset, start_datetime_obj: dt.datetime = dt.datetime.now()) -> dt.datetime:
+def calculate_end_date(time_offset: int, start_datetime_obj: dt.datetime = dt.datetime.now()) -> dt.datetime:
     """
     Returns start_datetime_obj (if given, otherwise, uses current datetime)
     + time_offset in days as a datetime obj

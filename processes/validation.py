@@ -31,8 +31,9 @@ def validate_length(value: str, min_len: int, max_len: int, attribute_name: str)
     if min_len <= len(value) <= max_len:
         return value
     else:
-        error_str = f'{attribute_name} provided ("{value}") ' \
-                    f'is not between {min_len} and {max_len} characters long.'
+        # :.20 shortens value to 20 chars
+        error_str = f'{attribute_name} provided ("{value:.20}{"..." if len(value) > 20 else ""}")' \
+                    f' is not between {min_len} and {max_len} characters long.'
         logging.error(error_str)
         raise ValidationError(error_str)
 
