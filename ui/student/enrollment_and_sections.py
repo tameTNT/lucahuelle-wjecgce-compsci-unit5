@@ -19,7 +19,7 @@ class Enrollment(ui.GenericPage):
         self.back_button.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         self.sign_up_label = ttk.Label(self, text='Complete Enrollment',
-                                       font=ui.HEADER_FONT)
+                                       font=ui.HEADING_FONT)
         self.sign_up_label.grid(row=1, column=0, padx=self.padx, pady=self.pady)
 
         self.existing_info_frame = ttk.Frame(self)
@@ -89,7 +89,7 @@ class Enrollment(ui.GenericPage):
         self.phone_primary = ttk.Entry(self.info_submission_frame,
                                        textvariable=self.phone_primary_var)
         self.phone_primary.grid(row=0, column=3, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.phone_primary, "Do not include '+'s or spaces")
+        ui.create_tooltip(self.phone_primary, 'Do not include plus signs or spaces')
 
         # -email
         self.email_label = ttk.Label(self.info_submission_frame, text='Email address:')
@@ -109,7 +109,7 @@ class Enrollment(ui.GenericPage):
         self.phone_emergency = ttk.Entry(self.info_submission_frame,
                                          textvariable=self.phone_emergency_var)
         self.phone_emergency.grid(row=2, column=3, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.phone_emergency, "Do not include '+'s or spaces")
+        ui.create_tooltip(self.phone_emergency, 'Do not include plus signs or spaces')
 
         # -primary language
         self.language_selection_label = ttk.Label(self.info_submission_frame,
@@ -124,12 +124,11 @@ class Enrollment(ui.GenericPage):
         self.language_selection.grid(row=3, column=3, pady=self.pady, sticky='we')
         # === end of frame ===
 
-        self.current_date = ttk.Label(self, text=f'Current Date: {date_logic.datetime_to_str()}',
-                                      font=ui.CAPTION_FONT)
+        self.current_date = ttk.Label(self, text=f'Current Date: {date_logic.datetime_to_str()}')
         self.current_date.grid(row=3, column=0, padx=self.padx, pady=self.pady)
 
         self.complete_button = ttk.Button(self, text='Complete Enrollment',
-                                          command=self.complete_enrollment)
+                                          command=self.attempt_enrollment)
         self.complete_button.grid(row=3, column=1, padx=self.padx, pady=self.pady)
 
         self.student = None
@@ -153,7 +152,6 @@ class Enrollment(ui.GenericPage):
                              f'{str(current_val).capitalize()}')
 
         # sets default values for fields
-        self.date_of_birth_var.set('YYYY/MM/DD')
         self.gender_selection_var.set('Female')
         self.language_selection_var.set('English')
 
@@ -167,7 +165,7 @@ class Enrollment(ui.GenericPage):
             username=self.student_username,
         )
 
-    def complete_enrollment(self):
+    def attempt_enrollment(self):
         try:
             self.student.complete_enrolment(
                 fullname=self.full_name_var.get(),
@@ -198,7 +196,7 @@ class SectionInfo(ui.GenericPage):
         # todo: consistency of buttons to quick navigate between pages
 
         self.header_var = tk.StringVar()
-        self.header = ttk.Label(self, textvariable=self.header_var, font=ui.HEADER_FONT)
+        self.header = ttk.Label(self, textvariable=self.header_var, font=ui.HEADING_FONT)
         self.header.grid(row=1, column=0, padx=self.padx, pady=self.pady)
 
         self.student = None
@@ -211,8 +209,11 @@ class SectionInfo(ui.GenericPage):
         self.student = student
         self.student_username = username
         self.section_type_short = section_type_short
+        long_section_name = ui.SECTION_NAME_MAPPING[self.section_type_short]
 
-        self.page_name = f'{self.student_username} Section Details'
+        self.page_name = f'{self.student_username} {long_section_name} Details'
+
+        self.header_var.set(f'{long_section_name} Details')
 
         self.header_var.set(f'{ui.SECTION_NAME_MAPPING[self.section_type_short]}')
 

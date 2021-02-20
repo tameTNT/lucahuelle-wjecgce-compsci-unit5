@@ -22,7 +22,8 @@ class Welcome(ui.GenericPage):
                                  text='Welcome to the\n'
                                       'DofE Scheme Management Application.\n\n'
                                       'Please select your login method:',
-                                 justify='center')
+                                 justify='center',
+                                 font=ui.BOLD_CAPTION_FONT)
         self.message.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         # button calls the change_to_page method of the pager_frame to change view to StudentLogin
@@ -59,7 +60,7 @@ class Login(ui.GenericPage):
 
         self.user_type_label = ttk.Label(self,
                                          text=f'{"Student" if self.is_student else "Staff"} Login',
-                                         font=ui.HEADER_FONT)
+                                         font=ui.HEADING_FONT)
         self.user_type_label.grid(row=1, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         if self.is_student:
@@ -70,7 +71,7 @@ class Login(ui.GenericPage):
         self.message = ttk.Label(
             self,
             text=f'Please enter your username and password.\n\n{login_message}',
-            justify='center', font=ui.CAPTION_FONT
+            justify='center', font=ui.ITALIC_CAPTION_FONT
         )
         self.message.grid(row=2, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 

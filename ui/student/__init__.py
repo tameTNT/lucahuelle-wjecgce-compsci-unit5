@@ -21,11 +21,12 @@ class StudentAwardDashboard(ui.GenericPage):
         # with student info when update_attributes is called
         self.welcome_text_var = tk.StringVar()
         self.welcome_text = ttk.Label(self, textvariable=self.welcome_text_var, justify='center',
-                                      font=ui.HEADER_FONT)
+                                      font=ui.HEADING_FONT)
         self.welcome_text.pack(padx=self.padx, pady=self.pady)
 
         self.current_level_var = tk.StringVar()
-        self.current_level = ttk.Label(self, textvariable=self.current_level_var, justify='center')
+        self.current_level = ttk.Label(self, textvariable=self.current_level_var,
+                                       justify='center', font=ui.BOLD_CAPTION_FONT)
         self.current_level.pack(padx=self.padx, pady=self.pady)
 
         # button only shown if student has not yet registered/fully enrolled
@@ -38,7 +39,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # === frame contents below only shown if student not yet registered ===
 
         # == frame containing info on each section of award ==
-        self.section_info_frame = ttk.Frame(self.fully_enrolled_info_frame)
+        self.section_info_frame = ttk.Labelframe(self.fully_enrolled_info_frame, text='Section progress')
         self.section_info_frame.pack(padx=self.padx, pady=self.pady)
 
         # Builds up GUI by section/column
@@ -63,7 +64,7 @@ class StudentAwardDashboard(ui.GenericPage):
             status_label_name = f'{section_type}_status_label'
             label_obj = ttk.Label(self.section_info_frame,
                                   textvariable=self.__getattribute__(status_var_name),
-                                  justify='center')
+                                  justify='center', font=ui.ITALIC_CAPTION_FONT)
             self.__setattr__(status_label_name, label_obj)  # e.g. self.vol_status_label
             self.__getattribute__(status_label_name).grid(row=2, column=col,
                                                           padx=self.padx, pady=self.pady)
@@ -85,7 +86,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # == end of self.section_info_frame ==
 
         # == expedition info frame contents ==
-        self.expedition_frame = ttk.Frame(self.fully_enrolled_info_frame)
+        self.expedition_frame = ttk.Labelframe(self.fully_enrolled_info_frame, text='Expedition')
         self.expedition_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: expedition info frame in Student overview page
@@ -94,7 +95,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # == end of self.expedition_frame contents ==
 
         # == calendar frame contents ==
-        self.calendar_frame = ttk.Frame(self.fully_enrolled_info_frame)
+        self.calendar_frame = ttk.Labelframe(self.fully_enrolled_info_frame, text='Calendar')
         self.calendar_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: calendar info frame in Student overview page
@@ -107,7 +108,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.student = None  # stores all student information for the window - updated below
         self.student_username = ''
 
-        self.section_table = self.pager_frame.master_root.db. \
+        self.section_table_dict = self.pager_frame.master_root.db. \
             get_table_by_name('SectionTable').row_dict
 
     def update_attributes(self, student: data_handling.Student, username: str) -> None:

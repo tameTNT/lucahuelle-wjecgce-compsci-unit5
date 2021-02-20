@@ -1,11 +1,15 @@
 import logging
 import tkinter as tk
+from tkinter import font
 from tkinter import messagebox
 
 import ui.landing
 import ui.student
 from data_tables import data_handling
 from ui import RootWindow
+
+# todo: args parser to create admin accounts
+#  -gui argument for default operation, update README
 
 logging.basicConfig(filename='main_program.log',
                     filemode='w', level=logging.DEBUG,
@@ -36,6 +40,14 @@ if __name__ == '__main__':
     root = tk.Tk()
     main_database_obj = data_handling.Database()
     main_database_obj.load_state_from_file()  # loads last database state from file into memory
+
+    # some font constants set here as Tk needs to be initialised to use nametofont()
+    font_obj = font.nametofont('TkCaptionFont')
+    font_obj['size'], font_obj['slant'] = 10, 'italic'
+    # can't just assign font_obj as options edited below again
+    ui.ITALIC_CAPTION_FONT = font.Font(**font_obj.actual())
+    font_obj['weight'], font_obj['slant'] = 'bold', 'roman'
+    ui.BOLD_CAPTION_FONT = font.Font(**font_obj.actual())
 
     main_window = RootWindow(tk_root=root, db=main_database_obj)  # initialises tkinter root/base
 

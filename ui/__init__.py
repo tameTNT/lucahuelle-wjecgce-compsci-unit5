@@ -8,9 +8,11 @@ from typing import Iterable, Type
 from data_tables import data_handling
 
 # Font constants
-HEADER_FONT = 'TkHeadingFont 15'
-CAPTION_FONT = 'TkCaptionFont 10'
+HEADING_FONT = 'TkHeadingFont 15'
+ITALIC_CAPTION_FONT = 'TEMP - set in main.py'
+BOLD_CAPTION_FONT = 'TEMP - set in main.py'
 TOOLTIP_FONT = 'TkTooltipFont 9'
+TEXT_ENTRY_FONT = 'TkTextFont 9'
 
 # Misc. constants
 SECTION_NAME_MAPPING = {'vol': 'Volunteering', 'skill': 'Skill', 'phys': 'Physical'}
