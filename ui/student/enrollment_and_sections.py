@@ -326,6 +326,10 @@ class SectionInfo(ui.GenericPage):
         self.student_username = ''
         self.section_type_short = ''
 
+        # noinspection PyTypeChecker
+        self.section_table: data_handling.SectionTable = \
+            self.pager_frame.master_root.db.get_table_by_name('SectionTable')
+
     def update_attributes(self, student: data_handling.Student, username: str,
                           section_type_short: str):
         # updates attributes with submitted parameters
@@ -371,10 +375,8 @@ class SectionInfo(ui.GenericPage):
         return True
 
     def attempt_section_table_update(self):
-        # noinspection PyTypeChecker
-        section_table: data_handling.SectionTable = self.pager_frame.master_root.db.get_table_by_name('SectionTable')
         try:
-            new_id = section_table.get_new_key_id()
+            new_id = self.section_table.get_new_key_id()
             if self.timescale_var.get():
                 new_section_entry = data_handling.Section(
                     section_id=new_id,
@@ -394,7 +396,7 @@ class SectionInfo(ui.GenericPage):
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
         else:
-            section_table.add_row(new_section_entry)
+            self.section_table.add_row(new_section_entry)
             # Links student to section table
             self.student.__setattr__(f'{new_section_entry.section_type}_info_id',
                                      new_section_entry.section_id)

@@ -5,7 +5,7 @@ import tkinter.ttk as ttk
 
 import ui
 import ui.student
-from data_tables.data_handling import StudentLogin as LoginDataRow
+from data_tables import data_handling
 from processes import password_logic
 
 
@@ -124,18 +124,18 @@ class Login(ui.GenericPage):
         if self.is_student:
             logging.debug(f'A student attempted to log in with username "{input_username}"')
 
-            login_dict = db.get_table_by_name('StudentLoginTable').row_dict
-            if input_username in login_dict.keys():  # if username is valid, verifies pwd
-                # noinspection PyTypeChecker
-                login_obj: LoginDataRow = login_dict[input_username]
+            # noinspection PyTypeChecker
+            login_table_obj: data_handling.StudentLoginTable = db.get_table_by_name('StudentLoginTable')
+            if input_username in login_table_obj.row_dict.keys():  # if username is valid, verifies pwd
+                login_obj = login_table_obj.row_dict[input_username]
                 if password_logic.verify_pwd_str(input_password, login_obj.password_hash):
                     logging.info(f'Username "{input_username}" '
                                  f'successfully logged into student application')
 
                     user_id = login_obj.student_id
-                    student_dict = db.get_table_by_name('StudentTable').row_dict
+                    # noinspection PyTypeChecker
                     # gets Student obj specified by logged in username
-                    logged_in_student = student_dict[user_id]
+                    logged_in_student: data_handling.Student = db.get_table_by_name('StudentTable').row_dict[user_id]
 
                     # changes page appropriately, providing StudentAwardDashboard
                     # frame with the Student obj information to update text

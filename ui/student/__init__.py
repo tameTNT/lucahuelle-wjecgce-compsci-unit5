@@ -108,8 +108,9 @@ class StudentAwardDashboard(ui.GenericPage):
         self.student = None  # stores all student information for the window - updated below
         self.student_username = ''
 
-        self.section_table_dict = self.pager_frame.master_root.db. \
-            get_table_by_name('SectionTable').row_dict
+        # noinspection PyTypeChecker
+        self.section_table: data_handling.SectionTable = \
+            self.pager_frame.master_root.db.get_table_by_name('SectionTable')
 
     def update_attributes(self, student: data_handling.Student, username: str) -> None:
         # updates attributes with submitted parameters
@@ -149,9 +150,8 @@ class StudentAwardDashboard(ui.GenericPage):
             status_var = self.__getattribute__(f'{section_type}_status_var')
 
             if section_id:  # if the link between tables exists then the section has been started
-                # noinspection PyTypeChecker
-                section_obj: data_handling.Section = self.section_table_dict[section_id]
-                section_length = int(section_obj.activity_length) // 30
+                section_obj = self.section_table.row_dict[section_id]
+                section_length = int(section_obj.activity_timescale) // 30
                 title_var.set(f'{long_name}\n({section_length} months)')
                 status_var.set(section_obj.activity_status)
             else:

@@ -69,6 +69,14 @@ def create_tooltip(widget: tk.Widget, text: str):
     widget.bind('<Leave>', leave)
 
 
+def remove_tooltip(widget: tk.Widget):
+    """
+    Remove a tooltip from a widget by unbinding functions from Enter and Leave events
+    """
+    widget.unbind('<Enter>')
+    widget.unbind('<Leave>')
+
+
 # By CC attribution, this 'page-based approach' is based on the framework provided at
 # https://pythonprogramming.net/change-show-new-frame-tkinter/ and
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
@@ -212,6 +220,8 @@ class PagedMainFrame(ttk.Frame):
                                if isinstance(var, tk.Text)]
 
             for text_field in text_field_list:
+                # if the text_field state is 'disabled' it can't be cleared
+                text_field['state'] = 'normal'
                 text_field.delete('1.0', 'end')
 
         next_frame = self.page_frames[destination_page]  # gets the specified next page/frame
