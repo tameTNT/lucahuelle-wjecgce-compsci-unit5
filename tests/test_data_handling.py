@@ -76,7 +76,7 @@ class TestStudentLoginTable(TestCase):
 
 
 class TestDatabase(TestCase):
-    # TODO: add Database tests
+    # wouldbenice: add Database tests
     def test_get_txt_database_dir(self):
         self.fail()
 

@@ -19,7 +19,9 @@ def validate_int(value: Union[int, str], attribute_name: str):
         return int(value)
     except ValueError:
         error_str = f'{attribute_name} provided ("{value}") is not an integer.'
-        logging.error(error_str)  # todo: log errors on error catching not within func
+        logging.error(error_str)
+        # wouldbenice: log errors on error catching not within func (i.e. prevent logging if handled in except block).
+        #  Revert do_logging function changes
         raise ValidationError(error_str)
 
 

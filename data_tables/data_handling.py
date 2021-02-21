@@ -286,7 +286,7 @@ class Student(Row):
         logging.debug(f'New Student object fully created '
                       f'- student_id={self.student_id} fullname={self.fullname!r}')
 
-        # TODO: method for staff to 'approve' student -
+        # todo: method for staff to 'approve' student -
         #  approval sets self.approved = 1, deny clears fullname attr
 
     def __repr__(self):
@@ -404,7 +404,7 @@ class Section(Row):
         proposed_end_date = calculate_end_date(int(self.activity_timescale), self.activity_start_date)
 
         if past_date_check(proposed_end_date):
-            # TODO: GENERATE SECTION STATUS method
+            # todo: GENERATE SECTION STATUS method
             self._activity_status = 'Not Implemented'
         else:
             self._activity_status = 'In Progress'
