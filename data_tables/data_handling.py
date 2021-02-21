@@ -182,12 +182,10 @@ class Student(Row):
                  email_primary: str = '', phone_emergency: str = '', primary_lang: str = '',
                  enrolment_date: str = '', vol_info_id: Union[int, str] = '',
                  skill_info_id: Union[int, str] = '', phys_info_id: Union[int, str] = '',
-                 approved: Union[int, str] = ''):
-        """
-        Only the first 4 parameters are provided by staff.
-        The rest are filled in by the student at a later date
-        and hence default to '' on initial creation.
-        """
+                 approved: Union[int, str] = '', from_file: bool = True):
+        # Only the first 4 parameters are provided by staff.
+        # The rest are filled in by the student at a later date
+        # and hence default to '' on initial creation.
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'student_id')
@@ -208,9 +206,12 @@ class Student(Row):
         self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
                                       'gender') if fullname else ''
 
-        # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-        self.date_of_birth = validate_date(date_of_birth, 'date_of_birth',
-                                           offset_range=(-365.25 * 25, -365.25 * 10)) if fullname else ''
+        if from_file:  # date range validation skipped if loading from file to allow for dates in the past
+            self.date_of_birth = validate_date(date_of_birth, 'date_of_birth') if fullname else ''
+        else:
+            # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
+            self.date_of_birth = validate_date(date_of_birth, 'date_of_birth',
+                                               offset_range=(-365.25 * 25, -365.25 * 10))
 
         self.address = validate_length(address, 5, 100,
                                        'address') if fullname else ''
@@ -330,19 +331,23 @@ class Section(Row):
     key_field = 'section_id'
 
     def __init__(self, section_id: Union[int, str], section_type: str,
-                 activity_start_date: str, activity_length: str,
+                 activity_start_date: str, activity_timescale: str,
                  activity_type: str, activity_details: str, activity_goals: str,
-                 assessor_fullname: str, assessor_phone: str, assessor_email: str):
+                 assessor_fullname: str, assessor_phone: str, assessor_email: str,
+                 from_file: bool = True):
         self.section_id = validate_int(section_id, 'section_id')
 
         self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'section_type')
 
-        # A valid start date can be up to 1 year in the future
-        self.activity_start_date = validate_date(activity_start_date, 'activity_start_date',
-                                                 offset_range=(0, 365.25))
+        if from_file:
+            temp_start_date = validate_date(activity_start_date, 'activity_start_date')
+        else:
+            # A valid start date can be up to 1 year in the future
+            temp_start_date = validate_date(activity_start_date, 'activity_start_date', offset_range=(0, 365.25))
+        self.activity_start_date = temp_start_date
 
-        self.activity_length = validate_lookup(activity_length, {'90', '180', '360'},
-                                               'activity_length')
+        self.activity_timescale = validate_lookup(activity_timescale, {'90', '180', '360'},
+                                                  'activity_timescale')
 
         self.activity_type = validate_length(activity_type, 3, 20, 'activity_type')
 
@@ -367,7 +372,8 @@ class Section(Row):
         return f'<Section object section_id={self.section_id} ' \
                f'section_type={self.section_type!r} ' \
                f'activity_start_date={self.activity_start_date!s} ' \
-               f'activity_length={self.activity_length!r} activity_type={self.activity_type!r} ' \
+               f'activity_timescale={self.activity_timescale!r} ' \
+               f'activity_type={self.activity_type!r} ' \
                f'assessor_fullname={self.assessor_fullname!r}'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
@@ -375,7 +381,7 @@ class Section(Row):
             'section_id': INTERNAL_ID_LEN,
             'section_type': 5,
             'activity_start_date': 10,
-            'activity_length': 3,
+            'activity_timescale': 3,
             'activity_type': 20,
             'activity_details': 200,
             'activity_goals': 100,
@@ -395,7 +401,7 @@ class Section(Row):
     @activity_status.getter
     def activity_status(self):
         # this method is called every time this variable is accessed
-        proposed_end_date = calculate_end_date(int(self.activity_length), self.activity_start_date)
+        proposed_end_date = calculate_end_date(int(self.activity_timescale), self.activity_start_date)
 
         if past_date_check(proposed_end_date):
             # TODO: GENERATE SECTION STATUS method

@@ -380,13 +380,14 @@ class SectionInfo(ui.GenericPage):
                     section_id=new_id,
                     section_type=self.section_type_short,
                     activity_start_date=self.start_date_var.get(),
-                    activity_length=self.timescale_var.get(),
+                    activity_timescale=self.timescale_var.get(),
                     activity_type=self.activity_type_var.get(),
                     activity_details=self.activity_details_text.get('1.0', 'end').strip(),
                     activity_goals=self.activity_goals_text.get('1.0', 'end').strip(),
                     assessor_fullname=self.assessor_fullname_var.get(),
                     assessor_phone=self.assessor_phone_var.get().replace(' ', ''),
-                    assessor_email=self.assessor_email_var.get()
+                    assessor_email=self.assessor_email_var.get(),
+                    from_file=False,
                 )
             else:
                 raise validation.ValidationError('No timescale selected for section.')
