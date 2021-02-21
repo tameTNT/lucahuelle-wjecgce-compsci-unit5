@@ -12,11 +12,12 @@ class DateInfoDict(TypedDict):
     day: int
 
 
-def str_to_date_dict(date_str, sep: str = DATE_SEPARATOR) -> DateInfoDict:
+def str_to_date_dict(date_str, sep: str = DATE_SEPARATOR, do_logging: bool = True) -> DateInfoDict:
     """
     Converts date_str in format 'YYYY(sep)MM(sep)DD' (sep should be a 1-char str)
     to dictionary in format {'year': ???, 'month': ???, 'day': ???}
-    If date_str is not in the required format,  a ValidationError is raised
+    If date_str is not in the required format, a ValidationError is raised.
+    If do_logging is True, errors are logged to .log file also, otherwise they are not (silent)
     """
     match_str = '{year}{sep}{month}{sep}{day}'.format(year=r'\d{4}', month=r'\d{2}', day=r'\d{2}', sep=sep)
     if re.fullmatch(match_str, date_str):
@@ -24,8 +25,8 @@ def str_to_date_dict(date_str, sep: str = DATE_SEPARATOR) -> DateInfoDict:
         return DateInfoDict(year=value_list[0], month=value_list[1], day=value_list[2])
     else:
         error_str = f'Date provided ("{date_str}") is not in the form YYYY{sep}MM{sep}DD.'
-        logging.error(error_str)
-
+        if do_logging:
+            logging.error(error_str)
         from processes.validation import ValidationError  # only imported here to prevent circular import
         raise ValidationError(error_str)
 
@@ -66,5 +67,5 @@ def past_date_check(date: dt.datetime) -> bool:
     """
     return date < dt.datetime.now()
 
-# TODO: write GET WEEKDAY ABBREVIATION AND DATE PARTS function
-# TODO: write GET UPCOMING EVENTS WITHIN TIMEFRAME function
+# todo: write GET WEEKDAY ABBREVIATION AND DATE PARTS function
+# todo: write GET UPCOMING EVENTS WITHIN TIMEFRAME function

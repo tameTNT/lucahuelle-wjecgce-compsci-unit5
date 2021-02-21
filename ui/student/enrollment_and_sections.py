@@ -240,7 +240,8 @@ class SectionInfo(ui.GenericPage):
         on_update_wrapper = self.pager_frame.master_root.tk_root.register(self.date_update_validate)
         self.start_date = ttk.Entry(self.detail_frame, width=10,
                                     textvariable=self.start_date_var,
-                                    validate='all',  # calls validatecommand on any action with the widget
+                                    # calls validatecommand on any action with the widget (e.g. edit, focus change)
+                                    validate='all',
                                     validatecommand=on_update_wrapper)  # updates self.end_date_var based on entry
         self.start_date.grid(row=1, column=1, pady=self.pady, sticky='we')
         ui.create_tooltip(self.start_date, 'Enter in format YYYY/MM/DD')
@@ -314,9 +315,8 @@ class SectionInfo(ui.GenericPage):
         # == end of self.assessor_info_frame ==
 
         # === end of self.detail_frame ===
-        self.add_evidence_button = ttk.Button(self, text='Add Evidence',
-                                              state='disabled')
-        # todo: evidence functionality and tooltip to say why disabled
+        # todo: evidence upload pages - command for add_evidence_button
+        self.add_evidence_button = ttk.Button(self, text='Add Evidence')
         self.add_evidence_button.grid(row=2, column=0, padx=self.padx, pady=self.pady)
         self.exit_button = ttk.Button(self, text='Submit section info',
                                       command=self.attempt_section_table_update)
@@ -361,7 +361,7 @@ class SectionInfo(ui.GenericPage):
         Must return True for this validation aspect.
         """
         try:
-            start_date = validation.validate_date(self.start_date_var.get(), 'Start date', '/')
+            start_date = validation.validate_date(self.start_date_var.get(), 'Start date', '/', do_logging=False)
             end_date = date_logic.calculate_end_date(int(self.timescale_var.get()), start_date)
             end_date = date_logic.datetime_to_str(end_date, '/')
         except (validation.ValidationError, ValueError):

@@ -55,7 +55,8 @@ def validate_lookup(value: str, lookup_set: Set[str], attribute_name: str) -> st
 
 
 def validate_date(date_str: str, attribute_name: str, date_str_sep: str = '/',
-                  offset_range: Tuple[Union[float, int], ...] = (0, 0)) -> dt.datetime:
+                  offset_range: Tuple[Union[float, int], ...] = (0, 0),
+                  do_logging: bool = True) -> dt.datetime:
     """
     Validates a date - is it a valid date and does it fall within the given range?
     If this fails, a ValidationError is raised with a descriptive error message.
@@ -67,8 +68,9 @@ def validate_date(date_str: str, attribute_name: str, date_str_sep: str = '/',
         and number of days into the future (-ve for past) *up to which* to accept date.
         Note that, therefore, the first number should ALWAYS be less than second.
         If omitted, then no range check is performed on the date.
+    :param do_logging: If True, errors are logged to .log file, otherwise they are not (silent)
     """
-    date_dict = str_to_date_dict(date_str, date_str_sep)
+    date_dict = str_to_date_dict(date_str, date_str_sep, do_logging=do_logging)
 
     try:
         valid_date = dt.datetime(**date_dict)
@@ -77,7 +79,8 @@ def validate_date(date_str: str, attribute_name: str, date_str_sep: str = '/',
                     f'logically invalid; i.e. the date specified ' \
                     f'({date_dict_to_str(date_dict, date_str_sep)}) ' \
                     f'does not exist'
-        logging.error(error_str)
+        if do_logging:
+            logging.error(error_str)
         raise ValidationError(error_str)
 
     if offset_range != (0, 0):
