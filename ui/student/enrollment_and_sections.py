@@ -190,7 +190,6 @@ class SectionInfo(ui.GenericPage):
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
 
-        # todo: Section submission/editing and evidence upload pages
         self.back_button = ttk.Button(self, text='Back', command=self.back)
         self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # wouldbenice: consistency of buttons to quick navigate between pages
@@ -199,7 +198,7 @@ class SectionInfo(ui.GenericPage):
         self.header = ttk.Label(self, textvariable=self.header_var, font=ui.HEADING_FONT)
         self.header.grid(row=1, column=0, padx=self.padx, pady=self.pady)
 
-        # === detail frame ===  todo: version when section 'in progress'
+        # === detail frame ===
         self.detail_frame = ttk.Frame(self)
         self.detail_frame.grid(row=0, rowspan=3, column=1, padx=self.padx, pady=self.pady)
 
@@ -208,26 +207,28 @@ class SectionInfo(ui.GenericPage):
         self.timescale_label.grid(row=0, column=0, pady=self.pady, sticky='e')
 
         # == radio buttons for timescale selection ==
-        self.radio_button_frame = ttk.Frame(self.detail_frame)
-        self.radio_button_frame.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
+        self.radiobutton_frame = ttk.Frame(self.detail_frame)
+        self.radiobutton_frame.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
+        ui.create_tooltip(self.radiobutton_frame, 'NB: Some options may be disabled based on your award level\n'
+                                                  'and/or timescale choices in your other sections.')
 
         # Spreads out radio buttons evenly within frame
-        self.radio_button_frame.grid_columnconfigure(0, weight=1)
-        self.radio_button_frame.grid_columnconfigure(1, weight=1)
-        self.radio_button_frame.grid_columnconfigure(2, weight=1)
+        self.radiobutton_frame.grid_columnconfigure(0, weight=1)
+        self.radiobutton_frame.grid_columnconfigure(1, weight=1)
+        self.radiobutton_frame.grid_columnconfigure(2, weight=1)
 
         self.timescale_var = tk.StringVar()
-        self.timescale_select_3 = ttk.Radiobutton(self.radio_button_frame, text='3',
+        self.timescale_select_3 = ttk.Radiobutton(self.radiobutton_frame, text='3',
                                                   variable=self.timescale_var, value='90',
                                                   command=self.date_update_validate)
         self.timescale_select_3.grid(row=0, column=0, pady=self.pady)
 
-        self.timescale_select_6 = ttk.Radiobutton(self.radio_button_frame, text='6',
+        self.timescale_select_6 = ttk.Radiobutton(self.radiobutton_frame, text='6',
                                                   variable=self.timescale_var, value='180',
                                                   command=self.date_update_validate)
         self.timescale_select_6.grid(row=0, column=1, pady=self.pady)
 
-        self.timescale_select_12 = ttk.Radiobutton(self.radio_button_frame, text='12',
+        self.timescale_select_12 = ttk.Radiobutton(self.radiobutton_frame, text='12',
                                                    variable=self.timescale_var, value='360',
                                                    command=self.date_update_validate)
         self.timescale_select_12.grid(row=0, column=2, pady=self.pady)
@@ -318,9 +319,10 @@ class SectionInfo(ui.GenericPage):
         # todo: evidence upload pages - command for add_evidence_button
         self.add_evidence_button = ttk.Button(self, text='Add Evidence')
         self.add_evidence_button.grid(row=2, column=0, padx=self.padx, pady=self.pady)
-        self.exit_button = ttk.Button(self, text='Submit section info',
-                                      command=self.attempt_section_table_update)
-        self.exit_button.grid(row=3, column=0, columnspan=3, padx=self.padx, pady=self.pady)
+
+        self.submit_button = ttk.Button(self, text='Submit section info',
+                                        command=self.attempt_section_table_update)
+        self.submit_button.grid(row=3, column=0, columnspan=3, padx=self.padx, pady=self.pady)
 
         self.student = None
         self.student_username = ''
@@ -342,11 +344,65 @@ class SectionInfo(ui.GenericPage):
 
         self.header_var.set(f'{long_section_name} Details')
 
-        # todo: disable radio buttons depending on level and timescale choices
-        ui.create_tooltip(self.timescale_label, 'NB: Some options are disabled based on your award level\n'
-                                                'and/or timescale choices in your other sections.')
+        if self.student.__getattribute__(f'{section_type_short}_info_id'):
+            # if the section's details have already been filled out, fields are disabled with data filled in
+            fields_enabled = False
 
-        self.date_update_validate()  # clears end date label
+            section_id = self.student.__getattribute__(f'{section_type_short}_info_id')
+            section_table_dict = self.section_table.row_dict
+            section_obj: data_handling.Section = section_table_dict[section_id]
+
+            self.timescale_var.set(section_obj.activity_timescale)
+            self.start_date_var.set(date_logic.datetime_to_str(section_obj.activity_start_date))
+            self.activity_type_var.set(section_obj.activity_type)
+            self.activity_details_text.insert('1.0', section_obj.activity_details)
+            self.activity_goals_text.insert('1.0', section_obj.activity_goals)
+            self.assessor_fullname_var.set(section_obj.assessor_fullname)
+            self.assessor_phone_var.set(section_obj.assessor_phone)
+            self.assessor_email_var.set(section_obj.assessor_email)
+
+            self.timescale_select_3['state'] = 'disabled'
+            self.timescale_select_6['state'] = 'disabled'
+            self.timescale_select_12['state'] = 'disabled'
+        else:
+            # otherwise, the fields are enabled to allow data entry
+            fields_enabled = True
+
+            # todo: disable radio buttons depending on level and timescale choices
+            #   - go through other (completed) sections
+            #   - gather length choices
+            #   - chose which ones are not yet taken
+
+            # https://images.app.goo.gl/xCqbRvrhF3h6YLGy8 - timescale options
+            # if student.award_level == 'bronze':
+            #     times = {'90', '90', '90'}  # 3, 3, 3 months
+            # elif student.award_level == 'silver':
+            #     times = {'90', '90', '180'}  # 3, 3, 6 months
+            # elif student.award_level == 'gold':
+            #     times = {'180', '180', '260'}  # 3, 3, 6 months
+
+            self.timescale_select_3['state'] = 'disabled'
+            self.timescale_select_6['state'] = 'disabled'
+            self.timescale_select_12['state'] = 'disabled'
+
+        if fields_enabled:
+            field_state = 'normal'
+        else:
+            field_state = 'disabled'
+
+        self.start_date['state'] = field_state
+        self.activity_type['state'] = field_state
+        self.activity_details_text['state'] = field_state
+        self.activity_goals_text['state'] = field_state
+        self.assessor_fullname['state'] = field_state
+        self.assessor_phone['state'] = field_state
+        self.assessor_email['state'] = field_state
+        self.submit_button['state'] = field_state
+
+        # button set to inverse state of detail fields above - i.e. only enabled if section filled in
+        self.add_evidence_button['state'] = ('normal', 'disabled')[int(fields_enabled)]
+
+        self.date_update_validate()  # updates/clears end date label
 
     def back(self):
         """
