@@ -4,7 +4,7 @@ from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict  # type hints in function and class definitions
 
-from processes.date_logic import str_to_date_dict, datetime_to_str
+from processes.date_logic import str_to_date_dict, datetime_to_str, past_date_check, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
     validate_date, validate_regex
 
@@ -48,10 +48,11 @@ class Row:
 
         return_string = ''
         for attr_name, attr_val in self.__dict__.items():
-            str_func = str
-            if attr_name in special_str_funcs:
-                str_func = special_str_funcs[attr_name]
-            return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
+            if attr_name[0] != '_':  # ignores protected attributes
+                str_func = str
+                if attr_name in special_str_funcs:
+                    str_func = special_str_funcs[attr_name]
+                return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
         return return_string + '\n'
 
 
@@ -86,7 +87,7 @@ class Table:
         return f'<{type(self).__name__} object with {len(self.row_dict)} row(s) ' \
                f'of {self.row_class} objects>'
 
-    def add_row(self, *args):
+    def add_row(self, *args) -> None:
         """
         Add a new row/object to table.
         If an object is provided first, that is added directly - all other arguments are ignored.
@@ -393,13 +394,32 @@ class Section(Row):
 
     @activity_status.getter
     def activity_status(self):
-        # TODO: GENERATE SECTION STATUS method
-        return 'Not Implemented'
+        # this method is called every time this variable is accessed
+        proposed_end_date = calculate_end_date(int(self.activity_length), self.activity_start_date)
+
+        if past_date_check(proposed_end_date):
+            # TODO: GENERATE SECTION STATUS method
+            self._activity_status = 'Not Implemented'
+        else:
+            self._activity_status = 'In Progress'
+
+        return self._activity_status
 
 
 class SectionTable(Table):
     row_class = Section
     row_dict: Dict[str, Section]
+
+    def get_new_key_id(self) -> int:
+        """
+        Looks at current row_dict and returns the next
+        available id that can be used as a unique key.
+        """
+        taken_ids = {int(str_id) for str_id in self.row_dict.keys()}
+        if taken_ids:
+            return set(range(max(taken_ids))).intersection(taken_ids).pop()
+        else:
+            return 1
 
 
 class Database:
