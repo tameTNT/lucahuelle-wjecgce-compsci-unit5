@@ -1,7 +1,7 @@
 import datetime as dt
 import logging
 import re
-from typing import TypedDict
+from typing import TypedDict, Set
 
 DATE_SEPARATOR = '/'
 
@@ -66,6 +66,72 @@ def past_date_check(date: dt.datetime) -> bool:
     Returns True is date is in the past, False otherwise
     """
     return date < dt.datetime.now()
+
+
+def get_possible_timeframes(level: str, section_type: str,
+                            student_obj, section_table) -> Set[int]:
+    """
+    Returns a set of the potential timeframes still available for the student for the section specified.
+    Based on the DofE structure shown here: https://images.app.goo.gl/xCqbRvrhF3h6YLGy8
+
+    :param level: The DofE level of the student (one of 'bronze', 'silver' or 'gold').
+        Determines what timeframe choices are initially available
+    :param section_type: One of 'vol', 'skill' or 'phys' - determines which timeframe set is returned.
+    :param student_obj: A student obj (data_tables.data_handling.Student)
+        to read any associated/already started section info from
+    :param section_table: The section table (data_tables.data_handling.SectionTable)
+        to read from (see student_obj)
+    :return: A set of timescale strings (3 and/or 6 and/or 12) still available to the student
+    """
+    set_choices = dict()
+    for st in ('vol', 'skill', 'phys'):
+        section_id = student_obj.__getattribute__(f'{st}_info_id')
+        if section_id:  # section has been started
+            set_choices[st] = int(section_table.row_dict[section_id].activity_timescale) // 30
+        else:
+            set_choices[st] = None
+
+    if level == 'bronze':
+        if 6 in set_choices.values():  # one section already on 6 months
+            return {3}  # only choice left is 3 months
+        else:
+            return {3, 6}
+
+    elif level == 'silver':
+        if section_type == 'vol':
+            return {6}
+        elif section_type == 'skill':
+            if set_choices['phys'] == 3:
+                return {6}
+            elif set_choices['phys'] == 6:
+                return {3}
+            else:
+                return {3, 6}
+        elif section_type == 'phys':
+            if set_choices['skill'] == 3:
+                return {6}
+            elif set_choices['skill'] == 6:
+                return {3}
+            else:
+                return {3, 6}
+
+    elif level == 'gold':
+        if section_type == 'vol':
+            return {12}
+        elif section_type == 'skill':
+            if set_choices['phys'] == 6:
+                return {12}
+            elif set_choices['phys'] == 12:
+                return {6}
+            else:
+                return {6, 12}
+        elif section_type == 'phys':
+            if set_choices['skill'] == 6:
+                return {12}
+            elif set_choices['skill'] == 12:
+                return {6}
+            else:
+                return {6, 12}
 
 # todo: write GET WEEKDAY ABBREVIATION AND DATE PARTS function
 # todo: write GET UPCOMING EVENTS WITHIN TIMEFRAME function

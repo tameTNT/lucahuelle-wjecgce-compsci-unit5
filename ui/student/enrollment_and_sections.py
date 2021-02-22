@@ -7,6 +7,7 @@ import processes
 import ui
 from data_tables import data_handling
 from processes import date_logic, validation
+from processes.date_logic import get_possible_timeframes
 
 
 class Enrollment(ui.GenericPage):
@@ -344,6 +345,7 @@ class SectionInfo(ui.GenericPage):
 
         self.header_var.set(f'{long_section_name} Details')
 
+        state_dict = {False: 'disabled', True: 'normal'}
         if self.student.__getattribute__(f'{section_type_short}_info_id'):
             # if the section's details have already been filled out, fields are disabled with data filled in
             fields_enabled = False
@@ -368,39 +370,25 @@ class SectionInfo(ui.GenericPage):
             # otherwise, the fields are enabled to allow data entry
             fields_enabled = True
 
-            # todo: disable radio buttons depending on level and timescale choices
-            #   - go through other (completed) sections
-            #   - gather length choices
-            #   - chose which ones are not yet taken
+            available_timescale_options = get_possible_timeframes(student.award_level,
+                                                                  self.section_type_short,
+                                                                  self.student, self.section_table)
 
-            # https://images.app.goo.gl/xCqbRvrhF3h6YLGy8 - timescale options
-            # if student.award_level == 'bronze':
-            #     times = {'90', '90', '90'}  # 3, 3, 3 months
-            # elif student.award_level == 'silver':
-            #     times = {'90', '90', '180'}  # 3, 3, 6 months
-            # elif student.award_level == 'gold':
-            #     times = {'180', '180', '260'}  # 3, 3, 6 months
+            self.timescale_select_3['state'] = state_dict[3 in available_timescale_options]
+            self.timescale_select_6['state'] = state_dict[6 in available_timescale_options]
+            self.timescale_select_12['state'] = state_dict[12 in available_timescale_options]
 
-            self.timescale_select_3['state'] = 'disabled'
-            self.timescale_select_6['state'] = 'disabled'
-            self.timescale_select_12['state'] = 'disabled'
-
-        if fields_enabled:
-            field_state = 'normal'
-        else:
-            field_state = 'disabled'
-
-        self.start_date['state'] = field_state
-        self.activity_type['state'] = field_state
-        self.activity_details_text['state'] = field_state
-        self.activity_goals_text['state'] = field_state
-        self.assessor_fullname['state'] = field_state
-        self.assessor_phone['state'] = field_state
-        self.assessor_email['state'] = field_state
-        self.submit_button['state'] = field_state
+        self.start_date['state'] = state_dict[fields_enabled]
+        self.activity_type['state'] = state_dict[fields_enabled]
+        self.activity_details_text['state'] = state_dict[fields_enabled]
+        self.activity_goals_text['state'] = state_dict[fields_enabled]
+        self.assessor_fullname['state'] = state_dict[fields_enabled]
+        self.assessor_phone['state'] = state_dict[fields_enabled]
+        self.assessor_email['state'] = state_dict[fields_enabled]
+        self.submit_button['state'] = state_dict[fields_enabled]
 
         # button set to inverse state of detail fields above - i.e. only enabled if section filled in
-        self.add_evidence_button['state'] = ('normal', 'disabled')[int(fields_enabled)]
+        self.add_evidence_button['state'] = state_dict[not fields_enabled]
 
         self.date_update_validate()  # updates/clears end date label
 
