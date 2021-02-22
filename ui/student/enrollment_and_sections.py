@@ -6,8 +6,7 @@ import tkinter.ttk as ttk
 import processes
 import ui
 from data_tables import data_handling
-from processes import date_logic, validation
-from processes.date_logic import get_possible_timeframes
+from processes import datetime_logic, validation
 
 
 class Enrollment(ui.GenericPage):
@@ -125,7 +124,7 @@ class Enrollment(ui.GenericPage):
         self.language_selection.grid(row=3, column=3, pady=self.pady, sticky='we')
         # === end of frame ===
 
-        self.current_date = ttk.Label(self, text=f'Current Date: {date_logic.datetime_to_str()}')
+        self.current_date = ttk.Label(self, text=f'Current Date: {datetime_logic.datetime_to_str()}')
         self.current_date.grid(row=3, column=0, padx=self.padx, pady=self.pady)
 
         self.complete_button = ttk.Button(self, text='Complete Enrollment',
@@ -355,7 +354,7 @@ class SectionInfo(ui.GenericPage):
             section_obj: data_handling.Section = section_table_dict[section_id]
 
             self.timescale_var.set(section_obj.activity_timescale)
-            self.start_date_var.set(date_logic.datetime_to_str(section_obj.activity_start_date))
+            self.start_date_var.set(datetime_logic.datetime_to_str(section_obj.activity_start_date))
             self.activity_type_var.set(section_obj.activity_type)
             self.activity_details_text.insert('1.0', section_obj.activity_details)
             self.activity_goals_text.insert('1.0', section_obj.activity_goals)
@@ -370,9 +369,12 @@ class SectionInfo(ui.GenericPage):
             # otherwise, the fields are enabled to allow data entry
             fields_enabled = True
 
-            available_timescale_options = get_possible_timeframes(student.award_level,
-                                                                  self.section_type_short,
-                                                                  self.student, self.section_table)
+            available_timescale_options = datetime_logic.get_possible_timeframes(
+                student.award_level,
+                self.section_type_short,
+                self.student,
+                self.section_table
+            )
 
             self.timescale_select_3['state'] = state_dict[3 in available_timescale_options]
             self.timescale_select_6['state'] = state_dict[6 in available_timescale_options]
@@ -410,8 +412,8 @@ class SectionInfo(ui.GenericPage):
         """
         try:
             start_date = validation.validate_date(self.start_date_var.get(), 'Start date', '/', do_logging=False)
-            end_date = date_logic.calculate_end_date(int(self.timescale_var.get()), start_date)
-            end_date = date_logic.datetime_to_str(end_date, '/')
+            end_date = datetime_logic.calculate_end_date(int(self.timescale_var.get()), start_date)
+            end_date = datetime_logic.datetime_to_str(end_date, '/')
         except (validation.ValidationError, ValueError):
             end_date = '----/--/--'
 

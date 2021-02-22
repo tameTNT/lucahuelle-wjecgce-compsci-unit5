@@ -4,7 +4,7 @@ from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict  # type hints in function and class definitions
 
-from processes.date_logic import str_to_date_dict, datetime_to_str, past_date_check, calculate_end_date
+from processes.datetime_logic import str_to_date_dict, datetime_to_str, past_date_check, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
     validate_date, validate_regex
 
