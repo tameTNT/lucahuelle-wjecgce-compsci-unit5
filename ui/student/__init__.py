@@ -4,7 +4,8 @@ import tkinter.ttk as ttk
 
 import ui
 import ui.landing
-import ui.student.enrollment_and_sections
+import ui.student.enrollment
+import ui.student.section_info
 from data_tables import data_handling
 
 
@@ -173,14 +174,14 @@ class StudentAwardDashboard(ui.GenericPage):
 
     def enrol_fully(self):
         self.pager_frame.change_to_page(
-            destination_page=ui.student.enrollment_and_sections.Enrollment,
+            destination_page=ui.student.enrollment.Enrollment,
             student=self.student,
             username=self.student_username,
         )
 
     def edit_section(self, section_type_short):
         self.pager_frame.change_to_page(
-            destination_page=ui.student.enrollment_and_sections.SectionInfo,
+            destination_page=ui.student.section_info.SectionInfo,
             student=self.student,
             username=self.student_username,
             section_type_short=section_type_short,
