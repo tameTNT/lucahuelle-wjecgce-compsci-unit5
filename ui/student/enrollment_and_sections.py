@@ -1,7 +1,11 @@
 import logging
+import os
+import shutil
 import tkinter as tk
+import tkinter.filedialog as filedialog
 import tkinter.messagebox as msg
 import tkinter.ttk as ttk
+from pathlib import Path
 
 import processes
 import ui
@@ -180,7 +184,8 @@ class Enrollment(ui.GenericPage):
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
         else:
-            msg.showinfo('Enrollment successful', 'Information submitted to staff for approval.')
+            msg.showinfo('Enrollment successful',
+                         'Your enrollment information was successfully saved and submitted to staff for approval.')
             self.back()
 
 
@@ -316,8 +321,8 @@ class SectionInfo(ui.GenericPage):
         # == end of self.assessor_info_frame ==
 
         # === end of self.detail_frame ===
-        # todo: evidence upload pages - command for add_evidence_button
-        self.add_evidence_button = ttk.Button(self, text='Add Evidence')
+        # todo: list resources already added (from table)
+        self.add_evidence_button = ttk.Button(self, text='Add Evidence', command=self.add_evidence)
         self.add_evidence_button.grid(row=2, column=0, padx=self.padx, pady=self.pady)
 
         self.submit_button = ttk.Button(self, text='Submit section info',
@@ -325,6 +330,7 @@ class SectionInfo(ui.GenericPage):
         self.submit_button.grid(row=3, column=0, columnspan=3, padx=self.padx, pady=self.pady)
 
         self.student = None
+        self.section_obj = None
         self.student_username = ''
         self.section_type_short = ''
 
@@ -351,16 +357,16 @@ class SectionInfo(ui.GenericPage):
 
             section_id = self.student.__getattribute__(f'{section_type_short}_info_id')
             section_table_dict = self.section_table.row_dict
-            section_obj: data_handling.Section = section_table_dict[section_id]
+            self.section_obj: data_handling.Section = section_table_dict[section_id]
 
-            self.timescale_var.set(section_obj.activity_timescale)
-            self.start_date_var.set(datetime_logic.datetime_to_str(section_obj.activity_start_date))
-            self.activity_type_var.set(section_obj.activity_type)
-            self.activity_details_text.insert('1.0', section_obj.activity_details)
-            self.activity_goals_text.insert('1.0', section_obj.activity_goals)
-            self.assessor_fullname_var.set(section_obj.assessor_fullname)
-            self.assessor_phone_var.set(section_obj.assessor_phone)
-            self.assessor_email_var.set(section_obj.assessor_email)
+            self.timescale_var.set(self.section_obj.activity_timescale)
+            self.start_date_var.set(datetime_logic.datetime_to_str(self.section_obj.activity_start_date))
+            self.activity_type_var.set(self.section_obj.activity_type)
+            self.activity_details_text.insert('1.0', self.section_obj.activity_details)
+            self.activity_goals_text.insert('1.0', self.section_obj.activity_goals)
+            self.assessor_fullname_var.set(self.section_obj.assessor_fullname)
+            self.assessor_phone_var.set(self.section_obj.assessor_phone)
+            self.assessor_email_var.set(self.section_obj.assessor_email)
 
             self.timescale_select_3['state'] = 'disabled'
             self.timescale_select_6['state'] = 'disabled'
@@ -447,7 +453,43 @@ class SectionInfo(ui.GenericPage):
             self.student.__setattr__(f'{new_section_entry.section_type}_info_id',
                                      new_section_entry.section_id)
 
-            msg.showinfo('Section information submission successful',
+            msg.showinfo('Section submission successful',
                          'Section information successfully submitted. '
                          'You can now start working on this section!')
             self.back()
+
+    def add_evidence(self):
+        # if section time is complete, evidence can now be uploaded
+        planned_end_date = datetime_logic.calculate_end_date(int(self.section_obj.activity_timescale),
+                                                             self.section_obj.activity_start_date)
+        if not datetime_logic.date_in_past(planned_end_date):
+            msg.showwarning('File upload',
+                            f'You cannot upload evidence until you have reached the '
+                            f"section's end date ({datetime_logic.datetime_to_str(planned_end_date)}).")
+        else:
+            # opens a file selection dialog in the user's home directory
+            # the user can select as many files as they wish
+            selected_files = filedialog.askopenfiles(title='Please select file(s) to add as evidence.',
+                                                     initialdir=os.path.expanduser('~'))
+
+            if selected_files:  # if any files were selected (i.e. operation not cancelled)
+                upload_dir = Path.cwd() / 'uploads' / 'student' / f'id-{self.student.student_id}'
+                upload_dir.mkdir(parents=True, exist_ok=True)
+                for fobj in selected_files:
+                    orig_file_path = Path(fobj.name)
+
+                    upload_path = upload_dir / orig_file_path.name
+                    i = 0
+                    while upload_path.exists():  # adds ' (i)' to end of filename until unique
+                        i += 1  # keeps increasing i until unique
+                        new_name = f'{upload_path.stem} ({i}){upload_path.suffix}'
+                        upload_path = Path(upload_path.parent) / new_name
+
+                    shutil.copy(orig_file_path, upload_path)  # 'uploads'/copies file into dir
+
+                msg.showinfo('File upload', f'{len(selected_files)} file(s) uploaded successfully.')
+
+                # todo: add resource table and link to section
+
+            else:
+                msg.showinfo('File upload', 'No file(s) selected to upload.')
