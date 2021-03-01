@@ -61,7 +61,7 @@ def calculate_end_date(time_offset: int, start_datetime_obj: dt.datetime = dt.da
     return start_datetime_obj + dt.timedelta(days=time_offset)
 
 
-def past_date_check(date: dt.datetime) -> bool:
+def date_in_past(date: dt.datetime) -> bool:
     """
     Returns True is date is in the past, False otherwise
     """

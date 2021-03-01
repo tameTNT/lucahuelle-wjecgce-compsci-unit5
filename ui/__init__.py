@@ -69,7 +69,7 @@ def create_tooltip(widget: tk.Widget, text: str):
     widget.bind('<Leave>', leave)
 
 
-def remove_tooltip(widget: tk.Widget):
+def remove_tooltip(widget: tk.Widget):  # todo: really needed? remove?
     """
     Remove a tooltip from a widget by unbinding functions from Enter and Leave events
     """

@@ -4,7 +4,7 @@ from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict  # type hints in function and class definitions
 
-from processes.datetime_logic import str_to_date_dict, datetime_to_str, past_date_check, calculate_end_date
+from processes.datetime_logic import str_to_date_dict, datetime_to_str, date_in_past, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
     validate_date, validate_regex
 
@@ -403,7 +403,7 @@ class Section(Row):
         # this method is called every time this variable is accessed
         proposed_end_date = calculate_end_date(int(self.activity_timescale), self.activity_start_date)
 
-        if past_date_check(proposed_end_date):
+        if date_in_past(proposed_end_date):
             # todo: GENERATE SECTION STATUS method
             self._activity_status = 'Not Implemented'
         else:
