@@ -1,8 +1,9 @@
 import datetime as dt
 import logging  # logging functionality
-from io import TextIOWrapper  # type hints in function definitions
 from pathlib import Path  # file handling
-from typing import Collection, Union, Dict  # type hints in function and class definitions
+import shutil
+from typing import Collection, Union, Dict, List  # type hints in function and class definitions
+from typing.io import TextIO
 
 from processes.datetime_logic import str_to_date_dict, datetime_to_str, date_in_past, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
@@ -114,7 +115,7 @@ class Table:
             logging.error(error_str)
             raise KeyError(error_str)
 
-    def load_from_file(self, txt_file: TextIOWrapper):
+    def load_from_file(self, txt_file: TextIO):
         """
         Given the output from an open() method, populates self with data from lines of text file
         """
@@ -129,16 +130,18 @@ class Table:
 
             self.add_row(*obj_info)  # add new row/obj to table
 
+        txt_file.close()
         logging.info(f'{type(self).__name__} object successfully populated from file - '
                      f'added {len(txt_lines)} {self.row_class.__name__} objects')
 
-    def save_to_file(self, txt_file: TextIOWrapper):
+    def save_to_file(self, txt_file: TextIO):
         """
         Given the file output from an open('w') method, writes to the file the data within self
         """
         for row_object in self.row_dict.values():
             txt_file.write(row_object.tabulate())
 
+        txt_file.close()
         logging.debug(f'{type(self).__name__} object successfully saved to file')
 
 
@@ -481,7 +484,7 @@ class Database:
             table_obj.row_dict = dict()  # clears table
             logging.debug(f'Cleared {previous_row_count} rows/{table_obj.row_class.__name__} '
                           f'object(s) from {type(table_obj).__name__} table successfully')
-            with load_path.open(mode='r') as fobj:  # type: TextIOWrapper
+            with load_path.open(mode='r') as fobj:
                 table_obj.load_from_file(fobj)
 
         logging.info(
@@ -495,7 +498,7 @@ class Database:
         for table_name, table_obj in self.database.items():
             save_path = self.get_txt_database_dir() / f'{table_name}.txt'
 
-            with save_path.open(mode='w+') as fobj:  # type: TextIOWrapper
+            with save_path.open(mode='w+') as fobj:
                 table_obj.save_to_file(fobj)
 
         logging.info(

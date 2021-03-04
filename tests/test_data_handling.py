@@ -58,7 +58,6 @@ class TestStudentLoginTable(TestCase):
             fobj.write(TEST_STUDENT_SAVE_STRING)
 
         test_table = StudentLoginTable()
-        # noinspection PyTypeChecker
         test_table.load_from_file(test_file_path.open('r'))
         self.assertEqual(test_table.row_dict['test name'].student_id, 1,
                          'New row not correctly loaded from txt file')
@@ -66,7 +65,6 @@ class TestStudentLoginTable(TestCase):
     def test_save_to_file(self):
         test_file_path = Path.cwd() / 'test_student_save.txt'
 
-        # noinspection PyTypeChecker
         TestStudentLoginTable.test_login_table.save_to_file(test_file_path.open('w+'))
 
         with test_file_path.open('r') as fobj:
