@@ -113,9 +113,9 @@ class RootWindow:
         Actually 'starts' the application by setting the originally empty
         self.window_frame to another with content 'layered' inside.
 
-        :param page_obj_list: A list of GenericPage objects that the tkinter
+        :param page_obj_list: a list of GenericPage objects that the tkinter
             window can be 'built up'/layered from (see PagedMainFrame docs)
-        :param start_page: A designated class (contained in page_obj_list)
+        :param start_page: a designated class (contained in page_obj_list)
             to use as the start/landing page for the application.
             This is the first page that the user will see on startup.
         """
@@ -166,7 +166,7 @@ class PagedMainFrame(ttk.Frame):
         layered frames by elevating them to the top of the tkinter window.
         Should only be called using RootWindow.initialise_window()
 
-        :param master_root: A tkinter 'root' wrapper which is used to changed
+        :param master_root: a tkinter 'root' wrapper which is used to changed
             windows' titles, dimensions, etc.
         """
         super().__init__(master_root.window_frame)

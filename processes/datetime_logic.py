@@ -74,12 +74,12 @@ def get_possible_timeframes(level: str, section_type: str,
     Returns a set of the potential timeframes still available for the student for the section specified.
     Based on the DofE structure shown here: https://images.app.goo.gl/xCqbRvrhF3h6YLGy8
 
-    :param level: The DofE level of the student (one of 'bronze', 'silver' or 'gold').
+    :param level: the DofE level of the student (one of 'bronze', 'silver' or 'gold').
         Determines what timeframe choices are initially available
-    :param section_type: One of 'vol', 'skill' or 'phys' - determines which timeframe set is returned.
-    :param student_obj: A student obj (data_tables.data_handling.Student)
+    :param section_type: one of 'vol', 'skill' or 'phys' - determines which timeframe set is returned.
+    :param student_obj: a student obj (data_tables.data_handling.Student)
         to read any associated/already started section info from
-    :param section_table: The section table (data_tables.data_handling.SectionTable)
+    :param section_table: the section table (data_tables.data_handling.SectionTable)
         to read from (see student_obj)
     :return: A set of timescale strings (3 and/or 6 and/or 12) still available to the student
     """
