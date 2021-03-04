@@ -88,22 +88,40 @@ class Table:
         return f'<{type(self).__name__} object with {len(self.row_dict)} row(s) ' \
                f'of {self.row_class} objects>'
 
-    def add_row(self, *args) -> None:
+    def get_new_key_id(self) -> int:
+        """
+        Looks at current row_dict and returns the next
+        available id that can be used as a unique key.
+        Should only be used with tables that use an integer-only id key_field.
+        """
+        taken_ids = {int(str_id) for str_id in self.row_dict.keys()}
+        if taken_ids:
+            # range(1, max(taken_ids) + 2): a range of all possible ids between 1 and the max taken id+1
+            # set.difference finds any unused ids in this range and min() finds the smallest such id
+            return min(set(range(1, max(taken_ids) + 2)).difference(taken_ids))
+        else:
+            return 1  # ids should start at 1
+
+    def add_row(self, *args, **kwargs) -> None:
         """
         Add a new row/object to table.
         If an object is provided first, that is added directly - all other arguments are ignored.
-        Otherwise, a new object is initialised (using all args) and then added.
+        Otherwise, a new object is initialised (using all args OR kwargs (kwargs priority)) and then added.
         Raises KeyError if attempting to add an object with a non-unique key field.
         """
-        if isinstance(args[0], self.row_class):  # if first argument is a row object
-            new_row_obj = args[0]
-        else:
-            # if no object passed to function then
-            # object initialisation arguments have been passed instead
-            # so row_class __init__() method is called
-
+        if kwargs:
             # noinspection PyArgumentList
-            new_row_obj = self.row_class(*args)
+            new_row_obj = self.row_class(**kwargs)
+        else:
+            if isinstance(args[0], self.row_class):  # if first argument is a row object
+                new_row_obj = args[0]
+            else:
+                # if no object passed to function then
+                # object initialisation arguments have been passed instead
+                # so row_class __init__() method is called
+
+                # noinspection PyArgumentList
+                new_row_obj = self.row_class(*args, **kwargs)
 
         key_field = self.row_class.key_field
         primary_key = new_row_obj.__getattribute__(key_field)

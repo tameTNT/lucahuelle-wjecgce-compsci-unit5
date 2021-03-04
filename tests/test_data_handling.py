@@ -45,11 +45,19 @@ class TestStudentLoginTable(TestCase):
         # deepcopy made so modifications don't affect other tests
         test_table = deepcopy(TestStudentLoginTable.test_login_table)
         with self.assertRaises(KeyError):
-            test_table.add_row('test name', 'test pwd hash', '01')
+            test_table.add_row(
+                username='test name',
+                password_hash='test pwd hash',
+                student_id='01'
+            )
         self.assertEqual(len(test_table.row_dict), 1,
                          'Row with non-unique primary key incorrectly added')
 
-        test_table.add_row('test different name', 'test pwd hash', '01')
+        test_table.add_row(
+            username='test different name',
+            password_hash='test pwd hash',
+            student_id='01'
+        )
         self.assertEqual(len(test_table.row_dict), 2, 'Unique row incorrectly not added')
 
     def test_load_from_file(self):
