@@ -393,7 +393,7 @@ class Section(Row):
     def __repr__(self):
         return f'<Section object section_id={self.section_id} ' \
                f'section_type={self.section_type!r} ' \
-               f'activity_start_date={self.activity_start_date!s} ' \
+               f"activity_start_date='{self.activity_start_date!s}' " \
                f'activity_timescale={self.activity_timescale!r} ' \
                f'activity_type={self.activity_type!r} ' \
                f'assessor_fullname={self.assessor_fullname!r}'

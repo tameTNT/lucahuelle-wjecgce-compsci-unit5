@@ -152,8 +152,10 @@ class SectionInfo(ui.GenericPage):
                                         command=self.attempt_section_table_update)
         self.submit_button.grid(row=3, column=0, columnspan=3, padx=self.padx, pady=self.pady)
 
-        self.student = None
-        self.section_obj = None
+        # noinspection PyTypeChecker
+        self.student: data_handling.Student = None
+        # noinspection PyTypeChecker
+        self.section_obj: data_handling.Section = None
         self.student_username = ''
         self.section_type_short = ''
 
@@ -250,6 +252,7 @@ class SectionInfo(ui.GenericPage):
         return True
 
     def attempt_section_table_update(self):
+        # todo: docs for this method and below
         try:
             new_id = self.section_table.get_new_key_id()
             if self.timescale_var.get():
@@ -290,6 +293,10 @@ class SectionInfo(ui.GenericPage):
                             f'You cannot upload evidence until you have reached the '
                             f"section's end date ({datetime_logic.datetime_to_str(planned_end_date)}).")
         else:
+            # noinspection PyTypeChecker
+            resource_table: data_handling.ResourceTable = \
+                self.pager_frame.master_root.db.get_table_by_name('ResourceTable')
+
             # opens a file selection dialog in the user's home directory
             # the user can select as many files as they wish
             selected_files = filedialog.askopenfiles(title='Please select file(s) to add as evidence.',
