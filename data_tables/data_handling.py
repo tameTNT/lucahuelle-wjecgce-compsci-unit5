@@ -1,7 +1,7 @@
 import datetime as dt
 import logging  # logging functionality
-from pathlib import Path  # file handling
 import shutil
+from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List  # type hints in function and class definitions
 from typing.io import TextIO
 
@@ -438,18 +438,91 @@ class SectionTable(Table):
     row_class = Section
     row_dict: Dict[str, Section]
 
-    def get_new_key_id(self) -> int:
+
+class Resource(Row):
+    key_field = 'resource_id'
+
+    def __init__(self, resource_id: Union[int, str], file_path: str,
+                 is_section_report: Union[int, str], resource_type: str,
+                 parent_link_id: Union[int, str], date_uploaded: Union[str] = ''):
+        self.resource_id = validate_int(resource_id, 'resource_id')
+
+        # leading slashes optional. Must start with 'uploads\' followed by at least 1 char
+        self.file_path = validate_regex(file_path, r'[\\]?uploads\\.+', 'file_path', '(\\)uploads\\...')
+        # wouldbenice: path strings are gonna cause issues when loading for viewing
+        # wouldbenice: check file path actually exists when loading from file (from_file: bool = True)
+
+        self.is_section_report = int(is_section_report) if is_section_report else 0
+        self.resource_type = validate_lookup(resource_type, {'event', 'section_evidence'}, 'resource_type')
+        self.parent_link_id = validate_int(parent_link_id, 'parent_link_id')
+
+        if not date_uploaded:  # if this argument is not provided, generated from current datetime
+            date_uploaded = datetime_to_str()  # gets current datetime as string
+        self.date_uploaded = validate_date(date_uploaded, 'date_uploaded')
+
+    def __repr__(self):
+        return f'<Resource object resource_id={self.resource_id} ' \
+               f"file_path={self.file_path!r} date_uploaded='{self.date_uploaded!s}'" \
+               f'is_section_report={self.is_section_report} ' \
+               f'resource_type={self.resource_type!r} parent_link_id={self.parent_link_id}>'
+
+    def tabulate(self, padding_values=None, special_str_funcs=None):
+        padding_values = {
+            'resource_id': INTERNAL_ID_LEN,
+            'file_path': 256,  # Windows default file path limit - highly unlikely that path is longer
+            'is_section_report': 1,
+            'resource_type': 16,
+            'parent_link_id': INTERNAL_ID_LEN,
+            'date_uploaded': 10,
+        }
+        special_str_funcs = {
+            'date_uploaded': datetime_to_str,
+        }
+        return super().tabulate(padding_values, special_str_funcs)
+
+
+class ResourceTable(Table):
+    row_class = Resource
+    row_dict: Dict[str, Resource]
+
+    def add_student_resources(self, selected_file_list: List[TextIO], student_id: int,
+                              section_id: int) -> int:
         """
-        Looks at current row_dict and returns the next
-        available id that can be used as a unique key.
+        Adds the files in selected_file_list to the ResourceTable each as its own Resource object.
+        :param selected_file_list: a list of TextIO objects such as that produced by tk.filedialog.askopenfiles()
+        :param student_id: the id of the student to which the resources should be linked
+        :param section_id: the id of the section to which the resources should be linked
+        :return: the length of selected_file_list
         """
-        taken_ids = {int(str_id) for str_id in self.row_dict.keys()}
-        if taken_ids:
-            # range(1, max(taken_ids) + 2): a range of all possible ids between 1 and the max taken id+1
-            # set.difference finds any unused ids in this range and min() finds the smallest such id
-            return min(set(range(1, max(taken_ids) + 2)).difference(taken_ids))
-        else:
-            return 1
+        if selected_file_list:  # if any files were selected (i.e. operation not cancelled)
+            internal_upload_dir = Path('uploads') / 'student' / f'id-{student_id}'
+
+            upload_dir = Path.cwd() / internal_upload_dir
+            upload_dir.mkdir(parents=True, exist_ok=True)
+
+            for fobj in selected_file_list:
+                orig_file_path = Path(fobj.name)  # .name is the filepath
+
+                upload_path = upload_dir / orig_file_path.name
+                i = 0
+                while upload_path.exists():  # adds ' (i)' to end of filename (before suffix) until unique
+                    i += 1  # keeps increasing i until unique
+                    new_name = f'{upload_path.stem} ({i}){upload_path.suffix}'
+                    upload_path = upload_path.with_name(new_name)
+
+                shutil.copy(orig_file_path, upload_path)  # 'uploads'/copies file to upload_path
+
+                self.add_row(
+                    resource_id=self.get_new_key_id(),
+                    file_path=str(internal_upload_dir / orig_file_path.name),
+                    is_section_report=0,
+                    resource_type='section_evidence',
+                    parent_link_id=section_id
+                )
+
+        return len(selected_file_list)
+
+    # todo: add_event_resources - possible to combine with above
 
 
 class Database:

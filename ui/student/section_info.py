@@ -1,11 +1,9 @@
 import logging
 import os
-import shutil
 import tkinter as tk
 import tkinter.filedialog as filedialog
 import tkinter.messagebox as msg
 import tkinter.ttk as ttk
-from pathlib import Path
 
 import ui
 from data_tables import data_handling
@@ -144,7 +142,12 @@ class SectionInfo(ui.GenericPage):
         # == end of self.assessor_info_frame ==
 
         # === end of self.detail_frame ===
-        # todo: list resources already added (from table)
+        # todo: list resources already added (from table) and date added
+
+        # todo: option to mark as section_report (confirm dialog - permanent) - only one allowed
+        # todo: option to remove resources - generate alongside above in table thing
+
+        # wouldbenice: buttons to open folder containing resource for staff - os.startfile(path, 'open'), Windows only
         self.add_evidence_button = ttk.Button(self, text='Add Evidence', command=self.add_evidence)
         self.add_evidence_button.grid(row=2, column=0, padx=self.padx, pady=self.pady)
 
@@ -302,24 +305,12 @@ class SectionInfo(ui.GenericPage):
             selected_files = filedialog.askopenfiles(title='Please select file(s) to add as evidence.',
                                                      initialdir=os.path.expanduser('~'))
 
-            if selected_files:  # if any files were selected (i.e. operation not cancelled)
-                upload_dir = Path.cwd() / 'uploads' / 'student' / f'id-{self.student.student_id}'
-                upload_dir.mkdir(parents=True, exist_ok=True)
-                for fobj in selected_files:
-                    orig_file_path = Path(fobj.name)
+            num_files_uploaded = resource_table.add_student_resources(selected_files,
+                                                                      self.student.student_id,
+                                                                      self.section_obj.section_id)
 
-                    upload_path = upload_dir / orig_file_path.name
-                    i = 0
-                    while upload_path.exists():  # adds ' (i)' to end of filename until unique
-                        i += 1  # keeps increasing i until unique
-                        new_name = f'{upload_path.stem} ({i}){upload_path.suffix}'
-                        upload_path = Path(upload_path.parent) / new_name
-
-                    shutil.copy(orig_file_path, upload_path)  # 'uploads'/copies file into dir
-
-                msg.showinfo('File upload', f'{len(selected_files)} file(s) uploaded successfully.')
-
-                # todo: add resource table and link to section
-
+            if num_files_uploaded > 0:
+                msg.showinfo('File upload', f'{num_files_uploaded} file(s) uploaded successfully.')
+                self.back()
             else:
                 msg.showinfo('File upload', 'No file(s) selected to upload.')
