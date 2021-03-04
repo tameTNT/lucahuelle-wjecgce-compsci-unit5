@@ -203,7 +203,7 @@ class Student(Row):
                  email_primary: str = '', phone_emergency: str = '', primary_lang: str = '',
                  enrolment_date: str = '', vol_info_id: Union[int, str] = '',
                  skill_info_id: Union[int, str] = '', phys_info_id: Union[int, str] = '',
-                 approved: Union[int, str] = '', from_file: bool = True):
+                 is_approved: Union[int, str] = '', from_file: bool = True):
         # Only the first 4 parameters are provided by staff.
         # The rest are filled in by the student at a later date
         # and hence default to '' on initial creation.
@@ -257,7 +257,8 @@ class Student(Row):
 
         self.phys_info_id = validate_int(phys_info_id, 'phys_info_id') if phys_info_id else ''
 
-        self.approved = int(approved) if approved else 0
+        # 1 = True/is approved, 0 = False/is not approved
+        self.is_approved = int(is_approved) if is_approved else 0
 
         logging.debug(f'New Student object {"fully" if fullname else "partially"} created '
                       f'- student_id={self.student_id}')
@@ -308,13 +309,13 @@ class Student(Row):
                       f'- student_id={self.student_id} fullname={self.fullname!r}')
 
         # todo: method for staff to 'approve' student -
-        #  approval sets self.approved = 1, deny clears fullname attr
+        #  approval sets self.is_approved = 1, deny clears fullname attr
 
     def __repr__(self):
         return f'<Student object student_id={self.student_id} ' \
                f'fullname={self.fullname!r} year_group={self.year_group!r} ' \
                f"award_level={self.award_level!r} date_of_birth='{self.date_of_birth!s}' " \
-               f"approved={self.approved}>"
+               f'is_approved={self.is_approved}>'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
@@ -334,7 +335,7 @@ class Student(Row):
             'vol_info_id': INTERNAL_ID_LEN,
             'skill_info_id': INTERNAL_ID_LEN,
             'phys_info_id': INTERNAL_ID_LEN,
-            'approved': 1,
+            'is_approved': 1,
         }
         special_str_funcs = {
             'date_of_birth': datetime_to_str,
