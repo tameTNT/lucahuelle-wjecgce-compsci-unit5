@@ -14,7 +14,7 @@ class Enrollment(ui.GenericPage):
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
 
-        self.back_button = ttk.Button(self, text='Back', command=self.back)
+        self.back_button = ttk.Button(self, text='Back', command=self.page_back)
         self.back_button.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         self.sign_up_label = ttk.Label(self, text='Complete Enrollment',
@@ -154,7 +154,7 @@ class Enrollment(ui.GenericPage):
         self.gender_selection_var.set('Female')
         self.language_selection_var.set('English')
 
-    def back(self):
+    def page_back(self):
         """
         Returns the student to the dashboard page
         """
@@ -181,4 +181,4 @@ class Enrollment(ui.GenericPage):
         else:
             msg.showinfo('Enrollment successful',
                          'Your enrollment information was successfully saved and submitted to staff for approval.')
-            self.back()
+            self.page_back()

@@ -16,7 +16,7 @@ class SectionInfo(ui.GenericPage):
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
 
-        self.back_button = ttk.Button(self, text='Back', command=self.back)
+        self.back_button = ttk.Button(self, text='Back', command=self.page_back)
         self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # wouldbenice: consistency of buttons to quick navigate between pages
 
@@ -166,6 +166,10 @@ class SectionInfo(ui.GenericPage):
         self.section_table: data_handling.SectionTable = \
             self.pager_frame.master_root.db.get_table_by_name('SectionTable')
 
+        # noinspection PyTypeChecker
+        self.resource_table: data_handling.ResourceTable = \
+            self.pager_frame.master_root.db.get_table_by_name('ResourceTable')
+
     def update_attributes(self, student: data_handling.Student, username: str,
                           section_type_short: str):
         # updates attributes with submitted parameters
@@ -214,6 +218,7 @@ class SectionInfo(ui.GenericPage):
             self.timescale_select_6['state'] = state_dict[6 in available_timescale_options]
             self.timescale_select_12['state'] = state_dict[12 in available_timescale_options]
 
+        # enable/disable fields/forms depending on section status
         self.start_date['state'] = state_dict[fields_enabled]
         self.activity_type['state'] = state_dict[fields_enabled]
         self.activity_details_text['state'] = state_dict[fields_enabled]
@@ -228,7 +233,7 @@ class SectionInfo(ui.GenericPage):
 
         self.date_update_validate()  # updates/clears end date label
 
-    def back(self):
+    def page_back(self):
         """
         Returns the student to the dashboard page
         """
@@ -285,7 +290,7 @@ class SectionInfo(ui.GenericPage):
             msg.showinfo('Section submission successful',
                          'Section information successfully submitted. '
                          'You can now start working on this section!')
-            self.back()
+            self.page_back()
 
     def add_evidence(self):
         # if section time is complete, evidence can now be uploaded
@@ -311,6 +316,6 @@ class SectionInfo(ui.GenericPage):
 
             if num_files_uploaded > 0:
                 msg.showinfo('File upload', f'{num_files_uploaded} file(s) uploaded successfully.')
-                self.back()
+                self.page_back()
             else:
                 msg.showinfo('File upload', 'No file(s) selected to upload.')

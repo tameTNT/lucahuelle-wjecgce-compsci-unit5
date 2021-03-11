@@ -55,7 +55,7 @@ class Login(ui.GenericPage):
         super().__init__(pager_frame=pager_frame)
 
         self.back_button = ttk.Button(self, text='Back',
-                                      command=self.back)
+                                      command=self.page_back)
         self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady, sticky='w')
 
         self.user_type_label = ttk.Label(self,
@@ -84,6 +84,7 @@ class Login(ui.GenericPage):
         self.username_var = tk.StringVar()
         self.username_entry = ttk.Entry(self.user_detail_frame, textvariable=self.username_var)
         self.username_entry.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
+        ui.create_tooltip(self.username_entry, 'case sensitive')
 
         self.password_label = ttk.Label(self.user_detail_frame, text='Password:', justify='right')
         self.password_label.grid(row=1, column=0, pady=self.pady, sticky='e')
@@ -152,7 +153,7 @@ class Login(ui.GenericPage):
             logging.debug(f'A staff member attempted to log in with username "{input_username}"')
             return
 
-    def back(self):
+    def page_back(self):
         """
         Returns the user back to the Welcome page after resetting the pwd visibility
         """

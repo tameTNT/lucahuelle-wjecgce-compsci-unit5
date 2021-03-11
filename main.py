@@ -28,7 +28,7 @@ def close_window_call(db_obj: data_handling.Database, tk_root: tk.Tk) -> None:
     if messagebox.askokcancel("Quit",
                               "Are you sure you want to quit?\n"
                               "This will save all currently stored data."):
-        logging.debug('User chose to destroy window and exit program')
+        logging.info('User chose to destroy window and exit program')
         # saves current database state from memory to file before closing
         db_obj.save_state_to_file()
         tk_root.destroy()  # closes tkinter window

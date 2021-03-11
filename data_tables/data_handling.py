@@ -50,7 +50,7 @@ class Row:
         return_string = ''
         for attr_name, attr_val in self.__dict__.items():
             if attr_name[0] != '_':  # ignores protected attributes
-                str_func = str
+                str_func = str  # defaults to just using the str() func on the attribute
                 if attr_name in special_str_funcs:
                     str_func = special_str_funcs[attr_name]
                 return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
@@ -346,7 +346,7 @@ class Student(Row):
 
 class StudentTable(Table):
     row_class = Student
-    row_dict: Dict[str, Student]
+    row_dict: Dict[int, Student]
 
 
 class Section(Row):
@@ -436,21 +436,26 @@ class Section(Row):
 
 class SectionTable(Table):
     row_class = Section
-    row_dict: Dict[str, Section]
+    row_dict: Dict[int, Section]
 
 
 class Resource(Row):
     key_field = 'resource_id'
 
-    def __init__(self, resource_id: Union[int, str], file_path: str,
+    def __init__(self, resource_id: Union[int, str], file_path: Union[Path, str],
                  is_section_report: Union[int, str], resource_type: str,
                  parent_link_id: Union[int, str], date_uploaded: Union[str] = ''):
+
         self.resource_id = validate_int(resource_id, 'resource_id')
 
-        # leading slashes optional. Must start with 'uploads\' followed by at least 1 char
-        self.file_path = validate_regex(file_path, r'[\\]?uploads\\.+', 'file_path', '(\\)uploads\\...')
+        if isinstance(file_path, str):
+            # validates string paths (loaded from file)
+            # leading slashes optional. Must start with 'uploads\' followed by at least 1 char
+            file_path = validate_regex(file_path, r'[\\]?uploads\\.+', 'file_path', '(\\)uploads\\...')
+            # wouldbenice: check file path actually exists when loading from file (from_file: bool = True)
+
+        self.file_path = Path(file_path)
         # wouldbenice: path strings are gonna cause issues when loading for viewing
-        # wouldbenice: check file path actually exists when loading from file (from_file: bool = True)
 
         self.is_section_report = int(is_section_report) if is_section_report else 0
         self.resource_type = validate_lookup(resource_type, {'event', 'section_evidence'}, 'resource_type')
@@ -459,6 +464,8 @@ class Resource(Row):
         if not date_uploaded:  # if this argument is not provided, generated from current datetime
             date_uploaded = datetime_to_str()  # gets current datetime as string
         self.date_uploaded = validate_date(date_uploaded, 'date_uploaded')
+
+        logging.debug(f'New Resource object successfully created - resource_id={self.resource_id}')
 
     def __repr__(self):
         return f'<Resource object resource_id={self.resource_id} ' \
@@ -483,7 +490,7 @@ class Resource(Row):
 
 class ResourceTable(Table):
     row_class = Resource
-    row_dict: Dict[str, Resource]
+    row_dict: Dict[int, Resource]
 
     def add_student_resources(self, selected_file_list: List[TextIO], student_id: int,
                               section_id: int) -> int:
@@ -514,12 +521,13 @@ class ResourceTable(Table):
 
                 self.add_row(
                     resource_id=self.get_new_key_id(),
-                    file_path=str(internal_upload_dir / orig_file_path.name),
+                    file_path=internal_upload_dir / upload_path.name,
                     is_section_report=0,
                     resource_type='section_evidence',
                     parent_link_id=section_id
                 )
 
+        logging.info(f'{len(selected_file_list)} resource(s) were added to {type(self).__name__}')
         return len(selected_file_list)
 
     # todo: add_event_resources - possible to combine with above
