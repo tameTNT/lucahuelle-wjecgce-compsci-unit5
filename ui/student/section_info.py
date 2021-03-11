@@ -156,7 +156,7 @@ class SectionInfo(ui.GenericPage):
         # === end of self.evidence_frame ===
 
         self.submit_button = ttk.Button(self, text='Submit section info',
-                                        command=self.attempt_section_table_update)
+                                        command=self.attempt_section_table_submit)
         self.submit_button.grid(row=3, column=0, columnspan=3, padx=self.padx, pady=self.pady)
 
         # noinspection PyTypeChecker
@@ -215,7 +215,7 @@ class SectionInfo(ui.GenericPage):
             self.timescale_select_6['state'] = 'disabled'
             self.timescale_select_12['state'] = 'disabled'
 
-            # populate evidence list
+            # populate evidence list from resource table
             for resource in self.resource_table.row_dict.values():
                 is_section_evidence = resource.resource_type == 'section_evidence'
                 is_id_match = resource.parent_link_id == self.section_obj.section_id
@@ -302,9 +302,13 @@ class SectionInfo(ui.GenericPage):
         self.end_date_var.set(f'➡ Expected end date: {end_date}')
         return True
 
-    def attempt_section_table_update(self):
-        # todo: docs for this method and below
-        try:
+    def attempt_section_table_submit(self):
+        """
+        Attempts to submit the user input data as a new section object.
+        Raises a ValidationError if this fails for any reason to do with user
+        input. Otherwise, if successful, returns the student to the overview page.
+        """
+        try:  # attempts to create new Section object
             new_id = self.section_table.get_new_key_id()
             if self.timescale_var.get():
                 new_section_entry = data_handling.Section(
@@ -322,11 +326,12 @@ class SectionInfo(ui.GenericPage):
                 )
             else:
                 raise validation.ValidationError('No timescale selected for section.')
+
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
-        else:
+        else:  # no validation errors during object creation means all clear to add to table
             self.section_table.add_row(new_section_entry)
-            # Links student to section table
+            # Links student to section table by ..._info_id attribute in student object
             self.student.__setattr__(f'{new_section_entry.section_type}_info_id',
                                      new_section_entry.section_id)
 
@@ -336,6 +341,12 @@ class SectionInfo(ui.GenericPage):
             self.page_back()
 
     def add_evidence(self):
+        """
+        Allows the user to select one or more files to upload as evidence for a section.
+        These files are then added to the resource table and displayed in a list
+        within the section's associated page. If the upload is successful, the student
+        is returned to the overview page.
+        """
         # if section time is complete, evidence can now be uploaded
         planned_end_date = datetime_logic.calculate_end_date(int(self.section_obj.activity_timescale),
                                                              self.section_obj.activity_start_date)
@@ -364,6 +375,12 @@ class SectionInfo(ui.GenericPage):
                 msg.showinfo('File upload', 'No file(s) selected to upload.')
 
     def delete_evidence(self, resource_id: int):
+        """
+        Attempts to delete the section_evidence resource with id resource_id
+        from the ResourceTable. Also deletes the actual associated file.
+        :param resource_id: id of the resource to delete
+        :return:
+        """
         resource_obj = self.resource_table.row_dict[resource_id]
         confirm_delete = msg.askyesno('Delete evidence',
                                       f"Are you sure you want to delete '{resource_obj.file_path.name}'?\n"
@@ -374,6 +391,14 @@ class SectionInfo(ui.GenericPage):
             self.update_attributes(self.student, self.student_username, self.section_type_short)
 
     def mark_evidence_as_report(self, resource_id: int):
+        """
+        Attempts to mark the section_evidence resource with id resource_id
+        in the ResourceTable as a section report
+        (i.e. set is_section_report attribute to 1 (from 0)).
+        Only one resource per section object can be marked in this way.
+        :param resource_id: id of the resource to mark as section report
+        :return:
+        """
         resource_obj = self.resource_table.row_dict[resource_id]
         confirm_mark = msg.askyesno('Mark as section report',
                                     f"Are you sure you want to mark '{resource_obj.file_path.name}' "
