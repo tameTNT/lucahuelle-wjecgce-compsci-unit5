@@ -133,6 +133,18 @@ class Table:
             logging.error(error_str)
             raise KeyError(error_str)
 
+    def delete_row(self, primary_key):
+        """
+        Attempts to delete row with primary key 'primary_key' from table.
+        Raises a KeyError if this key is invalid.
+        """
+        try:
+            del self.row_dict[primary_key]
+        except KeyError:
+            error_str = f'{primary_key} is not a row within {type(self).__name__}'
+            logging.error(error_str)
+            raise KeyError(error_str)
+
     def load_from_file(self, txt_file: TextIO):
         """
         Given the output from an open() method, populates self with data from lines of text file
@@ -531,6 +543,26 @@ class ResourceTable(Table):
         return len(selected_file_list)
 
     # todo: add_event_resources - possible to combine with above
+
+    def has_section_report(self, section_id: int) -> bool:
+        """
+        Returns True if the section with id parent_link_id already has a
+        resource associated with it marked as a section report. Returns False
+        if this is not the case.
+        :param section_id: id of section to check
+        :return: boolean of whether there is a report associated with section already
+        """
+        for resource in self.row_dict.values():
+            if resource.resource_type == 'section_evidence' and resource.parent_link_id == section_id:
+                if resource.is_section_report:
+                    return True
+        return False
+
+    def delete_row(self, primary_key):
+        file_path = self.row_dict[primary_key].file_path
+        file_path.unlink(missing_ok=True)  # actually deletes file - doesn't care if it doesn't exist
+        logging.debug(f'{file_path} was deleted.')
+        super().delete_row(primary_key)
 
 
 class Database:

@@ -7,7 +7,7 @@ import tkinter.ttk as ttk
 
 import ui
 from data_tables import data_handling
-from processes import datetime_logic, validation
+from processes import datetime_logic, validation, shorten_string
 
 
 class SectionInfo(ui.GenericPage):
@@ -142,14 +142,18 @@ class SectionInfo(ui.GenericPage):
         # == end of self.assessor_info_frame ==
 
         # === end of self.detail_frame ===
-        # todo: list resources already added (from table) and date added
 
-        # todo: option to mark as section_report (confirm dialog - permanent) - only one allowed
-        # todo: option to remove resources - generate alongside above in table thing
+        # === evidence frame ===
+        self.evidence_frame = ttk.Labelframe(self, text='Evidence Upload')
+        self.evidence_frame.grid(row=2, column=0, padx=self.padx, pady=self.pady)
+
+        self.evidence_list = ttk.Frame(self.evidence_frame)  # populated in self.update_attributes()
+        self.evidence_list.grid(row=0, column=0, padx=self.padx, pady=self.pady)
 
         # wouldbenice: buttons to open folder containing resource for staff - os.startfile(path, 'open'), Windows only
-        self.add_evidence_button = ttk.Button(self, text='Add Evidence', command=self.add_evidence)
-        self.add_evidence_button.grid(row=2, column=0, padx=self.padx, pady=self.pady)
+        self.add_evidence_button = ttk.Button(self.evidence_frame, text='Add Evidence', command=self.add_evidence)
+        self.add_evidence_button.grid(row=1, column=0, padx=self.padx, pady=self.pady)
+        # === end of self.evidence_frame ===
 
         self.submit_button = ttk.Button(self, text='Submit section info',
                                         command=self.attempt_section_table_update)
@@ -183,14 +187,21 @@ class SectionInfo(ui.GenericPage):
         self.header_var.set(f'{long_section_name} Details')
 
         state_dict = {False: 'disabled', True: 'normal'}
+
+        self.evidence_list.destroy()  # clears evidence list
+        self.evidence_list = ttk.Frame(self.evidence_frame)  # populated below if section submitted
+        self.evidence_list.grid(row=0, column=0, padx=self.padx, pady=self.pady)
+
         if self.student.__getattribute__(f'{section_type_short}_info_id'):
-            # if the section's details have already been filled out, fields are disabled with data filled in
+            # if the section's details have already been filled out,
+            # fields are disabled with data filled in
             fields_enabled = False
 
             section_id = self.student.__getattribute__(f'{section_type_short}_info_id')
             section_table_dict = self.section_table.row_dict
             self.section_obj: data_handling.Section = section_table_dict[section_id]
 
+            # fill in all form fields with entered data
             self.timescale_var.set(self.section_obj.activity_timescale)
             self.start_date_var.set(datetime_logic.datetime_to_str(self.section_obj.activity_start_date))
             self.activity_type_var.set(self.section_obj.activity_type)
@@ -203,6 +214,38 @@ class SectionInfo(ui.GenericPage):
             self.timescale_select_3['state'] = 'disabled'
             self.timescale_select_6['state'] = 'disabled'
             self.timescale_select_12['state'] = 'disabled'
+
+            # populate evidence list
+            for resource in self.resource_table.row_dict.values():
+                is_section_evidence = resource.resource_type == 'section_evidence'
+                is_id_match = resource.parent_link_id == self.section_obj.section_id
+                if is_section_evidence and is_id_match:
+                    row_id = resource.resource_id
+
+                    evidence_row = ttk.Frame(self.evidence_list)
+                    evidence_row.grid(sticky='we')
+
+                    short_name = shorten_string(resource.file_path.stem, 15) + ' ' + resource.file_path.suffix
+                    name_label = ttk.Label(evidence_row, text=short_name, width=20, justify='right')
+                    name_label.grid(row=0, column=0)
+                    ui.create_tooltip(name_label, resource.file_path.name)  # adds full path to tooltip
+
+                    date_added = datetime_logic.datetime_to_str(resource.date_uploaded)
+                    date_label = ttk.Label(evidence_row,  # 📝 marks section report
+                                           text=f'Uploaded {date_added}{" 📝" if resource.is_section_report else ""}',
+                                           width=22)
+                    date_label.grid(row=0, column=1, sticky='we')
+
+                    delete_button = ttk.Button(evidence_row, text='❌', width=3,
+                                               command=lambda x=row_id: self.delete_evidence(x))
+                    delete_button.grid(row=0, column=2)
+                    ui.create_tooltip(delete_button, 'Delete evidence')
+
+                    report_button = ttk.Button(evidence_row, text='📝', width=3,
+                                               command=lambda x=row_id: self.mark_evidence_as_report(x))
+                    report_button.grid(row=0, column=3)
+                    ui.create_tooltip(report_button, 'Mark as section report')
+
         else:
             # otherwise, the fields are enabled to allow data entry
             fields_enabled = True
@@ -319,3 +362,33 @@ class SectionInfo(ui.GenericPage):
                 self.page_back()
             else:
                 msg.showinfo('File upload', 'No file(s) selected to upload.')
+
+    def delete_evidence(self, resource_id: int):
+        resource_obj = self.resource_table.row_dict[resource_id]
+        confirm_delete = msg.askyesno('Delete evidence',
+                                      f"Are you sure you want to delete '{resource_obj.file_path.name}'?\n"
+                                      'This action cannot be undone.')
+        if confirm_delete:
+            self.resource_table.delete_row(resource_id)
+            # refresh resource list
+            self.update_attributes(self.student, self.student_username, self.section_type_short)
+
+    def mark_evidence_as_report(self, resource_id: int):
+        resource_obj = self.resource_table.row_dict[resource_id]
+        confirm_mark = msg.askyesno('Mark as section report',
+                                    f"Are you sure you want to mark '{resource_obj.file_path.name}' "
+                                    'as your ONE assessor report for this section?\n'
+                                    f'This action cannot be undone.')
+        if confirm_mark:
+            if self.resource_table.has_section_report(self.section_obj.section_id):
+                msg.showwarning('Mark as section report',
+                                'This section already has a resource marked as a section report. '
+                                'You may only have one section report per section.\n'
+                                'Please delete that resource before trying to mark another'
+                                'as your section report.')
+            else:
+                resource_obj.is_section_report = 1
+                logging.debug(f'Resource with id {resource_obj.resource_id} was '
+                              f'marked as the section report for section id {self.section_obj.section_id}')
+                # refresh resource list
+                self.update_attributes(self.student, self.student_username, self.section_type_short)
