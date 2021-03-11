@@ -8,7 +8,7 @@ import ui.student
 from data_tables import data_handling
 from ui import RootWindow
 
-# todo: args parser to create admin accounts
+# todo: args parser to create admin/staff accounts
 #  -gui argument for default operation, update README
 
 logging.basicConfig(filename='main_program.log',

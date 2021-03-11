@@ -565,6 +565,7 @@ class ResourceTable(Table):
         super().delete_row(primary_key)
 
 
+# todo: event table for calendar and expeditions etc.
 class Database:
     def __init__(self):
         """

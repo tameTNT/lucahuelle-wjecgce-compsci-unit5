@@ -69,14 +69,6 @@ def create_tooltip(widget: tk.Widget, text: str):
     widget.bind('<Leave>', leave)
 
 
-def remove_tooltip(widget: tk.Widget):  # todo: really needed? remove?
-    """
-    Remove a tooltip from a widget by unbinding functions from Enter and Leave events
-    """
-    widget.unbind('<Enter>')
-    widget.unbind('<Leave>')
-
-
 # By CC attribution, this 'page-based approach' is based on the framework provided at
 # https://pythonprogramming.net/change-show-new-frame-tkinter/ and
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
