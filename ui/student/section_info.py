@@ -46,17 +46,17 @@ class SectionInfo(ui.GenericPage):
         self.timescale_var = tk.StringVar()
         self.timescale_select_3 = ttk.Radiobutton(self.radiobutton_frame, text='3',
                                                   variable=self.timescale_var, value='90',
-                                                  command=self.date_update_validate)
+                                                  command=self.update_date_validation)
         self.timescale_select_3.grid(row=0, column=0, pady=self.pady)
 
         self.timescale_select_6 = ttk.Radiobutton(self.radiobutton_frame, text='6',
                                                   variable=self.timescale_var, value='180',
-                                                  command=self.date_update_validate)
+                                                  command=self.update_date_validation)
         self.timescale_select_6.grid(row=0, column=1, pady=self.pady)
 
         self.timescale_select_12 = ttk.Radiobutton(self.radiobutton_frame, text='12',
                                                    variable=self.timescale_var, value='360',
-                                                   command=self.date_update_validate)
+                                                   command=self.update_date_validation)
         self.timescale_select_12.grid(row=0, column=2, pady=self.pady)
         # == end of radio button frame ==
         self.start_date_label = ttk.Label(self.detail_frame,
@@ -64,7 +64,7 @@ class SectionInfo(ui.GenericPage):
         self.start_date_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
         self.start_date_var = tk.StringVar()
-        on_update_wrapper = self.pager_frame.master_root.tk_root.register(self.date_update_validate)
+        on_update_wrapper = self.pager_frame.master_root.tk_root.register(self.update_date_validation)
         self.start_date = ttk.Entry(self.detail_frame, width=10,
                                     textvariable=self.start_date_var,
                                     # calls validatecommand on any action with the widget (e.g. edit, focus change)
@@ -188,13 +188,9 @@ class SectionInfo(ui.GenericPage):
 
         state_dict = {False: 'disabled', True: 'normal'}
 
-        self.evidence_list.destroy()  # clears evidence list
-        self.evidence_list = ttk.Frame(self.evidence_frame)  # populated below if section submitted
-        self.evidence_list.grid(row=0, column=0, padx=self.padx, pady=self.pady)
-
+        # if the section's details have already been filled in,
+        # fields are disabled with data pre-filled
         if self.student.__getattribute__(f'{section_type_short}_info_id'):
-            # if the section's details have already been filled out,
-            # fields are disabled with data filled in
             fields_enabled = False
 
             section_id = self.student.__getattribute__(f'{section_type_short}_info_id')
@@ -215,39 +211,9 @@ class SectionInfo(ui.GenericPage):
             self.timescale_select_6['state'] = 'disabled'
             self.timescale_select_12['state'] = 'disabled'
 
-            # populate evidence list from resource table
-            for resource in self.resource_table.row_dict.values():
-                is_section_evidence = resource.resource_type == 'section_evidence'
-                is_id_match = resource.parent_link_id == self.section_obj.section_id
-                if is_section_evidence and is_id_match:
-                    row_id = resource.resource_id
+            self.update_evidence_list()  # updates/populates the evidence list
 
-                    evidence_row = ttk.Frame(self.evidence_list)
-                    evidence_row.grid(sticky='we')
-
-                    short_name = shorten_string(resource.file_path.stem, 15) + ' ' + resource.file_path.suffix
-                    name_label = ttk.Label(evidence_row, text=short_name, width=20, justify='right')
-                    name_label.grid(row=0, column=0)
-                    ui.create_tooltip(name_label, resource.file_path.name)  # adds full path to tooltip
-
-                    date_added = datetime_logic.datetime_to_str(resource.date_uploaded)
-                    date_label = ttk.Label(evidence_row,  # 📝 marks section report
-                                           text=f'Uploaded {date_added}{" 📝" if resource.is_section_report else ""}',
-                                           width=22)
-                    date_label.grid(row=0, column=1, sticky='we')
-
-                    delete_button = ttk.Button(evidence_row, text='❌', width=3,
-                                               command=lambda x=row_id: self.delete_evidence(x))
-                    delete_button.grid(row=0, column=2)
-                    ui.create_tooltip(delete_button, 'Delete evidence')
-
-                    report_button = ttk.Button(evidence_row, text='📝', width=3,
-                                               command=lambda x=row_id: self.mark_evidence_as_report(x))
-                    report_button.grid(row=0, column=3)
-                    ui.create_tooltip(report_button, 'Mark as section report')
-
-        else:
-            # otherwise, the fields are enabled to allow data entry
+        else:  # otherwise, the fields are enabled to allow data entry
             fields_enabled = True
 
             available_timescale_options = datetime_logic.get_possible_timeframes(
@@ -274,7 +240,62 @@ class SectionInfo(ui.GenericPage):
         # button set to inverse state of detail fields above - i.e. only enabled if section filled in
         self.add_evidence_button['state'] = state_dict[not fields_enabled]
 
-        self.date_update_validate()  # updates/clears end date label
+        self.update_date_validation()  # updates/clears end date label
+
+    def update_evidence_list(self):
+        """
+        Freshly populates the GUI's evidence list from the resource table.
+        """
+        self.evidence_list.destroy()  # clears current evidence list
+        self.evidence_list = ttk.Frame(self.evidence_frame)  # populated below
+        self.evidence_list.grid(row=0, column=0, padx=self.padx, pady=self.pady)
+
+        for resource in self.resource_table.row_dict.values():
+            is_section_evidence = resource.resource_type == 'section_evidence'
+            is_id_match = resource.parent_link_id == self.section_obj.section_id
+            if is_section_evidence and is_id_match:
+                row_id = resource.resource_id
+
+                evidence_row = ttk.Frame(self.evidence_list)
+                evidence_row.grid(sticky='we')
+
+                short_name = shorten_string(resource.file_path.stem, 15) + ' ' + resource.file_path.suffix
+                name_label = ttk.Label(evidence_row, text=short_name, width=20, justify='right')
+                name_label.grid(row=0, column=0)
+                ui.create_tooltip(name_label, resource.file_path.name)  # adds full path to tooltip
+
+                date_added = datetime_logic.datetime_to_str(resource.date_uploaded)
+                date_label = ttk.Label(evidence_row,  # 📝 marks section report
+                                       text=f'Uploaded {date_added}{" 📝" if resource.is_section_report else ""}',
+                                       width=22)
+                date_label.grid(row=0, column=1, sticky='we')
+
+                delete_button = ttk.Button(evidence_row, text='❌', width=3,
+                                           command=lambda x=row_id: self.delete_evidence(x))
+                delete_button.grid(row=0, column=2)
+                ui.create_tooltip(delete_button, 'Delete evidence')
+
+                report_button = ttk.Button(evidence_row, text='📝', width=3,
+                                           command=lambda x=row_id: self.mark_evidence_as_report(x))
+                report_button.grid(row=0, column=3)
+                ui.create_tooltip(report_button, 'Mark as section report')
+
+    def update_date_validation(self) -> True:
+        """
+        A 'validation' function so that the following code is executed
+        on every event of the entry widget.
+        Therefore always returns True for this validation aspect to work.
+        """
+        try:
+            start_date = validation.validate_date(self.start_date_var.get(), 'Start date', '/', do_logging=False)
+            end_date = datetime_logic.calculate_end_date(int(self.timescale_var.get()), start_date)
+            end_date = datetime_logic.datetime_to_str(end_date, '/')
+        except (validation.ValidationError, ValueError):
+            end_date = '----/--/--'
+
+        self.end_date_var.set(f'➡ Expected end date: {end_date}')
+
+        return True
 
     def page_back(self):
         """
@@ -285,22 +306,6 @@ class SectionInfo(ui.GenericPage):
             student=self.student,
             username=self.student_username,
         )
-
-    def date_update_validate(self):
-        """
-        A 'validation' function so that the following code is executed
-        on every update of the entry widget.
-        Must return True for this validation aspect.
-        """
-        try:
-            start_date = validation.validate_date(self.start_date_var.get(), 'Start date', '/', do_logging=False)
-            end_date = datetime_logic.calculate_end_date(int(self.timescale_var.get()), start_date)
-            end_date = datetime_logic.datetime_to_str(end_date, '/')
-        except (validation.ValidationError, ValueError):
-            end_date = '----/--/--'
-
-        self.end_date_var.set(f'➡ Expected end date: {end_date}')
-        return True
 
     def attempt_section_table_submit(self):
         """
@@ -388,7 +393,7 @@ class SectionInfo(ui.GenericPage):
         if confirm_delete:
             self.resource_table.delete_row(resource_id)
             # refresh resource list
-            self.update_attributes(self.student, self.student_username, self.section_type_short)
+            self.update_evidence_list()
 
     def mark_evidence_as_report(self, resource_id: int):
         """
@@ -416,4 +421,4 @@ class SectionInfo(ui.GenericPage):
                 logging.debug(f'Resource with id {resource_obj.resource_id} was '
                               f'marked as the section report for section id {self.section_obj.section_id}')
                 # refresh resource list
-                self.update_attributes(self.student, self.student_username, self.section_type_short)
+                self.update_evidence_list()
