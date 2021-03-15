@@ -21,7 +21,7 @@ class Welcome(ui.GenericPage):
         self.message = ttk.Label(self,
                                  text='Welcome to the\n'
                                       'DofE Scheme Management Application.\n\n'
-                                      'Please select your login method:',
+                                      'Please select your login type:',
                                  justify='center',
                                  font=ui.BOLD_CAPTION_FONT)
         self.message.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)

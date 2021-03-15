@@ -38,15 +38,15 @@ class Enrollment(ui.GenericPage):
         self.info_submission_frame = ttk.Frame(self)
         self.info_submission_frame.grid(row=2, column=1, padx=self.padx, pady=self.pady)
 
-        # -full name entry
-        self.full_name_label = ttk.Label(self.info_submission_frame,
-                                         text='Full Name:', justify='right')
-        self.full_name_label.grid(row=0, column=0, pady=self.pady, sticky='e')
+        # -fullname entry
+        self.fullname_label = ttk.Label(self.info_submission_frame,
+                                        text='Fullname:', justify='right')
+        self.fullname_label.grid(row=0, column=0, pady=self.pady, sticky='e')
 
-        self.full_name_var = tk.StringVar()
-        self.full_name_entry = ttk.Entry(self.info_submission_frame,
-                                         textvariable=self.full_name_var)
-        self.full_name_entry.grid(row=0, column=1, pady=self.pady, sticky='we')
+        self.fullname_var = tk.StringVar()
+        self.fullname_entry = ttk.Entry(self.info_submission_frame,
+                                        textvariable=self.fullname_var)
+        self.fullname_entry.grid(row=0, column=1, pady=self.pady, sticky='we')
 
         # -gender selection
         self.gender_selection_label = ttk.Label(self.info_submission_frame,
@@ -167,7 +167,7 @@ class Enrollment(ui.GenericPage):
     def attempt_enrollment(self):
         try:
             self.student.complete_enrolment(
-                fullname=self.full_name_var.get(),
+                fullname=self.fullname_var.get(),
                 gender=self.gender_selection_var.get().lower(),
                 date_of_birth=self.date_of_birth_var.get(),
                 address=self.address_var.get(),

@@ -119,7 +119,7 @@ class SectionInfo(ui.GenericPage):
         self.assessor_info_frame = ttk.Labelframe(self.detail_frame, text='Your Assessor')
         self.assessor_info_frame.grid(row=2, column=2, ipadx=self.padx, padx=self.padx, pady=self.pady)
 
-        self.assessor_fullname_label = ttk.Label(self.assessor_info_frame, text='Full Name:', justify='right')
+        self.assessor_fullname_label = ttk.Label(self.assessor_info_frame, text='Fullname:', justify='right')
         self.assessor_fullname_label.grid(row=0, column=0, pady=self.pady, sticky='e')
 
         self.assessor_fullname_var = tk.StringVar()
