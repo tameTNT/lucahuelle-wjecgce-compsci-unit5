@@ -179,11 +179,11 @@ class StudentLogin(Row):
     key_field = 'username'
 
     def __init__(self, username: str, password_hash: str, student_id: Union[int, str]):
-        self.username = validate_length(username, 2, 30, 'username')
+        self.username = validate_length(username, 2, 30, 'Username')
         self.password_hash = password_hash
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
-        self.student_id = validate_int(student_id, 'student_id')
+        self.student_id = validate_int(student_id, 'Student ID')
 
         logging.debug(f'New StudentLogin object successfully created - username={self.username!r}')
 
@@ -221,45 +221,45 @@ class Student(Row):
         # and hence default to '' on initial creation.
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
-        self.student_id = validate_int(student_id, 'student_id')
+        self.student_id = validate_int(student_id, 'Student ID')
 
-        self.centre_id = validate_int(centre_id, 'centre_id')
+        self.centre_id = validate_int(centre_id, 'Centre ID')
 
-        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'award_level')
+        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'Award Level')
 
-        year_group = str(validate_int(year_group, 'year_group'))
-        self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'year_group')
+        year_group = str(validate_int(year_group, 'Year Group'))
+        self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'Year Group')
 
-        # All following attributes are null ('') if a full name is not provided -
+        # All following attributes are null ('') if a fullname is not provided -
         # indicating initial creation and not student completing enrolment/loading
 
-        self.fullname = validate_length(fullname, 2, 30, 'fullname') if fullname else ''
+        self.fullname = validate_length(fullname, 2, 30, 'Fullname') if fullname else ''
 
         # pnts = prefer not to say
         self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
-                                      'gender') if fullname else ''
+                                      'Gender') if fullname else ''
 
         if from_file:  # date range validation skipped if loading from file to allow for dates in the past
-            self.date_of_birth = validate_date(date_of_birth, 'date_of_birth') if fullname else ''
+            self.date_of_birth = validate_date(date_of_birth, 'Date of birth') if fullname else ''
         else:
             # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-            self.date_of_birth = validate_date(date_of_birth, 'date_of_birth',
+            self.date_of_birth = validate_date(date_of_birth, 'Date of birth',
                                                offset_range=(-365.25 * 25, -365.25 * 10))
 
         self.address = validate_length(address, 5, 100,
-                                       'address') if fullname else ''
+                                       'Address') if fullname else ''
 
         self.phone_primary = validate_length(phone_primary, 9, 11,
-                                             'phone_primary') if fullname else ''
+                                             'Primary Phone') if fullname else ''
 
-        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary',
+        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
                                             'abc@def.ghi') if fullname else ''
 
         self.phone_emergency = validate_length(phone_emergency, 9, 11,
-                                               'phone_emergency') if fullname else ''
+                                               'Emergency Phone') if fullname else ''
 
         self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
-                                            'primary-lang') if fullname else ''
+                                            'Primary Language') if fullname else ''
 
         self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date)) if fullname else ''
 
@@ -278,30 +278,30 @@ class Student(Row):
     def complete_enrolment(self, fullname: str, gender: str,
                            date_of_birth: str, address: str, phone_primary: str,
                            email_primary: str, phone_emergency: str, primary_lang: str):
-        fullname = validate_length(fullname, 2, 30, 'fullname')
+        fullname = validate_length(fullname, 2, 30, 'Fullname')
 
         # pnts = prefer not to say
         gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
-                                 'gender')
+                                 'Gender')
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-        date_of_birth = validate_date(date_of_birth, 'date_of_birth',
+        date_of_birth = validate_date(date_of_birth, 'Date of birth',
                                       offset_range=(-365.25 * 25, -365.25 * 10))
 
         address = validate_length(address, 5, 100,
-                                  'address')
+                                  'Address')
 
         phone_primary = validate_length(phone_primary, 9, 11,
-                                        'phone_primary')
+                                        'Primary Phone')
 
-        email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary',
+        email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
                                        'abc@def.ghi')
 
         phone_emergency = validate_length(phone_emergency, 9, 11,
-                                          'phone_emergency')
+                                          'Emergency Phone')
 
         primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
-                                       'primary-lang')
+                                       'Primary Language')
 
         enrolment_date = dt.datetime(**str_to_date_dict(datetime_to_str()))
 
@@ -369,31 +369,31 @@ class Section(Row):
                  activity_type: str, activity_details: str, activity_goals: str,
                  assessor_fullname: str, assessor_phone: str, assessor_email: str,
                  from_file: bool = True):
-        self.section_id = validate_int(section_id, 'section_id')
+        self.section_id = validate_int(section_id, 'Section ID')
 
-        self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'section_type')
+        self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'Section Type')
 
         if from_file:
-            temp_start_date = validate_date(activity_start_date, 'activity_start_date')
+            temp_start_date = validate_date(activity_start_date, 'Activity Start Date')
         else:
             # A valid start date can be up to 1 year in the future
-            temp_start_date = validate_date(activity_start_date, 'activity_start_date', offset_range=(0, 365.25))
+            temp_start_date = validate_date(activity_start_date, 'Activity Start Date', offset_range=(0, 365.25))
         self.activity_start_date = temp_start_date
 
         self.activity_timescale = validate_lookup(activity_timescale, {'90', '180', '360'},
-                                                  'activity_timescale')
+                                                  'Activity Timescale')
 
-        self.activity_type = validate_length(activity_type, 3, 20, 'activity_type')
+        self.activity_type = validate_length(activity_type, 3, 20, 'Activity Type')
 
-        self.activity_details = validate_length(activity_details, 10, 200, 'activity_details')
+        self.activity_details = validate_length(activity_details, 10, 200, 'Activity Details')
 
-        self.activity_goals = validate_length(activity_goals, 10, 100, 'activity_goals')
+        self.activity_goals = validate_length(activity_goals, 10, 100, 'Activity Goals')
 
-        self.assessor_fullname = validate_length(assessor_fullname, 2, 30, 'assessor_fullname')
+        self.assessor_fullname = validate_length(assessor_fullname, 2, 30, 'Assessor Fullname')
 
-        self.assessor_phone = validate_length(assessor_phone, 9, 11, 'assessor_phone')
+        self.assessor_phone = validate_length(assessor_phone, 9, 11, 'Assessor Phone')
 
-        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'assessor_email',
+        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'Assessor Email',
                                              'abc@def.ghi')
 
         # This is a private attribute and as such is only updated when it is accessed.
@@ -458,7 +458,7 @@ class Resource(Row):
                  is_section_report: Union[int, str], resource_type: str,
                  parent_link_id: Union[int, str], date_uploaded: Union[str] = ''):
 
-        self.resource_id = validate_int(resource_id, 'resource_id')
+        self.resource_id = validate_int(resource_id, 'Resource ID')
 
         if isinstance(file_path, str):
             # validates string paths (loaded from file)
@@ -470,12 +470,12 @@ class Resource(Row):
         # wouldbenice: path strings are gonna cause issues when loading for viewing
 
         self.is_section_report = int(is_section_report) if is_section_report else 0
-        self.resource_type = validate_lookup(resource_type, {'event', 'section_evidence'}, 'resource_type')
-        self.parent_link_id = validate_int(parent_link_id, 'parent_link_id')
+        self.resource_type = validate_lookup(resource_type, {'event', 'section_evidence'}, 'Resource Type')
+        self.parent_link_id = validate_int(parent_link_id, 'Parent Link ID')
 
         if not date_uploaded:  # if this argument is not provided, generated from current datetime
             date_uploaded = datetime_to_str()  # gets current datetime as string
-        self.date_uploaded = validate_date(date_uploaded, 'date_uploaded')
+        self.date_uploaded = validate_date(date_uploaded, 'Date Uploaded')
 
         logging.debug(f'New Resource object successfully created - resource_id={self.resource_id}')
 
