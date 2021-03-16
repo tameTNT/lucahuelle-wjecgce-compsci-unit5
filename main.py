@@ -39,7 +39,10 @@ def close_window_call(db_obj: data_handling.Database, tk_root: tk.Tk) -> None:
 if __name__ == '__main__':
     root = tk.Tk()
     main_database_obj = data_handling.Database()
-    main_database_obj.load_state_from_file()  # loads last database state from file into memory
+    try:
+        main_database_obj.load_state_from_file()  # loads last database state from file into memory
+    except FileNotFoundError:
+        logging.info('No fully existing database files. New files will be created on program close.')
 
     # some font constants set here as Tk needs to be initialised to use nametofont()
     font_obj = font.nametofont('TkCaptionFont')
