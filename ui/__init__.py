@@ -8,9 +8,11 @@ from typing import Iterable, Type
 from data_tables import data_handling
 
 # Font constants
-HEADER_FONT = 'TkHeadingFont 15'
-CAPTION_FONT = 'TkCaptionFont 10'
+HEADING_FONT = 'TkHeadingFont 15'
+ITALIC_CAPTION_FONT = 'TEMP - set in main.py'
+BOLD_CAPTION_FONT = 'TEMP - set in main.py'
 TOOLTIP_FONT = 'TkTooltipFont 9'
+TEXT_ENTRY_FONT = 'TkTextFont 9'
 
 # Misc. constants
 SECTION_NAME_MAPPING = {'vol': 'Volunteering', 'skill': 'Skill', 'phys': 'Physical'}
@@ -103,9 +105,9 @@ class RootWindow:
         Actually 'starts' the application by setting the originally empty
         self.window_frame to another with content 'layered' inside.
 
-        :param page_obj_list: A list of GenericPage objects that the tkinter
+        :param page_obj_list: a list of GenericPage objects that the tkinter
             window can be 'built up'/layered from (see PagedMainFrame docs)
-        :param start_page: A designated class (contained in page_obj_list)
+        :param start_page: a designated class (contained in page_obj_list)
             to use as the start/landing page for the application.
             This is the first page that the user will see on startup.
         """
@@ -156,7 +158,7 @@ class PagedMainFrame(ttk.Frame):
         layered frames by elevating them to the top of the tkinter window.
         Should only be called using RootWindow.initialise_window()
 
-        :param master_root: A tkinter 'root' wrapper which is used to changed
+        :param master_root: a tkinter 'root' wrapper which is used to changed
             windows' titles, dimensions, etc.
         """
         super().__init__(master_root.window_frame)
@@ -204,6 +206,15 @@ class PagedMainFrame(ttk.Frame):
 
             for str_var in str_var_list:
                 str_var.set('')  # clears each field collected above in turn
+
+            # collects all tk.Text fields in current page
+            text_field_list = [var for var in self.current_page.__dict__.values()
+                               if isinstance(var, tk.Text)]
+
+            for text_field in text_field_list:
+                # if the text_field state is 'disabled' it can't be cleared
+                text_field['state'] = 'normal'
+                text_field.delete('1.0', 'end')
 
         next_frame = self.page_frames[destination_page]  # gets the specified next page/frame
         next_frame.update_attributes(**kwargs)  # updates the page's variables if necessary

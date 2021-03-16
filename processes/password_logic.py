@@ -57,5 +57,5 @@ def enforce_strength(provided_password: str) -> bool:
     """
     Returns a boolean of whether provided_password matches the program's strength requirements
     """
-    # TODO: write enforce pwd strength function
+    # todo: write enforce pwd strength function
     return bool(provided_password)

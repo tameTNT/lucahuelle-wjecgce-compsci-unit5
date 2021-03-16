@@ -4,7 +4,8 @@ import tkinter.ttk as ttk
 
 import ui
 import ui.landing
-import ui.student.enrollment_and_sections
+import ui.student.enrollment
+import ui.student.section_info
 from data_tables import data_handling
 
 
@@ -21,11 +22,12 @@ class StudentAwardDashboard(ui.GenericPage):
         # with student info when update_attributes is called
         self.welcome_text_var = tk.StringVar()
         self.welcome_text = ttk.Label(self, textvariable=self.welcome_text_var, justify='center',
-                                      font=ui.HEADER_FONT)
+                                      font=ui.HEADING_FONT)
         self.welcome_text.pack(padx=self.padx, pady=self.pady)
 
         self.current_level_var = tk.StringVar()
-        self.current_level = ttk.Label(self, textvariable=self.current_level_var, justify='center')
+        self.current_level = ttk.Label(self, textvariable=self.current_level_var,
+                                       justify='center', font=ui.BOLD_CAPTION_FONT)
         self.current_level.pack(padx=self.padx, pady=self.pady)
 
         # button only shown if student has not yet registered/fully enrolled
@@ -38,7 +40,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # === frame contents below only shown if student not yet registered ===
 
         # == frame containing info on each section of award ==
-        self.section_info_frame = ttk.Frame(self.fully_enrolled_info_frame)
+        self.section_info_frame = ttk.Labelframe(self.fully_enrolled_info_frame, text='Section progress')
         self.section_info_frame.pack(padx=self.padx, pady=self.pady)
 
         # Builds up GUI by section/column
@@ -63,7 +65,7 @@ class StudentAwardDashboard(ui.GenericPage):
             status_label_name = f'{section_type}_status_label'
             label_obj = ttk.Label(self.section_info_frame,
                                   textvariable=self.__getattribute__(status_var_name),
-                                  justify='center')
+                                  justify='center', font=ui.ITALIC_CAPTION_FONT)
             self.__setattr__(status_label_name, label_obj)  # e.g. self.vol_status_label
             self.__getattribute__(status_label_name).grid(row=2, column=col,
                                                           padx=self.padx, pady=self.pady)
@@ -85,7 +87,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # == end of self.section_info_frame ==
 
         # == expedition info frame contents ==
-        self.expedition_frame = ttk.Frame(self.fully_enrolled_info_frame)
+        self.expedition_frame = ttk.Labelframe(self.fully_enrolled_info_frame, text='Expedition')
         self.expedition_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: expedition info frame in Student overview page
@@ -94,7 +96,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # == end of self.expedition_frame contents ==
 
         # == calendar frame contents ==
-        self.calendar_frame = ttk.Frame(self.fully_enrolled_info_frame)
+        self.calendar_frame = ttk.Labelframe(self.fully_enrolled_info_frame, text='Calendar')
         self.calendar_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: calendar info frame in Student overview page
@@ -107,8 +109,9 @@ class StudentAwardDashboard(ui.GenericPage):
         self.student = None  # stores all student information for the window - updated below
         self.student_username = ''
 
-        self.section_table = self.pager_frame.master_root.db. \
-            get_table_by_name('SectionTable').row_dict
+        # noinspection PyTypeChecker
+        self.section_table: data_handling.SectionTable = \
+            self.pager_frame.master_root.db.get_table_by_name('SectionTable')
 
     def update_attributes(self, student: data_handling.Student, username: str) -> None:
         # updates attributes with submitted parameters
@@ -118,7 +121,7 @@ class StudentAwardDashboard(ui.GenericPage):
 
         # === updates tkinter StringVar with new information received ===
         if self.student.fullname:  # registration complete
-            if self.student.approved:  # teacher has approved enrolment
+            if self.student.is_approved:  # teacher has approved enrolment
                 self.welcome_text_var.set(f'Welcome, {self.student.fullname}!')
                 self.complete_enrollment_button.pack_forget()
                 self.fully_enrolled_info_frame.pack(padx=self.padx, pady=self.pady)
@@ -136,9 +139,6 @@ class StudentAwardDashboard(ui.GenericPage):
 
         self.current_level_var.set(f'Current level: {self.student.award_level.capitalize()}')
 
-        def str_days_to_months(str_days):
-            return int(str_days) // 30
-
         # Goes through each section one by one and updates the GUI's labels
         for section_type, long_name in ui.SECTION_NAME_MAPPING.items():
             # fetches the tk.StringVar attributes to update with new info
@@ -151,9 +151,10 @@ class StudentAwardDashboard(ui.GenericPage):
             status_var = self.__getattribute__(f'{section_type}_status_var')
 
             if section_id:  # if the link between tables exists then the section has been started
-                section_length = str_days_to_months(self.section_table[section_id].activity_length)
-                title_var.set(f'{long_name} ({section_length})')
-                status_var.set(self.section_table[section_id].activity_status)
+                section_obj = self.section_table.row_dict[section_id]
+                section_length = int(section_obj.activity_timescale) // 30
+                title_var.set(f'{long_name}\n({section_length} months)')
+                status_var.set(section_obj.activity_status)
             else:
                 title_var.set(long_name)
                 status_var.set('Not started')
@@ -173,14 +174,14 @@ class StudentAwardDashboard(ui.GenericPage):
 
     def enrol_fully(self):
         self.pager_frame.change_to_page(
-            destination_page=ui.student.enrollment_and_sections.Enrollment,
+            destination_page=ui.student.enrollment.Enrollment,
             student=self.student,
             username=self.student_username,
         )
 
     def edit_section(self, section_type_short):
         self.pager_frame.change_to_page(
-            destination_page=ui.student.enrollment_and_sections.SectionInfo,
+            destination_page=ui.student.section_info.SectionInfo,
             student=self.student,
             username=self.student_username,
             section_type_short=section_type_short,

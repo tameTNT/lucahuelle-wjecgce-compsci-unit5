@@ -1,17 +1,18 @@
 import datetime as dt
 import logging  # logging functionality
-from io import TextIOWrapper  # type hints in function definitions
+import shutil
 from pathlib import Path  # file handling
-from typing import Collection, Union, Dict  # type hints in function and class definitions
+from typing import Collection, Union, Dict, List  # type hints in function and class definitions
+from typing.io import TextIO
 
-from processes.date_logic import str_to_date_dict, datetime_to_str
+from processes.datetime_logic import str_to_date_dict, datetime_to_str, date_in_past, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
     validate_date, validate_regex
 
 # simplistic and naive regular expression for validating emails
 EMAIL_MAX_LEN = 50  # should match 5,??? above
 # matches abc@def.ghi
-EMAIL_RE_PATTERN = r'^(?=.{5,%(len)s}$)[^@]+@[^@.]+\.[^@.]+$' % {'len': EMAIL_MAX_LEN}
+EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
@@ -48,10 +49,11 @@ class Row:
 
         return_string = ''
         for attr_name, attr_val in self.__dict__.items():
-            str_func = str
-            if attr_name in special_str_funcs:
-                str_func = special_str_funcs[attr_name]
-            return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
+            if attr_name[0] != '_':  # ignores protected attributes
+                str_func = str  # defaults to just using the str() func on the attribute
+                if attr_name in special_str_funcs:
+                    str_func = special_str_funcs[attr_name]
+                return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
         return return_string + '\n'
 
 
@@ -86,22 +88,40 @@ class Table:
         return f'<{type(self).__name__} object with {len(self.row_dict)} row(s) ' \
                f'of {self.row_class} objects>'
 
-    def add_row(self, *args):
+    def get_new_key_id(self) -> int:
+        """
+        Looks at current row_dict and returns the next
+        available id that can be used as a unique key.
+        Should only be used with tables that use an integer-only id key_field.
+        """
+        taken_ids = {int(str_id) for str_id in self.row_dict.keys()}
+        if taken_ids:
+            # range(1, max(taken_ids) + 2): a range of all possible ids between 1 and the max taken id+1
+            # set.difference finds any unused ids in this range and min() finds the smallest such id
+            return min(set(range(1, max(taken_ids) + 2)).difference(taken_ids))
+        else:
+            return 1  # ids should start at 1
+
+    def add_row(self, *args, **kwargs) -> None:
         """
         Add a new row/object to table.
         If an object is provided first, that is added directly - all other arguments are ignored.
-        Otherwise, a new object is initialised (using all args) and then added.
+        Otherwise, a new object is initialised (using all args OR kwargs (kwargs priority)) and then added.
         Raises KeyError if attempting to add an object with a non-unique key field.
         """
-        if isinstance(args[0], self.row_class):  # if first argument is a row object
-            new_row_obj = args[0]
-        else:
-            # if no object passed to function then
-            # object initialisation arguments have been passed instead
-            # so row_class __init__() method is called
-
+        if kwargs:
             # noinspection PyArgumentList
-            new_row_obj = self.row_class(*args)
+            new_row_obj = self.row_class(**kwargs)
+        else:
+            if isinstance(args[0], self.row_class):  # if first argument is a row object
+                new_row_obj = args[0]
+            else:
+                # if no object passed to function then
+                # object initialisation arguments have been passed instead
+                # so row_class __init__() method is called
+
+                # noinspection PyArgumentList
+                new_row_obj = self.row_class(*args, **kwargs)
 
         key_field = self.row_class.key_field
         primary_key = new_row_obj.__getattribute__(key_field)
@@ -113,7 +133,19 @@ class Table:
             logging.error(error_str)
             raise KeyError(error_str)
 
-    def load_from_file(self, txt_file: TextIOWrapper):
+    def delete_row(self, primary_key):
+        """
+        Attempts to delete row with primary key 'primary_key' from table.
+        Raises a KeyError if this key is invalid.
+        """
+        try:
+            del self.row_dict[primary_key]
+        except KeyError:
+            error_str = f'{primary_key} is not a row within {type(self).__name__}'
+            logging.error(error_str)
+            raise KeyError(error_str)
+
+    def load_from_file(self, txt_file: TextIO):
         """
         Given the output from an open() method, populates self with data from lines of text file
         """
@@ -128,16 +160,18 @@ class Table:
 
             self.add_row(*obj_info)  # add new row/obj to table
 
+        txt_file.close()
         logging.info(f'{type(self).__name__} object successfully populated from file - '
                      f'added {len(txt_lines)} {self.row_class.__name__} objects')
 
-    def save_to_file(self, txt_file: TextIOWrapper):
+    def save_to_file(self, txt_file: TextIO):
         """
         Given the file output from an open('w') method, writes to the file the data within self
         """
         for row_object in self.row_dict.values():
             txt_file.write(row_object.tabulate())
 
+        txt_file.close()
         logging.debug(f'{type(self).__name__} object successfully saved to file')
 
 
@@ -145,11 +179,11 @@ class StudentLogin(Row):
     key_field = 'username'
 
     def __init__(self, username: str, password_hash: str, student_id: Union[int, str]):
-        self.username = validate_length(username, 2, 30, 'username')
+        self.username = validate_length(username, 2, 30, 'Username')
         self.password_hash = password_hash
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
-        self.student_id = validate_int(student_id, 'student_id')
+        self.student_id = validate_int(student_id, 'Student ID')
 
         logging.debug(f'New StudentLogin object successfully created - username={self.username!r}')
 
@@ -181,50 +215,51 @@ class Student(Row):
                  email_primary: str = '', phone_emergency: str = '', primary_lang: str = '',
                  enrolment_date: str = '', vol_info_id: Union[int, str] = '',
                  skill_info_id: Union[int, str] = '', phys_info_id: Union[int, str] = '',
-                 approved: Union[int, str] = ''):
-        """
-        Only the first 4 parameters are provided by staff.
-        The rest are filled in by the student at a later date
-        and hence default to '' on initial creation.
-        """
+                 is_approved: Union[int, str] = '', from_file: bool = True):
+        # Only the first 4 parameters are provided by staff.
+        # The rest are filled in by the student at a later date
+        # and hence default to '' on initial creation.
 
         # student_id should be int but when parsed from txt file will be str so needs conversion
-        self.student_id = validate_int(student_id, 'student_id')
+        self.student_id = validate_int(student_id, 'Student ID')
 
-        self.centre_id = validate_int(centre_id, 'centre_id')
+        self.centre_id = validate_int(centre_id, 'Centre ID')
 
-        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'award_level')
+        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'Award Level')
 
-        year_group = str(validate_int(year_group, 'year_group'))
-        self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'year_group')
+        year_group = str(validate_int(year_group, 'Year Group'))
+        self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'Year Group')
 
-        # All following attributes are null ('') if a full name is not provided -
+        # All following attributes are null ('') if a fullname is not provided -
         # indicating initial creation and not student completing enrolment/loading
 
-        self.fullname = validate_length(fullname, 2, 30, 'fullname') if fullname else ''
+        self.fullname = validate_length(fullname, 2, 30, 'Fullname') if fullname else ''
 
         # pnts = prefer not to say
         self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
-                                      'gender') if fullname else ''
+                                      'Gender') if fullname else ''
 
-        # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-        self.date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
-                                           'date_of_birth') if fullname else ''
+        if from_file:  # date range validation skipped if loading from file to allow for dates in the past
+            self.date_of_birth = validate_date(date_of_birth, 'Date of birth') if fullname else ''
+        else:
+            # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
+            self.date_of_birth = validate_date(date_of_birth, 'Date of birth',
+                                               offset_range=(-365.25 * 25, -365.25 * 10))
 
         self.address = validate_length(address, 5, 100,
-                                       'address') if fullname else ''
+                                       'Address') if fullname else ''
 
         self.phone_primary = validate_length(phone_primary, 9, 11,
-                                             'phone_primary') if fullname else ''
+                                             'Primary Phone') if fullname else ''
 
-        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary',
+        self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
                                             'abc@def.ghi') if fullname else ''
 
         self.phone_emergency = validate_length(phone_emergency, 9, 11,
-                                               'phone_emergency') if fullname else ''
+                                               'Emergency Phone') if fullname else ''
 
         self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
-                                            'primary-lang') if fullname else ''
+                                            'Primary Language') if fullname else ''
 
         self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date)) if fullname else ''
 
@@ -234,7 +269,8 @@ class Student(Row):
 
         self.phys_info_id = validate_int(phys_info_id, 'phys_info_id') if phys_info_id else ''
 
-        self.approved = int(approved) if approved else 0
+        # 1 = True/is approved, 0 = False/is not approved
+        self.is_approved = int(is_approved) if is_approved else 0
 
         logging.debug(f'New Student object {"fully" if fullname else "partially"} created '
                       f'- student_id={self.student_id}')
@@ -242,30 +278,30 @@ class Student(Row):
     def complete_enrolment(self, fullname: str, gender: str,
                            date_of_birth: str, address: str, phone_primary: str,
                            email_primary: str, phone_emergency: str, primary_lang: str):
-        fullname = validate_length(fullname, 2, 30, 'fullname')
+        fullname = validate_length(fullname, 2, 30, 'Fullname')
 
         # pnts = prefer not to say
         gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
-                                 'gender')
+                                 'Gender')
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
-        date_of_birth = validate_date(date_of_birth, -365.25 * 25, -365.25 * 10,
-                                      'date_of_birth')
+        date_of_birth = validate_date(date_of_birth, 'Date of birth',
+                                      offset_range=(-365.25 * 25, -365.25 * 10))
 
         address = validate_length(address, 5, 100,
-                                  'address')
+                                  'Address')
 
         phone_primary = validate_length(phone_primary, 9, 11,
-                                        'phone_primary')
+                                        'Primary Phone')
 
-        email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'email_primary',
+        email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
                                        'abc@def.ghi')
 
         phone_emergency = validate_length(phone_emergency, 9, 11,
-                                          'phone_emergency')
+                                          'Emergency Phone')
 
         primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
-                                       'primary-lang')
+                                       'Primary Language')
 
         enrolment_date = dt.datetime(**str_to_date_dict(datetime_to_str()))
 
@@ -284,14 +320,14 @@ class Student(Row):
         logging.debug(f'New Student object fully created '
                       f'- student_id={self.student_id} fullname={self.fullname!r}')
 
-        # TODO: method for staff to 'approve' student -
-        #  approval sets self.approved = 1, deny clears fullname attr
+        # todo: method for staff to 'approve' student -
+        #  approval sets self.is_approved = 1, deny clears fullname attr
 
     def __repr__(self):
         return f'<Student object student_id={self.student_id} ' \
                f'fullname={self.fullname!r} year_group={self.year_group!r} ' \
                f"award_level={self.award_level!r} date_of_birth='{self.date_of_birth!s}' " \
-               f"approved={self.approved}>"
+               f'is_approved={self.is_approved}>'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
@@ -311,7 +347,7 @@ class Student(Row):
             'vol_info_id': INTERNAL_ID_LEN,
             'skill_info_id': INTERNAL_ID_LEN,
             'phys_info_id': INTERNAL_ID_LEN,
-            'approved': 1,
+            'is_approved': 1,
         }
         special_str_funcs = {
             'date_of_birth': datetime_to_str,
@@ -322,38 +358,42 @@ class Student(Row):
 
 class StudentTable(Table):
     row_class = Student
-    row_dict: Dict[str, Student]
+    row_dict: Dict[int, Student]
 
 
 class Section(Row):
     key_field = 'section_id'
 
     def __init__(self, section_id: Union[int, str], section_type: str,
-                 activity_start_date: str, activity_length: str,
+                 activity_start_date: str, activity_timescale: str,
                  activity_type: str, activity_details: str, activity_goals: str,
-                 assessor_fullname: str, assessor_phone: str, assessor_email: str):
-        self.section_id = validate_int(section_id, 'section_id')
+                 assessor_fullname: str, assessor_phone: str, assessor_email: str,
+                 from_file: bool = True):
+        self.section_id = validate_int(section_id, 'Section ID')
 
-        self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'section_type')
+        self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'Section Type')
 
-        # A valid start date can be up to 1 year in the future
-        self.activity_start_date = validate_date(activity_start_date, 0, 365.25,
-                                                 'activity_start_date')
+        if from_file:
+            temp_start_date = validate_date(activity_start_date, 'Activity Start Date')
+        else:
+            # A valid start date can be up to 1 year in the future
+            temp_start_date = validate_date(activity_start_date, 'Activity Start Date', offset_range=(0, 365.25))
+        self.activity_start_date = temp_start_date
 
-        self.activity_length = validate_lookup(activity_length, {'90', '180', '360'},
-                                               'activity_length')
+        self.activity_timescale = validate_lookup(activity_timescale, {'90', '180', '360'},
+                                                  'Activity Timescale')
 
-        self.activity_type = validate_length(activity_type, 3, 20, 'activity_type')
+        self.activity_type = validate_length(activity_type, 3, 20, 'Activity Type')
 
-        self.activity_details = validate_length(activity_details, 10, 200, 'activity_details')
+        self.activity_details = validate_length(activity_details, 10, 200, 'Activity Details')
 
-        self.activity_goals = validate_length(activity_goals, 10, 100, 'activity_goals')
+        self.activity_goals = validate_length(activity_goals, 10, 100, 'Activity Goals')
 
-        self.assessor_fullname = validate_length(assessor_fullname, 2, 30, 'assessor_fullname')
+        self.assessor_fullname = validate_length(assessor_fullname, 2, 30, 'Assessor Fullname')
 
-        self.assessor_phone = validate_length(assessor_phone, 9, 11, 'assessor_phone')
+        self.assessor_phone = validate_length(assessor_phone, 9, 11, 'Assessor Phone')
 
-        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'assessor_email',
+        self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'Assessor Email',
                                              'abc@def.ghi')
 
         # This is a private attribute and as such is only updated when it is accessed.
@@ -365,8 +405,9 @@ class Section(Row):
     def __repr__(self):
         return f'<Section object section_id={self.section_id} ' \
                f'section_type={self.section_type!r} ' \
-               f'activity_start_date={self.activity_start_date!s} ' \
-               f'activity_length={self.activity_length!r} activity_type={self.activity_type!r} ' \
+               f"activity_start_date='{self.activity_start_date!s}' " \
+               f'activity_timescale={self.activity_timescale!r} ' \
+               f'activity_type={self.activity_type!r} ' \
                f'assessor_fullname={self.assessor_fullname!r}'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
@@ -374,7 +415,7 @@ class Section(Row):
             'section_id': INTERNAL_ID_LEN,
             'section_type': 5,
             'activity_start_date': 10,
-            'activity_length': 3,
+            'activity_timescale': 3,
             'activity_type': 20,
             'activity_details': 200,
             'activity_goals': 100,
@@ -393,15 +434,138 @@ class Section(Row):
 
     @activity_status.getter
     def activity_status(self):
-        # TODO: GENERATE SECTION STATUS method
-        return 'Not Implemented'
+        # this method is called every time this variable is accessed
+        proposed_end_date = calculate_end_date(int(self.activity_timescale), self.activity_start_date)
+
+        if date_in_past(proposed_end_date):
+            # todo: GENERATE SECTION STATUS method
+            self._activity_status = 'Not Implemented'
+        else:
+            self._activity_status = 'In Progress'
+
+        return self._activity_status
 
 
 class SectionTable(Table):
     row_class = Section
-    row_dict: Dict[str, Section]
+    row_dict: Dict[int, Section]
 
 
+class Resource(Row):
+    key_field = 'resource_id'
+
+    def __init__(self, resource_id: Union[int, str], file_path: Union[Path, str],
+                 is_section_report: Union[int, str], resource_type: str,
+                 parent_link_id: Union[int, str], date_uploaded: Union[str] = ''):
+
+        self.resource_id = validate_int(resource_id, 'Resource ID')
+
+        if isinstance(file_path, str):
+            # validates string paths (loaded from file)
+            # leading slashes optional. Must start with 'uploads\' followed by at least 1 char
+            file_path = validate_regex(file_path, r'[\\]?uploads\\.+', 'file_path', '(\\)uploads\\...')
+            # wouldbenice: check file path actually exists when loading from file (from_file: bool = True)
+
+        self.file_path = Path(file_path)
+        # wouldbenice: path strings are gonna cause issues when loading for viewing
+
+        self.is_section_report = int(is_section_report) if is_section_report else 0
+        self.resource_type = validate_lookup(resource_type, {'event', 'section_evidence'}, 'Resource Type')
+        self.parent_link_id = validate_int(parent_link_id, 'Parent Link ID')
+
+        if not date_uploaded:  # if this argument is not provided, generated from current datetime
+            date_uploaded = datetime_to_str()  # gets current datetime as string
+        self.date_uploaded = validate_date(date_uploaded, 'Date Uploaded')
+
+        logging.debug(f'New Resource object successfully created - resource_id={self.resource_id}')
+
+    def __repr__(self):
+        return f'<Resource object resource_id={self.resource_id} ' \
+               f"file_path={self.file_path!r} date_uploaded='{self.date_uploaded!s}'" \
+               f'is_section_report={self.is_section_report} ' \
+               f'resource_type={self.resource_type!r} parent_link_id={self.parent_link_id}>'
+
+    def tabulate(self, padding_values=None, special_str_funcs=None):
+        padding_values = {
+            'resource_id': INTERNAL_ID_LEN,
+            'file_path': 256,  # Windows default file path limit - highly unlikely that path is longer
+            'is_section_report': 1,
+            'resource_type': 16,
+            'parent_link_id': INTERNAL_ID_LEN,
+            'date_uploaded': 10,
+        }
+        special_str_funcs = {
+            'date_uploaded': datetime_to_str,
+        }
+        return super().tabulate(padding_values, special_str_funcs)
+
+
+class ResourceTable(Table):
+    row_class = Resource
+    row_dict: Dict[int, Resource]
+
+    def add_student_resources(self, selected_file_list: List[TextIO], student_id: int,
+                              section_id: int) -> int:
+        """
+        Adds the files in selected_file_list to the ResourceTable each as its own Resource object.
+        :param selected_file_list: a list of TextIO objects such as that produced by tk.filedialog.askopenfiles()
+        :param student_id: the id of the student to which the resources should be linked
+        :param section_id: the id of the section to which the resources should be linked
+        :return: the length of selected_file_list
+        """
+        if selected_file_list:  # if any files were selected (i.e. operation not cancelled)
+            internal_upload_dir = Path('uploads') / 'student' / f'id-{student_id}'
+
+            upload_dir = Path.cwd() / internal_upload_dir
+            upload_dir.mkdir(parents=True, exist_ok=True)
+
+            for fobj in selected_file_list:
+                orig_file_path = Path(fobj.name)  # .name is the filepath
+
+                upload_path = upload_dir / orig_file_path.name
+                i = 0
+                while upload_path.exists():  # adds ' (i)' to end of filename (before suffix) until unique
+                    i += 1  # keeps increasing i until unique
+                    new_name = f'{upload_path.stem} ({i}){upload_path.suffix}'
+                    upload_path = upload_path.with_name(new_name)
+
+                shutil.copy(orig_file_path, upload_path)  # 'uploads'/copies file to upload_path
+
+                self.add_row(
+                    resource_id=self.get_new_key_id(),
+                    file_path=internal_upload_dir / upload_path.name,
+                    is_section_report=0,
+                    resource_type='section_evidence',
+                    parent_link_id=section_id
+                )
+
+        logging.info(f'{len(selected_file_list)} resource(s) were added to {type(self).__name__}')
+        return len(selected_file_list)
+
+    # todo: add_event_resources - possible to combine with above
+
+    def has_section_report(self, section_id: int) -> bool:
+        """
+        Returns True if the section with id parent_link_id already has a
+        resource associated with it marked as a section report. Returns False
+        if this is not the case.
+        :param section_id: id of section to check
+        :return: boolean of whether there is a report associated with section already
+        """
+        for resource in self.row_dict.values():
+            if resource.resource_type == 'section_evidence' and resource.parent_link_id == section_id:
+                if resource.is_section_report:
+                    return True
+        return False
+
+    def delete_row(self, primary_key):
+        file_path = self.row_dict[primary_key].file_path
+        file_path.unlink(missing_ok=True)  # actually deletes file - doesn't care if it doesn't exist
+        logging.debug(f'{file_path} was deleted.')
+        super().delete_row(primary_key)
+
+
+# todo: event table for calendar and expeditions etc.
 class Database:
     def __init__(self):
         """
@@ -453,7 +617,7 @@ class Database:
             table_obj.row_dict = dict()  # clears table
             logging.debug(f'Cleared {previous_row_count} rows/{table_obj.row_class.__name__} '
                           f'object(s) from {type(table_obj).__name__} table successfully')
-            with load_path.open(mode='r') as fobj:  # type: TextIOWrapper
+            with load_path.open(mode='r') as fobj:
                 table_obj.load_from_file(fobj)
 
         logging.info(
@@ -467,7 +631,7 @@ class Database:
         for table_name, table_obj in self.database.items():
             save_path = self.get_txt_database_dir() / f'{table_name}.txt'
 
-            with save_path.open(mode='w+') as fobj:  # type: TextIOWrapper
+            with save_path.open(mode='w+') as fobj:
                 table_obj.save_to_file(fobj)
 
         logging.info(

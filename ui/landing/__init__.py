@@ -5,6 +5,7 @@ import tkinter.ttk as ttk
 
 import ui
 import ui.student
+from data_tables import data_handling
 from processes import password_logic
 
 
@@ -20,8 +21,9 @@ class Welcome(ui.GenericPage):
         self.message = ttk.Label(self,
                                  text='Welcome to the\n'
                                       'DofE Scheme Management Application.\n\n'
-                                      'Please select your login method:',
-                                 justify='center')
+                                      'Please select your login type:',
+                                 justify='center',
+                                 font=ui.BOLD_CAPTION_FONT)
         self.message.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         # button calls the change_to_page method of the pager_frame to change view to StudentLogin
@@ -53,12 +55,12 @@ class Login(ui.GenericPage):
         super().__init__(pager_frame=pager_frame)
 
         self.back_button = ttk.Button(self, text='Back',
-                                      command=self.back)
+                                      command=self.page_back)
         self.back_button.grid(row=0, column=0, padx=self.padx, pady=self.pady, sticky='w')
 
         self.user_type_label = ttk.Label(self,
                                          text=f'{"Student" if self.is_student else "Staff"} Login',
-                                         font=ui.HEADER_FONT)
+                                         font=ui.HEADING_FONT)
         self.user_type_label.grid(row=1, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         if self.is_student:
@@ -69,7 +71,7 @@ class Login(ui.GenericPage):
         self.message = ttk.Label(
             self,
             text=f'Please enter your username and password.\n\n{login_message}',
-            justify='center', font=ui.CAPTION_FONT
+            justify='center', font=ui.ITALIC_CAPTION_FONT
         )
         self.message.grid(row=2, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
@@ -82,6 +84,7 @@ class Login(ui.GenericPage):
         self.username_var = tk.StringVar()
         self.username_entry = ttk.Entry(self.user_detail_frame, textvariable=self.username_var)
         self.username_entry.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
+        ui.create_tooltip(self.username_entry, 'case sensitive')
 
         self.password_label = ttk.Label(self.user_detail_frame, text='Password:', justify='right')
         self.password_label.grid(row=1, column=0, pady=self.pady, sticky='e')
@@ -122,17 +125,18 @@ class Login(ui.GenericPage):
         if self.is_student:
             logging.debug(f'A student attempted to log in with username "{input_username}"')
 
-            login_username_dict = db.get_table_by_name('StudentLoginTable').row_dict
-            if input_username in login_username_dict.keys():  # if username is valid, verifies pwd
-                if password_logic.verify_pwd_str(input_password,
-                                                 login_username_dict[input_username].password_hash):
+            # noinspection PyTypeChecker
+            login_table_obj: data_handling.StudentLoginTable = db.get_table_by_name('StudentLoginTable')
+            if input_username in login_table_obj.row_dict.keys():  # if username is valid, verifies pwd
+                login_obj = login_table_obj.row_dict[input_username]
+                if password_logic.verify_pwd_str(input_password, login_obj.password_hash):
                     logging.info(f'Username "{input_username}" '
                                  f'successfully logged into student application')
 
-                    user_id = login_username_dict[input_username].student_id
-                    student_dict = db.get_table_by_name('StudentTable').row_dict
+                    user_id = login_obj.student_id
+                    # noinspection PyTypeChecker
                     # gets Student obj specified by logged in username
-                    logged_in_student = student_dict[user_id]
+                    logged_in_student: data_handling.Student = db.get_table_by_name('StudentTable').row_dict[user_id]
 
                     # changes page appropriately, providing StudentAwardDashboard
                     # frame with the Student obj information to update text
@@ -145,11 +149,11 @@ class Login(ui.GenericPage):
 
             msg.showerror('Login Failed', 'Username and/or password incorrect')
         else:
-            # TODO: password verification for staff - way to merge with above code?
+            # todo: password verification for staff - way to merge with code above?
             logging.debug(f'A staff member attempted to log in with username "{input_username}"')
             return
 
-    def back(self):
+    def page_back(self):
         """
         Returns the user back to the Welcome page after resetting the pwd visibility
         """
