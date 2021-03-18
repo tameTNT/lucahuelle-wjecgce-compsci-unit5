@@ -12,7 +12,7 @@ class PasswordTest(TestCase):
             self.assertIsInstance(hash_str, str, 'Hash not a string')
             self.assertEqual(len(hash_str), 128, 'Hash incorrect length')
 
-        with self.assertRaises(password_logic.PasswordLengthError):
+        with self.assertRaises(password_logic.PasswordError):
             password_logic.hash_pwd_str('a' * 101)  # 101 is longer than the 100 pwd len limit
         password_logic.hash_pwd_str('a' * 100)  # on boundary of accepted pwd len range
 
