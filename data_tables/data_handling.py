@@ -223,6 +223,7 @@ class Student(Row):
         # The rest are filled in by the student at a later date
         # and hence default to '' on initial creation.
 
+        # todo: creation of students by staff
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'Student ID')
 
@@ -569,6 +570,39 @@ class ResourceTable(Table):
 
 
 # todo: event table for calendar and expeditions etc.
+
+
+class Staff(Row):
+    key_field = 'username'
+
+    def __init__(self, username: str, password_hash: str, fullname: str):
+        # wouldbenice: staff detail table (similar to student table)
+        self.username = validate_length(username, 2, 30, 'Username')
+        self.password_hash = password_hash
+
+        self.fullname = validate_length(fullname, 2, 30, 'Fullname')
+
+        logging.debug(f'New Staff object successfully created - username={self.username!r}')
+
+    def __repr__(self):
+        # only first 10 chars of hash shown
+        return f'<Staff object username={self.username!r} ' \
+               f'password_hash={shorten_string(self.password_hash, 13)} fullname={self.fullname}>'
+
+    def tabulate(self, padding_values=None, special_str_funcs=None):
+        padding_values = {
+            'username': 30,
+            'password_hash': 128,
+            'fullname': 30,
+        }
+        return super().tabulate(padding_values, special_str_funcs)
+
+
+class StaffTable(Table):
+    row_class = Staff
+    row_dict: Dict[str, Staff]
+
+
 class Database:
     def __init__(self):
         """
