@@ -25,7 +25,7 @@ class PasswordLengthError(Exception):
 # https://www.vitoshacademy.com/hashing-passwords-in-python/
 def hash_pwd_str(provided_password: str) -> str:
     """
-    Returns a secure hash of the provided_password string to be stored.
+    Returns a 128 char hashed str of the provided_password string to be stored.
     """
     if len(provided_password) > 100:
         raise PasswordLengthError(len(provided_password))

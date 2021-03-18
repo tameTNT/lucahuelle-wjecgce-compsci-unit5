@@ -5,6 +5,7 @@ from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List  # type hints in function and class definitions
 from typing.io import TextIO
 
+from processes import shorten_string
 from processes.datetime_logic import str_to_date_dict, datetime_to_str, date_in_past, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
     validate_date, validate_regex
@@ -15,6 +16,8 @@ EMAIL_MAX_LEN = 50  # should match 5,??? above
 EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
+
+FIELD_SEP_STR = r'\%s'  # fixme: what happens if the user enters this or quotes into strings?
 
 
 class Row:
@@ -53,7 +56,7 @@ class Row:
                 str_func = str  # defaults to just using the str() func on the attribute
                 if attr_name in special_str_funcs:
                     str_func = special_str_funcs[attr_name]
-                return_string += str_func(attr_val).ljust(padding_values[attr_name]) + r'\%s'
+                return_string += str_func(attr_val).ljust(padding_values[attr_name]) + FIELD_SEP_STR
         return return_string + '\n'
 
 
@@ -153,7 +156,7 @@ class Table:
         for row in txt_lines:
             obj_info = list()
 
-            padded_fields = row.split(r'\%s')  # split line/row by separator
+            padded_fields = row.split(FIELD_SEP_STR)  # split line/row by separator
             for field in padded_fields:
                 if field != '\n':
                     obj_info.append(field.strip())  # remove padding whitespace
@@ -190,7 +193,7 @@ class StudentLogin(Row):
     def __repr__(self):
         # only first 10 chars of hash shown
         return f'<StudentLogin object username={self.username!r} ' \
-               f'password_hash={(self.password_hash[:10] + "...")!r} student_id={self.student_id}>'
+               f'password_hash={shorten_string(self.password_hash, 13)} student_id={self.student_id}>'
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {

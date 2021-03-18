@@ -9,7 +9,8 @@ def make_readable_name(var_name: str):
 
 def shorten_string(s: str, max_length: int):
     """
-    If longer than max_length, truncates string s and appends '...'
+    If longer than max_length, truncates string s and appends '...'.
+    Final string length will always be <= max_length
     """
     if len(s) > max_length:
         return s[:max_length - 3] + '...'
