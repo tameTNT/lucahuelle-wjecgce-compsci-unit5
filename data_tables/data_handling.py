@@ -213,13 +213,14 @@ class Student(Row):
     key_field = 'student_id'
 
     def __init__(self, student_id: Union[int, str], centre_id: Union[int, str], award_level: str,
-                 year_group: Union[int, str], fullname: str = '', gender: str = '',
+                 year_group: Union[int, str], is_approved: Union[int, str] = 0,
+                 fullname: str = '', gender: str = '',
                  date_of_birth: str = '', address: str = '', phone_primary: str = '',
                  email_primary: str = '', phone_emergency: str = '', primary_lang: str = '',
                  enrolment_date: str = '', vol_info_id: Union[int, str] = '',
                  skill_info_id: Union[int, str] = '', phys_info_id: Union[int, str] = '',
-                 is_approved: Union[int, str] = '', from_file: bool = True):
-        # Only the first 4 parameters are provided by staff.
+                 from_file: bool = True):
+        # Only the first 4 parameters are provided by staff. (is_approved defaults to 0)
         # The rest are filled in by the student at a later date
         # and hence default to '' on initial creation.
 
@@ -233,6 +234,9 @@ class Student(Row):
 
         year_group = str(validate_int(year_group, 'Year Group'))
         self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'Year Group')
+
+        # 1 = True/is approved, 0 = False/is not approved
+        self.is_approved = int(is_approved)
 
         # All following attributes are null ('') if a fullname is not provided -
         # indicating initial creation and not student completing enrolment/loading
@@ -272,9 +276,6 @@ class Student(Row):
         self.skill_info_id = validate_int(skill_info_id, 'skill_info_id') if skill_info_id else ''
 
         self.phys_info_id = validate_int(phys_info_id, 'phys_info_id') if phys_info_id else ''
-
-        # 1 = True/is approved, 0 = False/is not approved
-        self.is_approved = int(is_approved) if is_approved else 0
 
         logging.debug(f'New Student object {"fully" if fullname else "partially"} created '
                       f'- student_id={self.student_id}')
