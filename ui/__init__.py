@@ -3,11 +3,13 @@ from __future__ import annotations  # needed for typing of classes not yet defin
 import logging
 import tkinter as tk
 import tkinter.ttk as ttk
-from typing import Iterable, Type
+from tkinter import font
+from typing import Iterable, Type, Callable
 
 from data_tables import data_handling
 
 # Font constants
+BODY_FONT = 'TkTextFont'
 HEADING_FONT = 'TkHeadingFont 15'
 ITALIC_CAPTION_FONT = 'TEMP - set in main.py'
 BOLD_CAPTION_FONT = 'TEMP - set in main.py'
@@ -67,6 +69,34 @@ def create_tooltip(widget: tk.Widget, text: str):
 
     widget.bind('<Enter>', enter)
     widget.bind('<Leave>', leave)
+
+
+def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable):
+    """
+    Underlines the label widget when the user hovers over it
+    indicating a clickable link to them.
+    :param l_widget: the ttk label widget which the user hovers over.
+        Should have a font attribute already set (otherwise font may change on hover)
+    :param change_page_func: the change page function to be called when
+        the user clicks (mouse button 1) the label.
+        First argument must be able to accept tkinter event details: e.g. func(event, a, b): ...
+    """
+    l_widget.bind('<Button-1>', change_page_func)
+
+    # noinspection PyUnusedLocal
+    def enter(event):
+        f = font.Font(l_widget, l_widget.cget('font'))
+        f.configure(underline=True)
+        l_widget.configure(font=f)
+
+    # noinspection PyUnusedLocal
+    def leave(event):
+        f = font.Font(l_widget, l_widget.cget('font'))
+        f.configure(underline=False)
+        l_widget.configure(font=f)
+
+    l_widget.bind('<Enter>', enter)
+    l_widget.bind('<Leave>', leave)
 
 
 # By CC attribution, this 'page-based approach' is based on the framework provided at
@@ -143,6 +173,9 @@ class GenericPage(ttk.Frame):
         Which parameters are required depends on the specific class.
         """
         pass
+
+
+# wouldbenice: create a HomePage class that includes a logout method
 
 
 class PagedMainFrame(ttk.Frame):
