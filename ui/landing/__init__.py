@@ -4,6 +4,7 @@ import tkinter.messagebox as msg
 import tkinter.ttk as ttk
 
 import ui
+import ui.staff
 import ui.student
 from data_tables import data_handling
 from processes import password_logic
@@ -66,11 +67,11 @@ class Login(ui.GenericPage):
         if self.is_student:
             login_message = 'These will be given to you by your teacher.'
         else:
-            login_message = 'Contact the system admin to create an account.'
+            login_message = 'Contact your system administrator to create a new account.'
 
         self.message = ttk.Label(
             self,
-            text=f'Please enter your username and password.\n\n{login_message}',
+            text=f'Please enter your username and password.\nBoth are case sensitive.\n\n{login_message}',
             justify='center', font=ui.ITALIC_CAPTION_FONT
         )
         self.message.grid(row=2, column=0, columnspan=2, padx=self.padx, pady=self.pady)
@@ -84,7 +85,6 @@ class Login(ui.GenericPage):
         self.username_var = tk.StringVar()
         self.username_entry = ttk.Entry(self.user_detail_frame, textvariable=self.username_var)
         self.username_entry.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.username_entry, 'case sensitive')
 
         self.password_label = ttk.Label(self.user_detail_frame, text='Password:', justify='right')
         self.password_label.grid(row=1, column=0, pady=self.pady, sticky='e')
@@ -122,18 +122,32 @@ class Login(ui.GenericPage):
         input_password = self.password_var.get()
 
         db = self.pager_frame.master_root.db  # gets database obj from main root of application
-        if self.is_student:
-            logging.debug(f'A student attempted to log in with username "{input_username}"')
+        user_type = ('Staff', 'Student')[int(self.is_student)]
+        logging.debug(f'A {user_type.lower()} attempted to log in with username "{input_username}"')
 
+        if user_type == 'Staff':
+            # noinspection PyTypeChecker
+            login_table_obj: data_handling.StaffTable = db.get_table_by_name('StaffTable')
+        else:  # is Student
             # noinspection PyTypeChecker
             login_table_obj: data_handling.StudentLoginTable = db.get_table_by_name('StudentLoginTable')
-            if input_username in login_table_obj.row_dict.keys():  # if username is valid, verifies pwd
-                login_obj = login_table_obj.row_dict[input_username]
-                if password_logic.verify_pwd_str(input_password, login_obj.password_hash):
-                    logging.info(f'Username "{input_username}" '
-                                 f'successfully logged into student application')
 
+        if input_username in login_table_obj.row_dict.keys():  # if username is valid, verifies pwd
+            login_obj = login_table_obj.row_dict[input_username]
+            if password_logic.verify_pwd_str(input_password, login_obj.password_hash):
+                logging.info(f'Username "{input_username}" '
+                             f'successfully logged into {user_type.lower()} application')
+
+                if user_type == 'Staff':
+                    self.pager_frame.change_to_page(
+                        destination_page=ui.staff.StudentOverview,
+                        staff=login_obj
+                    )
+
+                elif user_type == 'Student':
+                    # noinspection PyUnresolvedReferences
                     user_id = login_obj.student_id
+
                     # noinspection PyTypeChecker
                     # gets Student obj specified by logged in username
                     logged_in_student: data_handling.Student = db.get_table_by_name('StudentTable').row_dict[user_id]
@@ -145,13 +159,11 @@ class Login(ui.GenericPage):
                         student=logged_in_student,
                         username=input_username,
                     )
-                    return  # ends function so error below is not displayed
 
-            msg.showerror('Login Failed', 'Username and/or password incorrect')
-        else:
-            # todo: password verification for staff - way to merge with code above?
-            logging.debug(f'A staff member attempted to log in with username "{input_username}"')
-            return
+                return  # ends function so error below is not displayed
+
+        msg.showerror('Login Failed', 'Username and/or password incorrect.\n'
+                                      'Make sure you are on the correct login page')
 
     def page_back(self):
         """

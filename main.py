@@ -6,6 +6,7 @@ from tkinter import font
 from tkinter import messagebox
 
 import ui.landing
+import ui.staff
 import ui.student
 from data_tables import data_handling
 from processes import validation, password_logic
@@ -60,7 +61,7 @@ def create_gui():
 
     # initialises actual tkinter window on Welcome page
     # todo: change start_page back to ui.landing.Welcome
-    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StudentLogin)
+    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StaffLogin)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root))
     root.mainloop()

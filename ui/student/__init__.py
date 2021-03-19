@@ -117,7 +117,7 @@ class StudentAwardDashboard(ui.GenericPage):
         # updates attributes with submitted parameters
         self.student = student
         self.student_username = username
-        self.page_name = f'{self.student_username} Award Dashboard'
+        self.page_name = f'{self.student_username} - Award Dashboard'
 
         # === updates tkinter StringVar with new information received ===
         if self.student.fullname:  # registration complete
