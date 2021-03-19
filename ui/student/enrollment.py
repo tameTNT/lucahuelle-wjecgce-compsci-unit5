@@ -35,6 +35,7 @@ class Enrollment(ui.GenericPage):
         # === end of frame ===
 
         # === info_submission_frame contents ===
+        # wouldbenice: temporary text in fields to guide user (e.g. 'Search...')
         self.info_submission_frame = ttk.Frame(self)
         self.info_submission_frame.grid(row=2, column=1, padx=self.padx, pady=self.pady)
 
