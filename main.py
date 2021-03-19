@@ -49,18 +49,18 @@ def create_gui():
 
     main_window = RootWindow(tk_root=root, db=MAIN_DATABASE_OBJ)  # initialises tkinter root/base
 
-    PAGE_OBJ_LIST = list()
+    page_obj_list = list()
     for cls in ui.GenericPage.__subclasses__():
         subcls_list = cls.__subclasses__()
         if subcls_list:  # subclasses of subclasses exist (e.g. Student/StaffLogin pages)
             for subcls in subcls_list:
-                PAGE_OBJ_LIST.append(subcls)
+                page_obj_list.append(subcls)
         else:
-            PAGE_OBJ_LIST.append(cls)
+            page_obj_list.append(cls)
 
     # initialises actual tkinter window on Welcome page
     # todo: change start_page back to ui.landing.Welcome
-    main_window.initialise_window(page_obj_list=PAGE_OBJ_LIST, start_page=ui.landing.StudentLogin)
+    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StudentLogin)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root))
     root.mainloop()
@@ -74,15 +74,24 @@ def create_staff_account():
     # noinspection PyTypeChecker
     staff_table: data_handling.StaffTable = MAIN_DATABASE_OBJ.get_table_by_name('StaffTable')
 
-    while True:
-        fullname = input('Fullname: ')
-        username = input('Username: ')
+    while True:  # ensure all data is valid
+        fullname = input(' Fullname: ')
+        username = input(' Username: ')
 
+        print('Passwords should be between 6 and 100 characters long and contain one each of:\n'
+              'lowercase letter, uppercase letter, number.')
         print('NB: No characters will be shown when entering passwords.')
-        while True:
-            password_a = getpass(prompt='Password: ')
-            # TODO: password strength enforcement
-            password_b = getpass(prompt='Confirm password: ')
+        while True:  # ensure passwords match
+            while True:  # enforce password strength on first entry
+                password_a = getpass(prompt=' Password: ')
+                try:
+                    password_logic.enforce_strength(password_a)
+                except password_logic.PasswordError as e:
+                    print(str(e))
+                else:
+                    break
+
+            password_b = getpass(prompt=' Confirm password: ')
             if password_a == password_b:
                 password_hash = password_logic.hash_pwd_str(password_a)
                 break
@@ -92,9 +101,18 @@ def create_staff_account():
         try:
             new_staff_user = data_handling.Staff(username, password_hash, fullname)
         except validation.ValidationError as e:
-            print(f'Error in entered data as follows:\n{str(e)}\nPlease try again.')
+            print(f'Error in entered data as follows:\n {str(e)}\nPlease try again.')
         else:
-            staff_table.add_row(new_staff_user)
+            try:
+                staff_table.add_row(new_staff_user)
+            except KeyError as e:
+                print(f'Error in entered data as follows:\n {str(e)}\nPlease try again.')
+            else:
+                print(f'New staff user added successfully:\n {str(new_staff_user)}')
+                break
+
+    MAIN_DATABASE_OBJ.save_state_to_file()
+    print('Tables successfully saved to txt files.')
 
 
 if __name__ == '__main__':
@@ -125,5 +143,5 @@ if __name__ == '__main__':
             logging.debug('create-staff-account argument provided: launching command line function')
             create_staff_account()
     else:
-        logging.debug('No arguments provided at command line. Showing help instead')
+        logging.debug('No arguments provided at command line. Showing help instead.')
         parser.print_help()

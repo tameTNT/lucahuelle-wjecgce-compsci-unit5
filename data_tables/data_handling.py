@@ -3,6 +3,7 @@ import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List  # type hints in function and class definitions
+
 from typing.io import TextIO
 
 from processes import shorten_string
@@ -17,7 +18,8 @@ EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
-FIELD_SEP_STR = r'\%s'  # fixme: what happens if the user enters this or quotes into strings?
+# fixme: what happens if the user enters this or quotes into strings? clean input in save function?
+FIELD_SEP_STR = r'\%s'
 
 
 class Row:
@@ -193,7 +195,7 @@ class StudentLogin(Row):
     def __repr__(self):
         # only first 10 chars of hash shown
         return f'<StudentLogin object username={self.username!r} ' \
-               f'password_hash={shorten_string(self.password_hash, 13)} student_id={self.student_id}>'
+               f"password_hash='{shorten_string(self.password_hash, 13)}' student_id={self.student_id}>"
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
@@ -588,7 +590,7 @@ class Staff(Row):
     def __repr__(self):
         # only first 10 chars of hash shown
         return f'<Staff object username={self.username!r} ' \
-               f'password_hash={shorten_string(self.password_hash, 13)} fullname={self.fullname}>'
+               f"password_hash='{shorten_string(self.password_hash, 13)}' fullname={self.fullname!r}>"
 
     def tabulate(self, padding_values=None, special_str_funcs=None):
         padding_values = {
