@@ -109,9 +109,11 @@ class StudentAwardDashboard(ui.GenericPage):
         self.student = None  # stores all student information for the window - updated below
         self.student_username = ''
 
+        db = self.pager_frame.master_root.db
         # noinspection PyTypeChecker
-        self.section_table: data_handling.SectionTable = \
-            self.pager_frame.master_root.db.get_table_by_name('SectionTable')
+        self.student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
+        # noinspection PyTypeChecker
+        self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
 
     def update_attributes(self, student: data_handling.Student, username: str) -> None:
         # updates attributes with submitted parameters
@@ -142,16 +144,16 @@ class StudentAwardDashboard(ui.GenericPage):
         # Goes through each section one by one and updates the GUI's labels
         for section_type, long_name in ui.SECTION_NAME_MAPPING.items():
             # fetches the tk.StringVar attributes to update with new info
-
-            # self.student.vol_info_id, self.student.skill_info_id, self.student.phys_info_id
-            section_id = self.student.__getattribute__(f'{section_type}_info_id')
-
             title_var = self.__getattribute__(f'{section_type}_title_var')
-
             status_var = self.__getattribute__(f'{section_type}_status_var')
 
-            if section_id:  # if the link between tables exists then the section has been started
-                section_obj = self.section_table.row_dict[section_id]
+            # self.student.vol_info_id, self.student.skill_info_id, self.student.phys_info_id
+            section_obj = self.student_table.get_student_section_obj(
+                self.student.student_id, section_type, self.section_table
+            )
+
+            if section_obj:
+                # if get_student_section_obj() isn't None then the table exists and the section has been started
                 section_length = int(section_obj.activity_timescale) // 30
                 title_var.set(f'{long_name}\n({section_length} months)')
                 status_var.set(section_obj.activity_status)

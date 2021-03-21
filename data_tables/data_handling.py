@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import datetime as dt
 import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List  # type hints in function and class definitions
-
 from typing.io import TextIO
 
 from processes import shorten_string
@@ -366,6 +367,23 @@ class Student(Row):
 class StudentTable(Table):
     row_class = Student
     row_dict: Dict[int, Student]
+
+    def get_student_section_obj(self, student_id: int, section_type_short: str,
+                                section_table: SectionTable):
+        """
+        Returns the requested section object for that specified student if it exists. Otherwise, None
+        :param student_id: id of student to get info from
+        :param section_type_short: specific section to retrieve. One of 'vol', 'skill' or 'phys'
+        :param section_table: SectionTable to return section_obj from if it exists
+        :return: Section object to interface with if it exists, otherwise None
+        """
+        student_obj = self.row_dict[student_id]
+        # student.vol_info_id, student.skill_info_id, student.phys_info_id
+        section_id = student_obj.__getattribute__(f'{section_type_short}_info_id')
+        if section_id:
+            return section_table.row_dict[section_id]
+        else:
+            return None
 
 
 class Section(Row):

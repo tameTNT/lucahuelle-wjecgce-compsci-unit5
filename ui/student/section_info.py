@@ -166,13 +166,11 @@ class SectionInfo(ui.GenericPage):
         self.student_username = ''
         self.section_type_short = ''
 
+        db = self.pager_frame.master_root.db
         # noinspection PyTypeChecker
-        self.section_table: data_handling.SectionTable = \
-            self.pager_frame.master_root.db.get_table_by_name('SectionTable')
-
+        self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
         # noinspection PyTypeChecker
-        self.resource_table: data_handling.ResourceTable = \
-            self.pager_frame.master_root.db.get_table_by_name('ResourceTable')
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
 
     def update_attributes(self, student: data_handling.Student, username: str,
                           section_type_short: str):
@@ -360,18 +358,14 @@ class SectionInfo(ui.GenericPage):
                             f'You cannot upload evidence until you have reached the '
                             f"section's end date ({datetime_logic.datetime_to_str(planned_end_date)}).")
         else:
-            # noinspection PyTypeChecker
-            resource_table: data_handling.ResourceTable = \
-                self.pager_frame.master_root.db.get_table_by_name('ResourceTable')
-
             # opens a file selection dialog in the user's home directory
             # the user can select as many files as they wish
             selected_files = filedialog.askopenfiles(title='Please select file(s) to add as evidence.',
                                                      initialdir=os.path.expanduser('~'))
 
-            num_files_uploaded = resource_table.add_student_resources(selected_files,
-                                                                      self.student.student_id,
-                                                                      self.section_obj.section_id)
+            num_files_uploaded = self.resource_table.add_student_resources(selected_files,
+                                                                           self.student.student_id,
+                                                                           self.section_obj.section_id)
 
             if num_files_uploaded > 0:
                 msg.showinfo('File upload', f'{num_files_uploaded} file(s) uploaded successfully.')

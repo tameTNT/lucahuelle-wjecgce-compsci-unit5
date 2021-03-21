@@ -116,6 +116,8 @@ class RootWindow:
         """
         self.tk_root = tk_root
 
+        # wouldbenice: store all tables within generic pages by default instead of
+        #  layered accessing this variable so many layers up
         self.db = db
         self.padx = padx
         self.pady = pady
@@ -203,6 +205,7 @@ class PagedMainFrame(ttk.Frame):
 
         # ensures that layered frames are packed/gridded seamlessly
         # into this main controller/'pager' frame
+        # wouldbenice: why aren't pages centered in the whole frame?
         self.pack(side='top', fill='both', expand=True)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
