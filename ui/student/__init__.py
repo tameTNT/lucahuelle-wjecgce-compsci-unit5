@@ -148,9 +148,7 @@ class StudentAwardDashboard(ui.GenericPage):
             status_var = self.__getattribute__(f'{section_type}_status_var')
 
             # self.student.vol_info_id, self.student.skill_info_id, self.student.phys_info_id
-            section_obj = self.student_table.get_student_section_obj(
-                self.student.student_id, section_type, self.section_table
-            )
+            section_obj = self.student.get_section_obj(section_type, self.section_table)
 
             if section_obj:
                 # if get_student_section_obj() isn't None then the table exists and the section has been started

@@ -64,12 +64,13 @@ class SectionInfo(ui.GenericPage):
         self.start_date_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
         self.start_date_var = tk.StringVar()
-        on_update_wrapper = self.pager_frame.master_root.tk_root.register(self.update_date_validation)
+        # on_update_wrapper = ...tk_root.register(self.update_date_validation) - wrapper not needed
         self.start_date = ttk.Entry(self.detail_frame, width=10,
                                     textvariable=self.start_date_var,
                                     # calls validatecommand on any action with the widget (e.g. edit, focus change)
                                     validate='all',
-                                    validatecommand=on_update_wrapper)  # updates self.end_date_var based on entry
+                                    # updates self.end_date_var based on entry
+                                    validatecommand=self.update_date_validation)
         self.start_date.grid(row=1, column=1, pady=self.pady, sticky='we')
         ui.create_tooltip(self.start_date, 'Enter in format YYYY/MM/DD')
 

@@ -364,27 +364,65 @@ class Student(Row):
         }
         return super().tabulate(padding_values, special_str_funcs)
 
-
-class StudentTable(Table):
-    row_class = Student
-    row_dict: Dict[int, Student]
-
-    def get_student_section_obj(self, student_id: int, section_type_short: str,
-                                section_table: SectionTable):
+    def get_section_obj(self, section_type_short: str, section_table: SectionTable) -> Optional[Section]:
         """
-        Returns the requested section object for that specified student if it exists. Otherwise, None
-        :param student_id: id of student to get info from
+        Returns the requested section object (if it exists) for self
+
         :param section_type_short: specific section to retrieve. One of 'vol', 'skill' or 'phys'
         :param section_table: SectionTable to return section_obj from if it exists
         :return: Section object to interface with if it exists, otherwise None
         """
-        student_obj = self.row_dict[student_id]
         # student.vol_info_id, student.skill_info_id, student.phys_info_id
-        section_id = student_obj.__getattribute__(f'{section_type_short}_info_id')
+        section_id = self.__getattribute__(f'{section_type_short}_info_id')
         if section_id:
             return section_table.row_dict[section_id]
         else:
             return None
+
+    def get_progress_summary(self, section_table: SectionTable) -> str:
+        # todo: docstring
+        if self.is_approved:
+            section_started_count = 0
+            section_finished_count = 0
+            for section_type_short in SECTION_NAME_MAPPING.keys():
+                # student.vol_info_id, student.skill_info_id, student.phys_info_id
+                section_id = self.__getattribute__(f'{section_type_short}_info_id')
+                if section_id:
+                    section_started_count += 1
+                    section_obj = section_table.row_dict[section_id]
+                    if section_obj.activity_status == '':  # fixme: finish status method to compare option here
+                        section_finished_count += 1
+
+            if section_finished_count == 3:  # todo: doesn't include expeditions
+                return 'Fully complete'
+            elif section_started_count == 3:
+                return 'All in progress'
+            elif 1 <= section_started_count < 3:
+                return 'In progress'
+            else:
+                return 'None started'
+
+        elif not self.fullname:  # student has not yet entered all details
+            return 'Pending enrolment'
+
+        elif not self.is_approved:
+            return 'Needs approval'
+
+    def get_login_username(self, login_table: StudentLoginTable) -> Optional[str]:
+        """
+        Returns the username of self using the login_table provided.
+        If the student does not have a login for whatever reason, returns None
+        """
+        for username, login in login_table.row_dict.items():
+            if login.student_id == self.student_id:
+                return username
+
+        return None
+
+
+class StudentTable(Table):
+    row_class = Student
+    row_dict: Dict[int, Student]
 
 
 class Section(Row):

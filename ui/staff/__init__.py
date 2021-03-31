@@ -22,8 +22,8 @@ class StudentOverview(ui.GenericPage):
         self.logout_button = ttk.Button(self, text='Logout', command=self.logout)
         self.logout_button.grid(row=0, column=2, columnspan=2, padx=self.padx, pady=self.pady)
 
-        self.select_level_label = ttk.Label(self, text='Select level:', width=13, justify='right')
-        self.select_level_label.grid(row=1, column=0, sticky='e', padx=0, pady=self.pady)
+        self.select_level_label = ttk.Label(self, text='Select level:')
+        self.select_level_label.grid(row=1, column=0, sticky='e', padx=(self.padx, 0), pady=self.pady)
 
         self.level_selection_var = tk.StringVar()
         self.select_level = ttk.Combobox(self,
@@ -37,10 +37,10 @@ class StudentOverview(ui.GenericPage):
         on_focus_wrapper = self.pager_frame.master_root.tk_root.register(self.initial_search_clear)
         self.search_entry = ttk.Entry(self,
                                       textvariable=self.search_query_var,
-                                      width=20,
+                                      width=30,
                                       validate='focus',
-                                      validatecommand=on_focus_wrapper)
-        self.search_entry.grid(row=1, column=2, pady=self.pady)
+                                      validatecommand=self.initial_search_clear)
+        self.search_entry.grid(row=1, column=2, sticky='e', pady=self.pady)
 
         self.search_button = ttk.Button(self, text='🔎', width=2, command=self.search)
         self.search_button.grid(row=1, column=3, sticky='w', pady=self.pady)
@@ -81,7 +81,7 @@ class StudentOverview(ui.GenericPage):
     #         username=self.student_username,
     #     )
 
-    def initial_search_clear(self) -> True:
+    def initial_search_clear(self) -> True:  # 'validation' function must return True
         if self.search_query_var.get() == 'Search...':
             self.search_query_var.set('')
         elif self.search_query_var.get() == '':
