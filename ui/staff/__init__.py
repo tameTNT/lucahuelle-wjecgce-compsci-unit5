@@ -32,9 +32,10 @@ class StudentOverview(ui.GenericPage):
                                          textvariable=self.level_selection_var,
                                          width=15)
         self.select_level.grid(row=1, column=1, sticky='w', padx=(0, self.padx), pady=self.pady)
+        self.select_level.bind("<<ComboboxSelected>>", self.repopulate_treeview_table)
+        self.columnconfigure(1, weight=1)
 
         self.search_query_var = tk.StringVar()
-        on_focus_wrapper = self.pager_frame.master_root.tk_root.register(self.initial_search_clear)
         self.search_entry = ttk.Entry(self,
                                       textvariable=self.search_query_var,
                                       width=30,
@@ -44,6 +45,38 @@ class StudentOverview(ui.GenericPage):
 
         self.search_button = ttk.Button(self, text='🔎', width=2, command=self.search)
         self.search_button.grid(row=1, column=3, sticky='w', pady=self.pady)
+
+        self.table_note = ttk.Label(self,
+                                    text='Double click a student to view their associated data and approve submissions',
+                                    justify='center', font=ui.ITALIC_CAPTION_FONT, width=65)
+        self.table_note.grid(row=2, column=0, columnspan=5, padx=self.padx, pady=(self.pady, 0))
+        self.rowconfigure(2, weight=1)
+        # == configuring student table ==
+        self.student_info_treeview = ttk.Treeview(self,
+                                                  columns=(
+                                                      'approval_status', 'volunteering',
+                                                      'skill', 'physical', 'expedition'
+                                                  ))
+
+        self.student_info_treeview.heading('#0', text='Fullname/Username', anchor='w')
+        self.student_info_treeview.column('#0', anchor='w')
+        self.student_info_treeview.heading('approval_status', text='Approval status')
+        self.student_info_treeview.column('approval_status', anchor='center')
+        self.student_info_treeview.heading('volunteering', text='Volunteering')
+        self.student_info_treeview.column('volunteering', anchor='center')
+        self.student_info_treeview.heading('skill', text='Skill')
+        self.student_info_treeview.column('skill', anchor='center')
+        self.student_info_treeview.heading('physical', text='Physical')
+        self.student_info_treeview.column('physical', anchor='center')
+        self.student_info_treeview.heading('expedition', text='Expedition')
+        self.student_info_treeview.column('expedition', anchor='center')
+
+        # wouldbenice: ability to sort columns when the headings are clicked
+
+        self.student_info_treeview.grid(row=3, column=0, columnspan=5, sticky='we', padx=self.padx,
+                                        pady=(0, self.pady))
+        self.student_info_treeview.bind('<Double-1>', self.on_double_click)
+        # == end table config ==
 
         self.staff = None
         self.staff_fullname = ''
@@ -57,13 +90,7 @@ class StudentOverview(ui.GenericPage):
         self.level_selection_var.set('Bronze')
         self.search_query_var.set('Search...')
 
-        # todo: populate student table (Treeview) - separate method also called by 'search' button
-        # self.test = ttk.Label(self, text='test', font=ui.BODY_FONT)
-        # self.test.grid(row=1, column=0)
-        # ui.add_underline_link_on_hover(
-        #     self.test,
-        #     lambda event, s_id=2: self.change_to_student_page(event, s_id)
-        # )
+        self.repopulate_treeview_table()
 
     def logout(self):
         """
@@ -92,9 +119,51 @@ class StudentOverview(ui.GenericPage):
         query = self.search_query_var.get()
         # todo: search primary keys and repopulate Treeview
         # todo: add 'reset' link when searching to clear box and reset results
-        # wouldbenice: search/sort by different fields other than key field
+        # wouldbenice: search by different fields other than key field
+
+    def repopulate_treeview_table(self, event=None, tv: ttk.Treeview = None):
+        # todo: function docs
+        if not tv:
+            tv = self.student_info_treeview
+
+        db = self.pager_frame.master_root.db
+        # noinspection PyTypeChecker
+        student_login_table: data_handling.StudentLoginTable = db.get_table_by_name('StudentLoginTable')
+        # noinspection PyTypeChecker
+        student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
+        # noinspection PyTypeChecker
+        section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+
+        selected_level = self.level_selection_var.get()
+
+        tv.delete(*tv.get_children())  # clear tree before repopulating
+        for student in student_table.row_dict.values():
+            if student.award_level == selected_level.lower():
+                username_str = f'Username: {student.get_login_username(student_login_table)}'
+                row_name = student.fullname if student.fullname else username_str
+
+                approval_status = student.get_progress_summary(section_table)
+
+                vol_status = student.get_section_obj('vol', section_table)
+                vol_status = vol_status.activity_status if vol_status else 'Not started'
+                skill_status = student.get_section_obj('skill', section_table)
+                skill_status = skill_status.activity_status if skill_status else 'Not started'
+                phys_status = student.get_section_obj('phys', section_table)
+                phys_status = phys_status.activity_status if phys_status else 'Not started'
+
+                # todo: expedition status text and column
+
+                tv.insert(
+                    parent='', index='end', text=row_name,
+                    values=(approval_status, vol_status, skill_status, phys_status, 'Null - TODO', student.student_id)
+                )
+
+    def on_double_click(self, event):
+        item = self.student_info_treeview.selection()
+        clicked_student_id = self.student_info_treeview.item(item)['values'][-1]
+        self.change_to_student_page(clicked_student_id)
 
     # noinspection PyUnusedLocal
-    def change_to_student_page(self, event, student_id: int):
+    def change_to_student_page(self, student_id: int):
         # todo: change to student page clicked
         print(student_id, self.staff_fullname)
