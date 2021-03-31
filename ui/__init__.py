@@ -16,9 +16,6 @@ BOLD_CAPTION_FONT = 'TEMP - set in main.py'
 TOOLTIP_FONT = 'TkTooltipFont 9'
 TEXT_ENTRY_FONT = 'TkTextFont 9'
 
-# Misc. constants
-SECTION_NAME_MAPPING = {'vol': 'Volunteering', 'skill': 'Skill', 'phys': 'Physical'}
-
 
 # By CC attribution, this Tooltip class and create_tooltip func are adapted from
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
@@ -71,6 +68,7 @@ def create_tooltip(widget: tk.Widget, text: str):
     widget.bind('<Leave>', leave)
 
 
+# todo: function not needed anymore?
 def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable):
     """
     Underlines the label widget when the user hovers over it

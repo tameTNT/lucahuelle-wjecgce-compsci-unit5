@@ -3,6 +3,8 @@ import logging
 import re
 from typing import TypedDict, Set
 
+from data_tables import SECTION_NAME_MAPPING
+
 DATE_SEPARATOR = '/'
 
 
@@ -84,7 +86,7 @@ def get_possible_timeframes(level: str, section_type: str,
     :return: A set of timescale strings (3 and/or 6 and/or 12) still available to the student
     """
     set_choices = dict()
-    for st in ('vol', 'skill', 'phys'):
+    for st in SECTION_NAME_MAPPING.keys():
         section_id = student_obj.__getattribute__(f'{st}_info_id')
         if section_id:  # section has been started
             set_choices[st] = int(section_table.row_dict[section_id].activity_timescale) // 30

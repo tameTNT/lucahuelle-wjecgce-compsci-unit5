@@ -6,7 +6,7 @@ import tkinter.messagebox as msg
 import tkinter.ttk as ttk
 
 import ui
-from data_tables import data_handling
+from data_tables import data_handling, SECTION_NAME_MAPPING
 from processes import datetime_logic, validation, shorten_string
 
 
@@ -178,7 +178,7 @@ class SectionInfo(ui.GenericPage):
         self.student = student
         self.student_username = username
         self.section_type_short = section_type_short
-        long_section_name = ui.SECTION_NAME_MAPPING[self.section_type_short]
+        long_section_name = SECTION_NAME_MAPPING[self.section_type_short]
 
         self.page_name = f'{self.student_username} {long_section_name} Details'
 

@@ -6,7 +6,7 @@ import ui
 import ui.landing
 import ui.student.enrollment
 import ui.student.section_info
-from data_tables import data_handling
+from data_tables import data_handling, SECTION_NAME_MAPPING
 
 
 class StudentAwardDashboard(ui.GenericPage):
@@ -44,7 +44,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.section_info_frame.pack(padx=self.padx, pady=self.pady)
 
         # Builds up GUI by section/column
-        for col, section_type in enumerate(ui.SECTION_NAME_MAPPING.keys()):
+        for col, section_type in enumerate(SECTION_NAME_MAPPING.keys()):
             # = Section title row =
             title_var_name = f'{section_type}_title_var'
             self.__setattr__(title_var_name, tk.StringVar())  # e.g. self.vol_title_var
@@ -142,7 +142,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.current_level_var.set(f'Current level: {self.student.award_level.capitalize()}')
 
         # Goes through each section one by one and updates the GUI's labels
-        for section_type, long_name in ui.SECTION_NAME_MAPPING.items():
+        for section_type, long_name in SECTION_NAME_MAPPING.items():
             # fetches the tk.StringVar attributes to update with new info
             title_var = self.__getattribute__(f'{section_type}_title_var')
             status_var = self.__getattribute__(f'{section_type}_status_var')

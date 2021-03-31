@@ -4,9 +4,10 @@ import datetime as dt
 import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
-from typing import Collection, Union, Dict, List  # type hints in function and class definitions
+from typing import Collection, Union, Dict, List, Optional  # type hints in function and class definitions
 from typing.io import TextIO
 
+from data_tables import SECTION_NAME_MAPPING
 from processes import shorten_string
 from processes.datetime_logic import str_to_date_dict, datetime_to_str, date_in_past, calculate_end_date
 from processes.validation import validate_int, validate_length, validate_lookup, \
@@ -396,7 +397,7 @@ class Section(Row):
                  from_file: bool = True):
         self.section_id = validate_int(section_id, 'Section ID')
 
-        self.section_type = validate_lookup(section_type, {'vol', 'skill', 'phys'}, 'Section Type')
+        self.section_type = validate_lookup(section_type, set(SECTION_NAME_MAPPING.keys()), 'Section Type')
 
         if from_file:
             temp_start_date = validate_date(activity_start_date, 'Activity Start Date')
