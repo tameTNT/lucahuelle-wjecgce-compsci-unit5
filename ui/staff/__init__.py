@@ -47,7 +47,8 @@ class StudentOverview(ui.GenericPage):
         self.search_button.grid(row=1, column=3, sticky='w', pady=self.pady)
 
         self.table_note = ttk.Label(self,
-                                    text='Double click a student to view their associated data and approve submissions',
+                                    text='Double click a student to view their associated '
+                                         'data and approve submissions',
                                     justify='center', font=ui.ITALIC_CAPTION_FONT, width=65)
         self.table_note.grid(row=2, column=0, columnspan=5, padx=self.padx, pady=(self.pady, 0))
         self.rowconfigure(2, weight=1)
@@ -80,6 +81,14 @@ class StudentOverview(ui.GenericPage):
 
         self.staff = None
         self.staff_fullname = ''
+
+        db = self.pager_frame.master_root.db
+        # noinspection PyTypeChecker
+        self.student_login_table: data_handling.StudentLoginTable = db.get_table_by_name('StudentLoginTable')
+        # noinspection PyTypeChecker
+        self.student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
+        # noinspection PyTypeChecker
+        self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
 
     def update_attributes(self, staff: data_handling.Staff) -> None:
         # updates attributes with submitted parameters
@@ -121,34 +130,26 @@ class StudentOverview(ui.GenericPage):
         # todo: add 'reset' link when searching to clear box and reset results
         # wouldbenice: search by different fields other than key field
 
-    def repopulate_treeview_table(self, event=None, tv: ttk.Treeview = None):
+    def repopulate_treeview_table(self, tk_event=None, tv: ttk.Treeview = None):
         # todo: function docs
-        if not tv:
+        if not tv:  # if no argument is given for tv (called by tkinter GUI)
             tv = self.student_info_treeview
-
-        db = self.pager_frame.master_root.db
-        # noinspection PyTypeChecker
-        student_login_table: data_handling.StudentLoginTable = db.get_table_by_name('StudentLoginTable')
-        # noinspection PyTypeChecker
-        student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
-        # noinspection PyTypeChecker
-        section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
 
         selected_level = self.level_selection_var.get()
 
         tv.delete(*tv.get_children())  # clear tree before repopulating
-        for student in student_table.row_dict.values():
+        for student in self.student_table.row_dict.values():
             if student.award_level == selected_level.lower():
-                username_str = f'Username: {student.get_login_username(student_login_table)}'
+                username_str = f'(Username) {student.get_login_username(self.student_login_table)}'
                 row_name = student.fullname if student.fullname else username_str
 
-                approval_status = student.get_progress_summary(section_table)
+                approval_status = student.get_progress_summary(self.section_table)
 
-                vol_status = student.get_section_obj('vol', section_table)
+                vol_status = student.get_section_obj('vol', self.section_table)
                 vol_status = vol_status.activity_status if vol_status else 'Not started'
-                skill_status = student.get_section_obj('skill', section_table)
+                skill_status = student.get_section_obj('skill', self.section_table)
                 skill_status = skill_status.activity_status if skill_status else 'Not started'
-                phys_status = student.get_section_obj('phys', section_table)
+                phys_status = student.get_section_obj('phys', self.section_table)
                 phys_status = phys_status.activity_status if phys_status else 'Not started'
 
                 # todo: expedition status text and column
@@ -158,12 +159,15 @@ class StudentOverview(ui.GenericPage):
                     values=(approval_status, vol_status, skill_status, phys_status, 'Null - TODO', student.student_id)
                 )
 
-    def on_double_click(self, event):
-        item = self.student_info_treeview.selection()
-        clicked_student_id = self.student_info_treeview.item(item)['values'][-1]
-        self.change_to_student_page(clicked_student_id)
-
     # noinspection PyUnusedLocal
-    def change_to_student_page(self, student_id: int):
+    def on_double_click(self, tk_event):
+        selected_item = self.student_info_treeview.selection()
+
+        treeview_item_values = self.student_info_treeview.item(selected_item)
+        # first item in 'values' list is username/fullname; last is the student's id
+        clicked_name, clicked_student_id = treeview_item_values['text'], treeview_item_values['values'][-1]
+        self.change_to_student_page(clicked_name, clicked_student_id)
+
+    def change_to_student_page(self, student_name: str, student_id: int):
         # todo: change to student page clicked
-        print(student_id, self.staff_fullname)
+        logging.debug(f'Student - {student_name} id:{student_id} - selected by {self.staff_fullname}')

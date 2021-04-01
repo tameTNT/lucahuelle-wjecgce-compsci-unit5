@@ -88,8 +88,8 @@ def create_staff_account(file_save_suffix):
                 password_a = getpass(prompt=' Password: ')
                 try:
                     password_logic.enforce_strength(password_a)
-                except password_logic.PasswordError as e:
-                    print(str(e))
+                except password_logic.PasswordError as pe:
+                    print(str(pe))
                 else:
                     break
 
@@ -102,13 +102,13 @@ def create_staff_account(file_save_suffix):
 
         try:
             new_staff_user = data_handling.Staff(username, password_hash, fullname)
-        except validation.ValidationError as e:
-            print(f'Error in entered data as follows:\n {str(e)}\nPlease try again.')
+        except validation.ValidationError as ve:
+            print(f'Error in entered data as follows:\n {str(ve)}\nPlease try again.')
         else:
             try:
                 staff_table.add_row(new_staff_user)
-            except KeyError as e:
-                print(f'Error in entered data as follows:\n {str(e)}\nPlease try again.')
+            except KeyError as ke:
+                print(f'Error in entered data as follows:\n {str(ke)}\nPlease try again.')
             else:
                 print(f'New staff user added successfully:\n {str(new_staff_user)}')
                 break

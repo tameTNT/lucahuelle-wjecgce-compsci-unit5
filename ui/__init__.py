@@ -57,11 +57,11 @@ def create_tooltip(widget: tk.Widget, text: str):
     tool_tip = ToolTip(widget)
 
     # noinspection PyUnusedLocal
-    def enter(event):
+    def enter(tk_event):
         tool_tip.show_tooltip(text)
 
     # noinspection PyUnusedLocal
-    def leave(event):
+    def leave(tk_event):
         tool_tip.hide_tooltip()
 
     widget.bind('<Enter>', enter)
@@ -82,13 +82,13 @@ def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable)
     l_widget.bind('<Button-1>', change_page_func)
 
     # noinspection PyUnusedLocal
-    def enter(event):
+    def enter(tk_event):
         f = font.Font(l_widget, l_widget.cget('font'))
         f.configure(underline=True)
         l_widget.configure(font=f)
 
     # noinspection PyUnusedLocal
-    def leave(event):
+    def leave(tk_event):
         f = font.Font(l_widget, l_widget.cget('font'))
         f.configure(underline=False)
         l_widget.configure(font=f)
