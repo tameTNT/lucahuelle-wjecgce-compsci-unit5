@@ -14,16 +14,17 @@ from ui import RootWindow
 
 logging.basicConfig(filename='main_program.log',
                     filemode='w', level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)8s: %(message)s')
+                    format='%(asctime)s - %(levelname)6s: %(message)s')
 
 
-def close_window_call(db_obj: data_handling.Database, tk_root: tk.Tk) -> None:
+def close_window_call(db_obj: data_handling.Database, tk_root: tk.Tk, file_save_suffix: str) -> None:
     """
     This function is activated by the WM_DELETE_WINDOW protocol (i.e. when the user presses X).
     It makes the user confirm they want to close the program and saves the program data to file.
 
     :param db_obj: the main Database object to which the current database state should be saved from
     :param tk_root: tkinter Tk() object which is main base window that user wanted to close
+    :param file_save_suffix: if given, appends this to each table's filename when saving (use for backups).
     """
     logging.debug('User pressed quit button')
     if messagebox.askokcancel("Quit",
@@ -31,13 +32,13 @@ def close_window_call(db_obj: data_handling.Database, tk_root: tk.Tk) -> None:
                               "This will save all currently stored data."):
         logging.info('User chose to destroy window and exit program')
         # saves current database state from memory to file before closing
-        db_obj.save_state_to_file()
+        db_obj.save_state_to_file(suffix=file_save_suffix)
         tk_root.destroy()  # closes tkinter window
     else:
         logging.debug('User chose not to exit')
 
 
-def create_gui():
+def create_gui(file_save_suffix):
     root = tk.Tk()
 
     # some font constants set here as Tk needs to be initialised to use nametofont()
@@ -63,11 +64,11 @@ def create_gui():
     # todo: change start_page back to ui.landing.Welcome
     main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StaffLogin)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
-    root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root))
+    root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root, file_save_suffix))
     root.mainloop()
 
 
-def create_staff_account():
+def create_staff_account(file_save_suffix):
     print('Abort entry process with break command (Ctrl+Z).'
           '\nCreating a new staff account...'
           '\nPlease enter the following details:')
@@ -112,13 +113,17 @@ def create_staff_account():
                 print(f'New staff user added successfully:\n {str(new_staff_user)}')
                 break
 
-    MAIN_DATABASE_OBJ.save_state_to_file()
+    MAIN_DATABASE_OBJ.save_state_to_file(suffix=file_save_suffix)
     print('Tables successfully saved to txt files.')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.format_help()
+    parser.add_argument('-s', '--file-save-suffix',
+                        type=str,
+                        help='optional suffix to add when loading files (use to load specific tables)',
+                        default='')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--show-gui',
                        help='show GUI to log in to system as staff or student',
@@ -131,18 +136,22 @@ if __name__ == '__main__':
     if args.show_gui or args.create_staff_account:
         MAIN_DATABASE_OBJ = data_handling.Database()
         try:
-            MAIN_DATABASE_OBJ.load_state_from_file()  # loads last database state from file into memory
+            # loads last database state from file into memory
+            MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
             print('Tables successfully loaded from txt files.')
-        except FileNotFoundError:
-            # todo: test 'clean' startup with no txt files/database
-            print('No existing complete database. New files will be created on program termination.')
+        except FileNotFoundError as fe:
+            if args.file_save_suffix:
+                raise fe
+            else:
+                # todo: test 'clean' startup with no txt files/database
+                print('No existing complete database. New files will be created on program termination.')
 
         if args.show_gui:
             logging.debug('show-gui argument provided: creating tkinter instance')
-            create_gui()
+            create_gui(args.file_save_suffix)
         elif args.create_staff_account:
-            logging.debug('create-staff-account argument provided: launching command line function')
-            create_staff_account()
+            logging.debug('create-staff-account argument provided: launching command line function to create account')
+            create_staff_account(args.file_save_suffix)
     else:
         logging.debug('No arguments provided at command line. Showing help instead.')
         parser.print_help()

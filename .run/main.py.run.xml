@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="main GUI" type="PythonConfigurationType"
+    <configuration default="false" name="main GUI (normal tables)" type="PythonConfigurationType"
                    factoryName="Python">
+        <log_file alias="Main log" path="$PROJECT_DIR$/main_program.log"/>
         <module name="gce-unit-5"/>
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>

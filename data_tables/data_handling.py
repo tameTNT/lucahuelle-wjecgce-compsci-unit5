@@ -666,8 +666,8 @@ class StaffTable(Table):
 class Database:
     def __init__(self):
         """
-        When initialised, automatically initialises one instance of each 'Table' in this .py file
-        These are all added to self.database for access. (Therefore functions like an SQL database)
+        When initialised, automatically initialises one instance of each 'Table' in this .py file.
+        These are all added to the self.database dict for access.
         """
         table_list = Table.__subclasses__()
         self.database: Dict[str, Table] = dict()
@@ -682,29 +682,36 @@ class Database:
         return f'<Database object with {len(self.database)} table(s): ' \
                f'{", ".join(self.database.keys())}>'
 
-    @staticmethod  # since it doesn't use any attributes
+    @staticmethod  # since it doesn't use any class attributes
     def get_txt_database_dir():
         """
         Returns the absolute path to the directory in which to store the database txt files.
+        Creates this path if it does not yet exist.
         """
-        if __name__ == '__main__':  # file is being executed in console/directly
-            return Path.cwd()
-        else:  # normal operation from main.py
-            return Path.cwd() / 'data_tables'
+        txt_db_path = Path.cwd()
+        if 'data_tables' not in str(txt_db_path):
+            txt_db_path /= 'data_tables'  # wouldbenice: not guaranteed to cover every case I think?
 
-    def load_state_from_file(self):
+        txt_db_path /= 'txt_tbls'
+        txt_db_path.mkdir(exist_ok=True)  # makes the path if it does not yet exist
+
+        return txt_db_path
+
+    def load_state_from_file(self, suffix=''):
         """
         Loads the entire database state from txt files into memory
         after clearing current state.
         Handled using each Table object's load_from_file method.
         If even one table is missing, no tables are loaded (due to links between tables)
         and a FileNotFoundError is raised.
+        If suffix is given, appends this to each table's filename when saving (use for backups).
         """
         load_path_list = list()
         for table_name in self.database.keys():
-            load_path_list.append(self.get_txt_database_dir() / f'{table_name}.txt')
-            if not load_path_list[-1].exists():  # a table is missing
-                error_str = f'The file {load_path_list[-1]} does not exist but should. ' \
+            new_load_path = self.get_txt_database_dir() / f'{table_name}{suffix}.txt'
+            load_path_list.append(new_load_path)
+            if not new_load_path.exists():  # a table is missing
+                error_str = f'The file {new_load_path} does not exist but should. ' \
                             f'Table load aborted and no tables loaded into memory.'
                 logging.error(error_str)
                 raise FileNotFoundError(error_str)
@@ -714,26 +721,30 @@ class Database:
             table_obj.row_dict = dict()  # clears table
             logging.debug(f'Cleared {previous_row_count} rows/{table_obj.row_class.__name__} '
                           f'object(s) from {type(table_obj).__name__} table successfully')
+
             with load_path.open(mode='r') as fobj:
                 table_obj.load_from_file(fobj)
 
         logging.info(
-            f'{len(load_path_list)} populated table(s) successfully loaded into Database object')
+            f'{len(load_path_list)} populated table(s) successfully loaded into Database object. '
+            f'(from "{self.get_txt_database_dir()!s}" using {suffix!r} as table filename suffix)')
 
-    def save_state_to_file(self):
+    def save_state_to_file(self, suffix=''):
         """
         Saves the entire database state to txt files from memory.
         Handled using each Table object's save_to_file method.
+        If suffix is given, appends this to each table's filename when saving (use for backups).
         """
         for table_name, table_obj in self.database.items():
-            save_path = self.get_txt_database_dir() / f'{table_name}.txt'
+            save_path = self.get_txt_database_dir() / f'{table_name}{suffix}.txt'
 
             with save_path.open(mode='w+') as fobj:
                 table_obj.save_to_file(fobj)
 
         logging.info(
             f'All {len(self.database.items())} table(s) in Database object '
-            f'successfully saved to txt files')
+            f'successfully saved to txt files. '
+            f'(in "{self.get_txt_database_dir()!s}" using {suffix!r} as table filename suffix)')
 
     def get_table_by_name(self, table_name) -> Table:
         """
