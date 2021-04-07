@@ -1,6 +1,6 @@
 import random
 import string
-from typing import Tuple, Iterable
+from typing import Tuple
 
 from data_handling import Database, Student, StudentLogin
 from processes import password_logic
@@ -25,15 +25,15 @@ def new_student_objs(username, id_num, centre_id, award_level, year_group) -> Tu
     return login_obj, student_obj
 
 
-def get_random_username(length: int, taken_list: Iterable) -> str:
+def get_random_username(length: int, taken_list: set) -> str:
     """
     Generates a random username of length 'length' that is not present in taken_list.
     (This is only checked if length is at least 3)
     """
 
-    def gen_username(l):
+    def gen_username(i: int):
         # chooses from all lowercase letters
-        return ''.join([random.choice(string.ascii_lowercase) for i in range(l)])
+        return ''.join([random.choice(string.ascii_lowercase) for _ in range(i)])
 
     result_str = gen_username(length)
     while result_str in taken_list and length >= 3:
@@ -52,6 +52,7 @@ def populate_db(db_obj: Database, num_students) -> set:
 
     usernames_created = set()
     for i in range(num_students):
+        print(f'Generating student num {i + 1:>{len(str(num_students))}}/{num_students}...', end='\r')
         random_username = get_random_username(5, usernames_created)
         usernames_created.add(random_username)
 
@@ -79,10 +80,12 @@ if __name__ == '__main__':
             table.row_dict = {}  # clears row_dict
 
     print('Populating Student and StudentLogin tables with new student data...')
-    username_set = populate_db(db, 20)  # generates 10 random students
+    username_set = populate_db(db, int(input('Num of random students to generate: ')))
+    print('Done generating!')
+
     print(f'Usernames added:\n  {"; ".join(username_set)}\nAll students use password "password".')
 
     print('Saving new tables with suffix " (test students)"...')
     db.save_state_to_file(' (test students)')
 
-    print('Done!')
+    print('Done saving!')
