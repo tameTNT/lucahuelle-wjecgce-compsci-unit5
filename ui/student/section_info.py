@@ -92,28 +92,28 @@ class SectionInfo(ui.GenericPage):
         self.activity_details_label = ttk.Label(self.activity_info_frame, text='Details:', justify='right')
         self.activity_details_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
-        self.activity_details_scrollable_text = ttk.Frame(self.activity_info_frame)
-        self.activity_details_scrollable_text.grid(row=1, column=1, pady=self.pady, sticky='we')
-        self.activity_details_text = tk.Text(self.activity_details_scrollable_text, width=25, height=4,
+        self.activity_details_scrollable_frame = ttk.Frame(self.activity_info_frame)
+        self.activity_details_scrollable_frame.grid(row=1, column=1, pady=self.pady, sticky='we')
+        self.activity_details_text = tk.Text(self.activity_details_scrollable_frame, width=25, height=4,
                                              wrap='word', font=ui.TEXT_ENTRY_FONT)
-        self.activity_details_text.grid(row=0, column=0, sticky='nesw')
-        self.details_y_scroll = ttk.Scrollbar(self.activity_details_scrollable_text, orient='vertical',
+        self.activity_details_text.pack(side='left')
+        self.details_y_scroll = ttk.Scrollbar(self.activity_details_scrollable_frame, orient='vertical',
                                               command=self.activity_details_text.yview)
         self.activity_details_text['yscrollcommand'] = self.details_y_scroll.set
-        self.details_y_scroll.grid(row=0, column=1, sticky='ns')
+        self.details_y_scroll.pack(side='right', fill='y')
 
         self.activity_goals_label = ttk.Label(self.activity_info_frame, text='Goals:', justify='right')
         self.activity_goals_label.grid(row=2, column=0, pady=self.pady, sticky='e')
 
-        self.activity_goals_scrollable_text = ttk.Frame(self.activity_info_frame)
-        self.activity_goals_scrollable_text.grid(row=2, column=1, pady=self.pady, sticky='we')
-        self.activity_goals_text = tk.Text(self.activity_goals_scrollable_text, width=25, height=2,
+        self.activity_goals_scrollable_frame = ttk.Frame(self.activity_info_frame)
+        self.activity_goals_scrollable_frame.grid(row=2, column=1, pady=self.pady, sticky='we')
+        self.activity_goals_text = tk.Text(self.activity_goals_scrollable_frame, width=25, height=3,
                                            wrap='word', font=ui.TEXT_ENTRY_FONT)
-        self.activity_goals_text.grid(row=0, column=0, sticky='nesw')
-        self.goals_y_scroll = ttk.Scrollbar(self.activity_goals_scrollable_text, orient='vertical',
+        self.activity_goals_text.pack(side='left')
+        self.goals_y_scroll = ttk.Scrollbar(self.activity_goals_scrollable_frame, orient='vertical',
                                             command=self.activity_goals_text.yview)
         self.activity_goals_text['yscrollcommand'] = self.goals_y_scroll.set
-        self.goals_y_scroll.grid(row=0, column=1, sticky='ns')
+        self.goals_y_scroll.pack(side='right', fill='y')
         # == end of self.activity_info_frame ==
 
         # == assessor info frame ==

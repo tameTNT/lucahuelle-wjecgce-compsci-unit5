@@ -53,7 +53,10 @@ class StudentOverview(ui.GenericPage):
         self.table_note.grid(row=2, column=0, columnspan=5, padx=self.padx, pady=(self.pady, 0))
         self.rowconfigure(2, weight=1)
         # == configuring student table ==
-        self.student_info_treeview = ttk.Treeview(self,
+        self.treeview_frame = ttk.Frame(self)
+        self.treeview_frame.grid(row=3, column=0, columnspan=5, sticky='we', padx=self.padx, pady=(0, self.pady))
+
+        self.student_info_treeview = ttk.Treeview(self.treeview_frame,
                                                   columns=(
                                                       'approval_status', 'volunteering',
                                                       'skill', 'physical', 'expedition'
@@ -74,9 +77,13 @@ class StudentOverview(ui.GenericPage):
 
         # wouldbenice: ability to sort columns when the headings are clicked
 
-        self.student_info_treeview.grid(row=3, column=0, columnspan=5, sticky='we', padx=self.padx,
-                                        pady=(0, self.pady))
+        self.student_info_treeview.pack(side='left')
         self.student_info_treeview.bind('<Double-1>', self.on_double_click)
+
+        self.treeview_scroll = ttk.Scrollbar(self.treeview_frame, orient='vertical',
+                                             command=self.student_info_treeview.yview)
+        self.treeview_scroll.pack(side='right', fill='y')
+        self.student_info_treeview['yscrollcommand'] = self.treeview_scroll.set
         # == end table config ==
 
         self.staff = None
