@@ -124,7 +124,7 @@ if __name__ == '__main__':
                         type=str,
                         help='optional suffix to add when loading files (use to load specific tables)',
                         default='')
-    group = parser.add_mutually_exclusive_group()
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--show-gui',
                        help='show GUI to log in to system as staff or student',
                        action='store_true')
@@ -133,25 +133,22 @@ if __name__ == '__main__':
                        action='store_true')
     args = parser.parse_args()
 
-    if args.show_gui or args.create_staff_account:
-        MAIN_DATABASE_OBJ = data_handling.Database()
-        try:
-            # loads last database state from file into memory
-            MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
-            print('Tables successfully loaded from txt files.')
-        except FileNotFoundError as fe:
-            if args.file_save_suffix:
-                raise fe
-            else:
-                # todo: test 'clean' startup with no txt files/database
-                print('No existing complete database. New files will be created on program termination.')
+    MAIN_DATABASE_OBJ = data_handling.Database()
+    try:
+        # loads last database state from file into memory
+        MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
+        print('Tables successfully loaded from txt files.')
+    except FileNotFoundError as fe:
+        if args.file_save_suffix:
+            raise fe
+        else:
+            # todo: test 'clean' startup with no txt files/database
+            # todo: set up example databases to be loaded using readme instructions
+            print('No existing complete database. New files will be created on program termination.')
 
-        if args.show_gui:
-            logging.debug('show-gui argument provided: creating tkinter instance')
-            create_gui(args.file_save_suffix)
-        elif args.create_staff_account:
-            logging.debug('create-staff-account argument provided: launching command line function to create account')
-            create_staff_account(args.file_save_suffix)
-    else:
-        logging.debug('No arguments provided at command line. Showing help instead.')
-        parser.print_help()
+    if args.show_gui:
+        logging.debug('show-gui argument provided: creating tkinter instance')
+        create_gui(args.file_save_suffix)
+    elif args.create_staff_account:
+        logging.debug('create-staff-account argument provided: launching command line function to create account')
+        create_staff_account(args.file_save_suffix)
