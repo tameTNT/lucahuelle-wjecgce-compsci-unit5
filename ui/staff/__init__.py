@@ -228,14 +228,22 @@ class StudentOverview(ui.GenericPage):
                     )
 
     # noinspection PyUnusedLocal
-    def on_double_click(self, tk_event):
+    def on_double_click(self, tk_event: tk.Event):
+        """
+        To be bound to a the treeview object. (requires tk_event for call from within tkinter)
+        When this is double clicked, the currently selected item is retrieved and its values extracted.
+        The method then calls self.change_to_student_page() to show the selected student's info to the user.
+        """
         selected_item = self.student_info_treeview.selection()
 
         treeview_item_values = self.student_info_treeview.item(selected_item)
-        # first item in 'values' list is username/fullname; last is the student's id
-        clicked_name, clicked_student_id = treeview_item_values['text'], treeview_item_values['values'][-1]
+        # 'text' value of row is username/fullname; last is the dictionary of extra info including student_id
+        clicked_name, clicked_student_id = treeview_item_values['text'], eval(treeview_item_values['values'][-1])['id']
+
+        logging.debug(f'Student - {clicked_name} id:{clicked_student_id} - double clicked by {self.staff_fullname}')
+
         self.change_to_student_page(clicked_name, clicked_student_id)
 
     def change_to_student_page(self, student_name: str, student_id: int):
         # todo: change to student page clicked
-        logging.debug(f'Student - {student_name} id:{student_id} - selected by {self.staff_fullname}')
+        pass
