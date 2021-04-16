@@ -5,7 +5,6 @@ import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List, Optional  # type hints in function and class definitions
-
 from typing.io import TextIO
 
 from data_tables import SECTION_NAME_MAPPING

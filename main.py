@@ -121,12 +121,12 @@ def create_staff_account(file_save_suffix):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.format_help()
-    parser.add_argument('-s', '--file-save-suffix',
-                        type=str,
+    parser.add_argument('-f', '--file-save-suffix',
+                        type=str, metavar='SUFFIX',
                         help='optional suffix to add when loading files (use to load specific tables)',
                         default='')
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--show-gui',
+    group.add_argument('-g', '--show-gui',
                        help='show GUI to log in to system as staff or student',
                        action='store_true')
     group.add_argument('-s', '--create-staff-account',
@@ -141,7 +141,6 @@ if __name__ == '__main__':
     try:
         # loads last database state from file into memory
         MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
-        print('Tables successfully loaded from txt files.')
     except FileNotFoundError as fe:
         if args.file_save_suffix:
             raise fe
