@@ -64,6 +64,7 @@ def create_gui(file_save_suffix):
     # todo: change start_page back to ui.landing.Welcome
     main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StaffLogin)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
+    root.resizable(width=False, height=False)
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root, file_save_suffix))
     root.mainloop()
 
