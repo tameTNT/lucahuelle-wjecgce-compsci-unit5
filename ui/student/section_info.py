@@ -378,6 +378,7 @@ class SectionInfo(ui.GenericPage):
         """
         Attempts to delete the section_evidence resource with id resource_id
         from the ResourceTable. Also deletes the actual associated file.
+
         :param resource_id: id of the resource to delete
         :return:
         """
@@ -396,6 +397,7 @@ class SectionInfo(ui.GenericPage):
         in the ResourceTable as a section report
         (i.e. set is_section_report attribute to 1 (from 0)).
         Only one resource per section object can be marked in this way.
+
         :param resource_id: id of the resource to mark as section report
         :return:
         """

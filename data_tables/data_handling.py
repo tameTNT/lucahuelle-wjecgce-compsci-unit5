@@ -5,6 +5,7 @@ import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List, Optional  # type hints in function and class definitions
+
 from typing.io import TextIO
 
 from data_tables import SECTION_NAME_MAPPING
@@ -44,6 +45,7 @@ class Row:
     def tabulate(self, padding_values: dict = None, special_str_funcs: dict = None) -> str:
         """
         Returns a one line string of the object's data tabulated for text storage
+
         :param padding_values: dictionary of field_name (str): padding_value (int) pairs
         :param special_str_funcs: dictionary of fields with a custom func for a str representation.
             Each function should take one argument, the field's value and return a string.
@@ -76,8 +78,7 @@ class Table:
     # a Collection is just a sized iterable
     def __init__(self, start_table: Collection[row_class] = None):
         """
-        :param start_table: an iterable of row objects (children of Row class)
-            to populate self with
+        Populates self.row_dict from the iterable of row objects, start_table
         """
 
         self.row_dict = dict()
@@ -572,6 +573,7 @@ class ResourceTable(Table):
                               section_id: int) -> int:
         """
         Adds the files in selected_file_list to the ResourceTable each as its own Resource object.
+
         :param selected_file_list: a list of TextIO objects such as that produced by tk.filedialog.askopenfiles()
         :param student_id: the id of the student to which the resources should be linked
         :param section_id: the id of the section to which the resources should be linked
@@ -613,6 +615,7 @@ class ResourceTable(Table):
         Returns True if the section with id parent_link_id already has a
         resource associated with it marked as a section report. Returns False
         if this is not the case.
+
         :param section_id: id of section to check
         :return: boolean of whether there is a report associated with section already
         """
