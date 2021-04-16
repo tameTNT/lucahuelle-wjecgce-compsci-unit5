@@ -2,7 +2,7 @@ import random
 import string
 from typing import Tuple
 
-from data_handling import Database, Student, StudentLogin
+from data_tables.data_handling import Database, Student, StudentLogin
 from processes import password_logic
 
 
@@ -70,9 +70,9 @@ def populate_db(db_obj: Database, num_students) -> set:
     return usernames_created
 
 
-if __name__ == '__main__':
+def populate(base_table_suffix):
     db = Database()
-    db.load_state_from_file()
+    db.load_state_from_file(suffix=base_table_suffix)
 
     print('Purging existing tables (except StaffTable)...')
     for name, table in db.database.items():

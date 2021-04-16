@@ -8,7 +8,7 @@ from tkinter import messagebox
 import ui.landing
 import ui.staff
 import ui.student
-from data_tables import data_handling
+from data_tables import data_handling, populate_tables
 from processes import validation, password_logic
 from ui import RootWindow
 
@@ -129,8 +129,11 @@ if __name__ == '__main__':
     group.add_argument('--show-gui',
                        help='show GUI to log in to system as staff or student',
                        action='store_true')
-    group.add_argument('--create-staff-account',
-                       help='launch interactive command line to create staff/admin accounts',
+    group.add_argument('-s', '--create-staff-account',
+                       help='launch interactive command line to create a staff/admin account',
+                       action='store_true')
+    group.add_argument('-p', '--populate-tables',
+                       help='launch interactive command line to create random test student data',
                        action='store_true')
     args = parser.parse_args()
 
@@ -153,3 +156,6 @@ if __name__ == '__main__':
     elif args.create_staff_account:
         logging.debug('create-staff-account argument provided: launching command line function to create account')
         create_staff_account(args.file_save_suffix)
+    elif args.populate_tables:
+        logging.debug('populate-tables argument provided: launching command line function to generate test students')
+        populate_tables.populate(args.file_save_suffix)
