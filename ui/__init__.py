@@ -3,19 +3,18 @@ from __future__ import annotations  # needed for typing of classes not yet defin
 import logging
 import tkinter as tk
 import tkinter.ttk as ttk
-from typing import Iterable, Type
+from tkinter import font
+from typing import Iterable, Type, Callable
 
 from data_tables import data_handling
 
 # Font constants
+BODY_FONT = 'TkTextFont'
 HEADING_FONT = 'TkHeadingFont 15'
 ITALIC_CAPTION_FONT = 'TEMP - set in main.py'
 BOLD_CAPTION_FONT = 'TEMP - set in main.py'
 TOOLTIP_FONT = 'TkTooltipFont 9'
 TEXT_ENTRY_FONT = 'TkTextFont 9'
-
-# Misc. constants
-SECTION_NAME_MAPPING = {'vol': 'Volunteering', 'skill': 'Skill', 'phys': 'Physical'}
 
 
 # By CC attribution, this Tooltip class and create_tooltip func are adapted from
@@ -58,15 +57,45 @@ def create_tooltip(widget: tk.Widget, text: str):
     tool_tip = ToolTip(widget)
 
     # noinspection PyUnusedLocal
-    def enter(event):
+    def enter(tk_event: tk.Event):
         tool_tip.show_tooltip(text)
 
     # noinspection PyUnusedLocal
-    def leave(event):
+    def leave(tk_event: tk.Event):
         tool_tip.hide_tooltip()
 
     widget.bind('<Enter>', enter)
     widget.bind('<Leave>', leave)
+
+
+# todo: function not needed anymore?
+def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable):
+    """
+    Underlines the label widget when the user hovers over it
+    indicating a clickable link to them.
+
+    :param l_widget: the ttk label widget which the user hovers over.
+        Should have a font attribute already set (otherwise font may change on hover)
+    :param change_page_func: the change page function to be called when
+        the user clicks (mouse button 1) the label.
+        First argument must be able to accept tkinter event details: e.g. func(event, a, b): ...
+    """
+    l_widget.bind('<Button-1>', change_page_func)
+
+    # noinspection PyUnusedLocal
+    def enter(tk_event: tk.Event):
+        f = font.Font(l_widget, l_widget.cget('font'))
+        f.configure(underline=True)
+        l_widget.configure(font=f)
+
+    # noinspection PyUnusedLocal
+    def leave(tk_event: tk.Event):
+        f = font.Font(l_widget, l_widget.cget('font'))
+        f.configure(underline=False)
+        l_widget.configure(font=f)
+
+    l_widget.bind('<Enter>', enter)
+    l_widget.bind('<Leave>', leave)
 
 
 # By CC attribution, this 'page-based approach' is based on the framework provided at
@@ -86,6 +115,8 @@ class RootWindow:
         """
         self.tk_root = tk_root
 
+        # wouldbenice: store all tables within generic pages by default instead of
+        #  layered accessing this variable so many layers up
         self.db = db
         self.padx = padx
         self.pady = pady
@@ -145,6 +176,9 @@ class GenericPage(ttk.Frame):
         pass
 
 
+# wouldbenice: create a HomePage class that includes a logout method
+
+
 class PagedMainFrame(ttk.Frame):
     def __init__(self,
                  master_root: RootWindow,
@@ -170,6 +204,7 @@ class PagedMainFrame(ttk.Frame):
 
         # ensures that layered frames are packed/gridded seamlessly
         # into this main controller/'pager' frame
+        # wouldbenice: why aren't pages centered in the whole frame?
         self.pack(side='top', fill='both', expand=True)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)

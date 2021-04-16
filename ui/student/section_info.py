@@ -6,7 +6,7 @@ import tkinter.messagebox as msg
 import tkinter.ttk as ttk
 
 import ui
-from data_tables import data_handling
+from data_tables import data_handling, SECTION_NAME_MAPPING
 from processes import datetime_logic, validation, shorten_string
 
 
@@ -64,12 +64,13 @@ class SectionInfo(ui.GenericPage):
         self.start_date_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
         self.start_date_var = tk.StringVar()
-        on_update_wrapper = self.pager_frame.master_root.tk_root.register(self.update_date_validation)
+        # on_update_wrapper = ...tk_root.register(self.update_date_validation) - wrapper not needed
         self.start_date = ttk.Entry(self.detail_frame, width=10,
                                     textvariable=self.start_date_var,
                                     # calls validatecommand on any action with the widget (e.g. edit, focus change)
                                     validate='all',
-                                    validatecommand=on_update_wrapper)  # updates self.end_date_var based on entry
+                                    # updates self.end_date_var based on entry
+                                    validatecommand=self.update_date_validation)
         self.start_date.grid(row=1, column=1, pady=self.pady, sticky='we')
         ui.create_tooltip(self.start_date, 'Enter in format YYYY/MM/DD')
 
@@ -91,28 +92,28 @@ class SectionInfo(ui.GenericPage):
         self.activity_details_label = ttk.Label(self.activity_info_frame, text='Details:', justify='right')
         self.activity_details_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
-        self.activity_details_scrollable_text = ttk.Frame(self.activity_info_frame)
-        self.activity_details_scrollable_text.grid(row=1, column=1, pady=self.pady, sticky='we')
-        self.activity_details_text = tk.Text(self.activity_details_scrollable_text, width=25, height=4,
+        self.activity_details_scrollable_frame = ttk.Frame(self.activity_info_frame)
+        self.activity_details_scrollable_frame.grid(row=1, column=1, pady=self.pady, sticky='we')
+        self.activity_details_text = tk.Text(self.activity_details_scrollable_frame, width=25, height=4,
                                              wrap='word', font=ui.TEXT_ENTRY_FONT)
-        self.activity_details_text.grid(row=0, column=0, sticky='nesw')
-        self.details_y_scroll = ttk.Scrollbar(self.activity_details_scrollable_text, orient='vertical',
+        self.activity_details_text.pack(side='left')
+        self.details_y_scroll = ttk.Scrollbar(self.activity_details_scrollable_frame, orient='vertical',
                                               command=self.activity_details_text.yview)
         self.activity_details_text['yscrollcommand'] = self.details_y_scroll.set
-        self.details_y_scroll.grid(row=0, column=1, sticky='ns')
+        self.details_y_scroll.pack(side='right', fill='y')
 
         self.activity_goals_label = ttk.Label(self.activity_info_frame, text='Goals:', justify='right')
         self.activity_goals_label.grid(row=2, column=0, pady=self.pady, sticky='e')
 
-        self.activity_goals_scrollable_text = ttk.Frame(self.activity_info_frame)
-        self.activity_goals_scrollable_text.grid(row=2, column=1, pady=self.pady, sticky='we')
-        self.activity_goals_text = tk.Text(self.activity_goals_scrollable_text, width=25, height=2,
+        self.activity_goals_scrollable_frame = ttk.Frame(self.activity_info_frame)
+        self.activity_goals_scrollable_frame.grid(row=2, column=1, pady=self.pady, sticky='we')
+        self.activity_goals_text = tk.Text(self.activity_goals_scrollable_frame, width=25, height=3,
                                            wrap='word', font=ui.TEXT_ENTRY_FONT)
-        self.activity_goals_text.grid(row=0, column=0, sticky='nesw')
-        self.goals_y_scroll = ttk.Scrollbar(self.activity_goals_scrollable_text, orient='vertical',
+        self.activity_goals_text.pack(side='left')
+        self.goals_y_scroll = ttk.Scrollbar(self.activity_goals_scrollable_frame, orient='vertical',
                                             command=self.activity_goals_text.yview)
         self.activity_goals_text['yscrollcommand'] = self.goals_y_scroll.set
-        self.goals_y_scroll.grid(row=0, column=1, sticky='ns')
+        self.goals_y_scroll.pack(side='right', fill='y')
         # == end of self.activity_info_frame ==
 
         # == assessor info frame ==
@@ -166,13 +167,11 @@ class SectionInfo(ui.GenericPage):
         self.student_username = ''
         self.section_type_short = ''
 
+        db = self.pager_frame.master_root.db
         # noinspection PyTypeChecker
-        self.section_table: data_handling.SectionTable = \
-            self.pager_frame.master_root.db.get_table_by_name('SectionTable')
-
+        self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
         # noinspection PyTypeChecker
-        self.resource_table: data_handling.ResourceTable = \
-            self.pager_frame.master_root.db.get_table_by_name('ResourceTable')
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
 
     def update_attributes(self, student: data_handling.Student, username: str,
                           section_type_short: str):
@@ -180,7 +179,7 @@ class SectionInfo(ui.GenericPage):
         self.student = student
         self.student_username = username
         self.section_type_short = section_type_short
-        long_section_name = ui.SECTION_NAME_MAPPING[self.section_type_short]
+        long_section_name = SECTION_NAME_MAPPING[self.section_type_short]
 
         self.page_name = f'{self.student_username} {long_section_name} Details'
 
@@ -360,18 +359,14 @@ class SectionInfo(ui.GenericPage):
                             f'You cannot upload evidence until you have reached the '
                             f"section's end date ({datetime_logic.datetime_to_str(planned_end_date)}).")
         else:
-            # noinspection PyTypeChecker
-            resource_table: data_handling.ResourceTable = \
-                self.pager_frame.master_root.db.get_table_by_name('ResourceTable')
-
             # opens a file selection dialog in the user's home directory
             # the user can select as many files as they wish
             selected_files = filedialog.askopenfiles(title='Please select file(s) to add as evidence.',
                                                      initialdir=os.path.expanduser('~'))
 
-            num_files_uploaded = resource_table.add_student_resources(selected_files,
-                                                                      self.student.student_id,
-                                                                      self.section_obj.section_id)
+            num_files_uploaded = self.resource_table.add_student_resources(selected_files,
+                                                                           self.student.student_id,
+                                                                           self.section_obj.section_id)
 
             if num_files_uploaded > 0:
                 msg.showinfo('File upload', f'{num_files_uploaded} file(s) uploaded successfully.')
@@ -383,6 +378,7 @@ class SectionInfo(ui.GenericPage):
         """
         Attempts to delete the section_evidence resource with id resource_id
         from the ResourceTable. Also deletes the actual associated file.
+
         :param resource_id: id of the resource to delete
         :return:
         """
@@ -401,6 +397,7 @@ class SectionInfo(ui.GenericPage):
         in the ResourceTable as a section report
         (i.e. set is_section_report attribute to 1 (from 0)).
         Only one resource per section object can be marked in this way.
+
         :param resource_id: id of the resource to mark as section report
         :return:
         """

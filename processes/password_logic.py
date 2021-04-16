@@ -2,33 +2,44 @@ import binascii
 import hashlib
 import logging
 import os
+import string
+from typing import Dict
 
 
-class PasswordLengthError(Exception):
-    def __init__(self, password_len, message='provided_password string argument too long'):
+class PasswordError(Exception):
+    def __init__(self, error_type: str):
         """
-        Exception raised for when provided_password string is too long.
+        Exception raised for when a password string doesn't meet requirements.
 
-        :param password_len: length of provided_password string
-        :param message: error message explanation to be raised
+        :param error_type: one of the following options:
+            'length', 'one_lower', 'one_upper', 'one_digit'
         """
-        self.password_len = password_len
-        self.message = message
+        self.message = ''
+
+        if error_type == 'length':
+            self.message = 'Password must be between 6 and 100 characters long'
+
+        elif error_type == 'one_lower':
+            self.message = 'Password must contain at least one lowercase letter'
+
+        elif error_type == 'one_upper':
+            self.message = 'Password must contain at least one uppercase letter'
+
+        elif error_type == 'one_digit':
+            self.message = 'Password must contain at least one number'
+
         logging.error(str(self))
         super().__init__(self.message)
-
-    def __str__(self):
-        return f'{self.password_len} > 100 : {self.message}'
 
 
 # By CC attribution, the functions for hashing and verifying password are based on code at
 # https://www.vitoshacademy.com/hashing-passwords-in-python/
 def hash_pwd_str(provided_password: str) -> str:
     """
-    Returns a secure hash of the provided_password string to be stored.
+    Returns a 128 char hashed str of the provided_password string to be stored.
     """
     if len(provided_password) > 100:
-        raise PasswordLengthError(len(provided_password))
+        raise PasswordError('length')
 
     random_bytes = os.urandom(60)
     salt = hashlib.sha256(random_bytes).hexdigest().encode('ascii')
@@ -53,9 +64,41 @@ def verify_pwd_str(provided_password: str, stored_hash: str) -> bool:
     return pwdhash == stored_password
 
 
-def enforce_strength(provided_password: str) -> bool:
+def enforce_strength(provided_password: str, quiet: bool = False) -> (bool, Dict[str, bool]):
     """
-    Returns a boolean of whether provided_password matches the program's strength requirements
+    Returns a tuple containing:
+        - boolean of whether provided_password meets the program's strength requirements
+        - dictionary of bool specifying which tests passed: 'length', 'one_lower', 'one_upper', 'one_digit'
+    :param provided_password: password string to test
+    :param quiet: If True, no PasswordErrors are raised on test failure
     """
-    # todo: write enforce pwd strength function
-    return bool(provided_password)
+    tests_passed = {
+        'length': True,
+        'one_lower': True,
+        'one_upper': True,
+        'one_digit': True,
+    }
+
+    if not (6 <= len(provided_password) <= 100):
+        tests_passed['length'] = False
+
+        if not quiet:
+            raise PasswordError('length')
+
+    string_tests = {
+        'one_lower': set(string.ascii_lowercase),
+        'one_upper': set(string.ascii_uppercase),
+        'one_digit': set(string.digits),
+    }
+    for test_name, req_char_set in string_tests.items():
+        if not set(provided_password).intersection(req_char_set):
+            # no overlap/intersection between sets
+            # i.e. there are no chars from req_char_set in provided_password
+            tests_passed[test_name] = False
+
+            if not quiet:
+                raise PasswordError(test_name)
+
+    all_passed = all(tests_passed.values())  # all() is only True if all tests passed
+
+    return all_passed, tests_passed
