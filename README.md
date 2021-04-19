@@ -1,8 +1,10 @@
 # WJEC GCE Computer Science Unit 5 Software Development
 
-*Luca Huelle (1902) - Rougemont School (68362)*
+Luca Huelle (1902) - Rougemont School (68362)
 
-*September 2020 - May 2021*
+September 2020 - May 2021
+
+*README last updated 19/04/2021*
 
 ## Installation
 
@@ -52,7 +54,44 @@ For further help with using this project's `main.py` file, run the following com
 (gce-unit-5) C:\...\dir>python main.py --help
 ```
 
-Some extra explanatory detail on these functions is provided below.
+Extra explanatory detail on these functions is provided further below.
+
+### _IMPORTANT_: Completed features
+
+Many parts of this project are **not fully complete** (*see the abundance of '`todo`'
+/ '`wouldbenice`'s in the source code*).
+
+Below is a list of the all the main features available to test and use in this latest version of the
+program. They should be *mostly* bug-free and working as intended. Feel free to experiment with
+these to get a feel for the program's capabilities:
+
+- **Fully Object-Oriented database** (in `data_handling.py`) : each element in a subclass of *Table*
+  is a subclass of *Row* (e.g. *Student* is a row object within *StudentTable*, which is itself
+  stored in a *Database* object at runtime)
+  - Saving data to **text files** for permanent data storage including autoload/save on program
+    start/exit
+  - Secure login detail storage with **password salting + hashing** (in `password_logic.py`)
+- Flexible **validation** procedures (in `validation.py`) for all user input across application
+  including emails, dates, etc.
+- **Sample unit tests** (e.g. `test_password_logic.py`) which can be used to verify that certain
+  procedures work as expected
+- User-friendly **command line interface** (with `--help` documentation) for running all
+  operations (creating admin accounts, test data, running GUI application)
+- Use of **logging** (to `main_program.log`) throughout program (GUI and CLI) for user '
+  self-debugging' and for easing IT support
+- Scalable and modular **tkinter Graphical User Interface framework** (see `ui/__init__.py` for
+  detailed, annotated implementation) using layered Frames to keep program within one window. The
+  complete GUI features are as follows:
+  - **Login** functionality for students
+    - **Student dashboard** to view an overview of current award progress and general information
+    - Data entry **enrolment**
+    - Data entry and viewing for **section start/in progress**
+    - Section **evidence uploading** - including marking evidence as an assessor's report
+  - **Login** functionality for staff
+    - **Student overview table** to view award progress of all students at a glance
+      - **Refine** student **views** by award level
+      - **Search** by student name/username
+    - TODO: Specific student data
 
 ## Additional functionality
 
