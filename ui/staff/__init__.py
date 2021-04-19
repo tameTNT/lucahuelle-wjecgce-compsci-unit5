@@ -150,7 +150,7 @@ class StudentOverview(ui.GenericPage):
 
     def search(self):
         self.initial_search_text_clear()  # prevent searching with 'Search names...'
-        query = self.search_query_var.get()
+        query = self.search_query_var.get().lower()
         self.initial_search_text_clear()
 
         if query:
@@ -170,7 +170,7 @@ class StudentOverview(ui.GenericPage):
                 if '(Username)' in item_text:
                     item_text = item_text.split(') ', maxsplit=1)[-1]
 
-                searchable_dict[item_text] = org_label
+                searchable_dict[item_text.lower()] = org_label
 
             # set of all name (item_text) strings where *query* is present
             matches = {item_text for item_text in searchable_dict.keys() if query in item_text}
