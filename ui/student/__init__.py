@@ -10,7 +10,7 @@ from data_tables import data_handling, SECTION_NAME_MAPPING
 
 
 class StudentAwardDashboard(ui.GenericPage):
-    page_name = 'Student Award Dashboard'
+    page_name = 'STUDENT_NAME - Award Dashboard'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)

@@ -10,7 +10,7 @@ from data_tables import data_handling
 
 
 class StudentOverview(ui.GenericPage):
-    page_name = 'Student Overview Dashboard'
+    page_name = 'STAFF_USERNAME - Student Overview Dashboard'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)

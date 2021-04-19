@@ -11,7 +11,7 @@ from processes import datetime_logic, validation, shorten_string
 
 
 class SectionInfo(ui.GenericPage):
-    page_name = 'Student Section Details'
+    page_name = 'STUDENT_USERNAME - SECTION_NAME Details'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -181,7 +181,7 @@ class SectionInfo(ui.GenericPage):
         self.section_type_short = section_type_short
         long_section_name = SECTION_NAME_MAPPING[self.section_type_short]
 
-        self.page_name = f'{self.student_username} {long_section_name} Details'
+        self.page_name = f'{self.student_username} - {long_section_name} Details'
 
         self.header_var.set(f'{long_section_name} Details')
 

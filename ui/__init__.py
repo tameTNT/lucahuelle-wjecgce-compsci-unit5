@@ -147,7 +147,7 @@ class RootWindow:
 
 class GenericPage(ttk.Frame):
     # The name to be used in a .title() call when this window is displayed to the user
-    page_name = ''
+    page_name = 'DofE - FRAME_NAME'  # updated in update_attributes() method of subclasses
 
     def __init__(self, pager_frame: PagedMainFrame):
         """
