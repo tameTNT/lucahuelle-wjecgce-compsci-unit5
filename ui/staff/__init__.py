@@ -88,6 +88,19 @@ class StudentOverview(ui.GenericPage):
         self.student_info_treeview['yscrollcommand'] = self.treeview_scroll.set
         # == end table config ==
 
+        # todo: add functionality to add students
+        self.add_student_button = ttk.Button(self, text='New Student', command=lambda: None)
+        self.add_student_button.grid(row=4, column=0, columnspan=5, padx=self.padx, pady=self.pady)
+
+        # == calendar frame contents ==
+        self.event_frame = ttk.Labelframe(self, text='Coming Up')
+        self.event_frame.grid(row=5, column=0, columnspan=5, padx=self.padx, pady=self.pady)
+
+        # todo: event frame/'Coming Up' and ability to manage events with button
+        self.temp_event_label = ttk.Label(self.event_frame, text='Temp coming up text...')
+        self.temp_event_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
+        # == end of self.event_frame contents ==
+
         self.staff = None
         self.staff_fullname = ''
 
