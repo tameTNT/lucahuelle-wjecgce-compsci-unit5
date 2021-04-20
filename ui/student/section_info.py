@@ -145,16 +145,16 @@ class SectionInfo(ui.GenericPage):
         # === end of self.detail_frame ===
 
         # === evidence frame ===
-        self.evidence_frame = ttk.Labelframe(self, text='Evidence Upload')
-        self.evidence_frame.grid(row=2, column=0, padx=self.padx, pady=self.pady)
+        self.evidence_frame_top = ttk.Labelframe(self, text='Evidence Upload')
+        self.evidence_frame_top.grid(row=2, column=0, padx=self.padx, pady=self.pady)
 
-        self.evidence_list = ttk.Frame(self.evidence_frame)  # populated in self.update_attributes()
-        self.evidence_list.grid(row=0, column=0, padx=self.padx, pady=self.pady)
+        self.evidence_list_frame = ttk.Frame(self.evidence_frame_top)  # populated in self.update_attributes()
+        self.evidence_list_frame.grid(row=0, column=0)  # no args - re-added below
 
         # wouldbenice: buttons to open folder containing resource for staff - os.startfile(path, 'open'), Windows only
-        self.add_evidence_button = ttk.Button(self.evidence_frame, text='Add Evidence', command=self.add_evidence)
-        self.add_evidence_button.grid(row=1, column=0, padx=self.padx, pady=self.pady)
-        # === end of self.evidence_frame ===
+        self.add_evidence_button = ttk.Button(self.evidence_frame_top, text='Add Evidence', command=self.add_evidence)
+        self.add_evidence_button.grid(row=1, column=0, padx=self.padx, pady=(0, self.pady))
+        # === end of self.evidence_frame_top ===
 
         self.submit_button = ttk.Button(self, text='Submit section info',
                                         command=self.attempt_section_table_submit)
@@ -187,6 +187,8 @@ class SectionInfo(ui.GenericPage):
 
         state_dict = {False: 'disabled', True: 'normal'}
 
+        self.clear_evidence_list()
+
         # if the section's details have already been filled in,
         # fields are disabled with data pre-filled
         if self.student.__getattribute__(f'{section_type_short}_info_id'):
@@ -210,7 +212,7 @@ class SectionInfo(ui.GenericPage):
             self.timescale_select_6['state'] = 'disabled'
             self.timescale_select_12['state'] = 'disabled'
 
-            self.update_evidence_list()  # updates/populates the evidence list
+            self.populate_evidence_list()  # updates/populates the evidence list
 
         else:  # otherwise, the fields are enabled to allow data entry
             fields_enabled = True
@@ -241,21 +243,26 @@ class SectionInfo(ui.GenericPage):
 
         self.update_date_validation()  # updates/clears end date label
 
-    def update_evidence_list(self):
+    def clear_evidence_list(self):
+        """
+        Clears all items/rows from the GUI's evidence list
+        """
+        self.evidence_list_frame.destroy()  # clears current evidence list
+        self.evidence_list_frame = ttk.Frame(self.evidence_frame_top)  # populated afterwards
+        self.evidence_list_frame.grid(row=0, column=0, padx=self.padx, pady=(0, self.pady))
+
+    def populate_evidence_list(self):
         """
         Freshly populates the GUI's evidence list from the resource table.
+        DOES NOT clear the list beforehand - use self.clear_evidence_list()
         """
-        self.evidence_list.destroy()  # clears current evidence list
-        self.evidence_list = ttk.Frame(self.evidence_frame)  # populated below
-        self.evidence_list.grid(row=0, column=0, padx=self.padx, pady=self.pady)
-
         for resource in self.resource_table.row_dict.values():
             is_section_evidence = resource.resource_type == 'section_evidence'
             is_id_match = resource.parent_link_id == self.section_obj.section_id
             if is_section_evidence and is_id_match:
                 row_id = resource.resource_id
 
-                evidence_row = ttk.Frame(self.evidence_list)
+                evidence_row = ttk.Frame(self.evidence_list_frame)
                 evidence_row.grid(sticky='we')
 
                 short_name = shorten_string(resource.file_path.stem, 15) + ' ' + resource.file_path.suffix
@@ -389,7 +396,8 @@ class SectionInfo(ui.GenericPage):
         if confirm_delete:
             self.resource_table.delete_row(resource_id)
             # refresh resource list
-            self.update_evidence_list()
+            self.clear_evidence_list()
+            self.populate_evidence_list()
 
     def mark_evidence_as_report(self, resource_id: int):
         """
@@ -418,4 +426,5 @@ class SectionInfo(ui.GenericPage):
                 logging.debug(f'Resource with id {resource_obj.resource_id} was '
                               f'marked as the section report for section id {self.section_obj.section_id}')
                 # refresh resource list
-                self.update_evidence_list()
+                self.clear_evidence_list()
+                self.populate_evidence_list()
