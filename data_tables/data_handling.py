@@ -221,7 +221,7 @@ class Student(Row):
                  fullname: str = '', gender: str = '',
                  date_of_birth: str = '', address: str = '', phone_primary: str = '',
                  email_primary: str = '', phone_emergency: str = '', primary_lang: str = '',
-                 enrolment_date: str = '', vol_info_id: Union[int, str] = '',
+                 submission_date: str = '', vol_info_id: Union[int, str] = '',
                  skill_info_id: Union[int, str] = '', phys_info_id: Union[int, str] = '',
                  from_file: bool = True):
         # Only the first 4 parameters are provided by staff. (is_approved defaults to 0)
@@ -273,7 +273,7 @@ class Student(Row):
         self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
                                             'Primary Language') if fullname else ''
 
-        self.enrolment_date = dt.datetime(**str_to_date_dict(enrolment_date)) if fullname else ''
+        self.submission_date = dt.datetime(**str_to_date_dict(submission_date)) if fullname else ''
 
         self.vol_info_id = validate_int(vol_info_id, 'vol_info_id') if vol_info_id else ''
 
@@ -312,8 +312,6 @@ class Student(Row):
         primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
                                        'Primary Language')
 
-        enrolment_date = dt.datetime(**str_to_date_dict(datetime_to_str()))
-
         logging.debug('All validation checks passed on input data for student enrollment.')
 
         self.fullname = fullname
@@ -324,7 +322,7 @@ class Student(Row):
         self.email_primary = email_primary
         self.phone_emergency = phone_emergency
         self.primary_lang = primary_lang
-        self.enrolment_date = enrolment_date
+        self.submission_date = dt.datetime.now()
 
         logging.debug(f'New Student object fully created '
                       f'- student_id={self.student_id} fullname={self.fullname!r}')
@@ -352,7 +350,7 @@ class Student(Row):
             'email_primary': EMAIL_MAX_LEN,
             'phone_emergency': 11,
             'primary_lang': 7,
-            'enrolment_date': 10,
+            'submission_date': 10,
             'vol_info_id': INTERNAL_ID_LEN,
             'skill_info_id': INTERNAL_ID_LEN,
             'phys_info_id': INTERNAL_ID_LEN,
@@ -360,7 +358,7 @@ class Student(Row):
         }
         special_str_funcs = {
             'date_of_birth': datetime_to_str,
-            'enrolment_date': datetime_to_str,
+            'submission_date': datetime_to_str,
         }
         return super().tabulate(padding_values, special_str_funcs)
 
