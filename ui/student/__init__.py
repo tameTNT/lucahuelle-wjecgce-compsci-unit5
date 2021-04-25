@@ -123,14 +123,13 @@ class StudentAwardDashboard(ui.GenericPage):
 
         # === updates tkinter StringVar with new information received ===
         if self.student.fullname:  # registration complete
+            self.complete_enrollment_button.pack_forget()
             if self.student.is_approved:  # teacher has approved enrolment
                 self.welcome_text_var.set(f'Welcome, {self.student.fullname}!')
-                self.complete_enrollment_button.pack_forget()
                 self.fully_enrolled_info_frame.pack(padx=self.padx, pady=self.pady)
             else:  # pending teacher approval
                 self.welcome_text_var.set(f'Welcome!\n Your teacher has not yet approved '
                                           f'your enrollment, {username}.')
-                self.complete_enrollment_button.pack_forget()
                 self.fully_enrolled_info_frame.pack_forget()
 
         else:  # if the student's details aren't complete, they have yet to register
