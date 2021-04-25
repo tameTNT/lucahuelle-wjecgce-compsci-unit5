@@ -4,7 +4,7 @@ Luca Huelle (1902) - Rougemont School (68362)
 
 September 2020 - May 2021
 
-*README last updated 19/04/2021*
+*README last updated 20/04/2021*
 
 ## Installation
 
@@ -68,6 +68,8 @@ these to get a feel for the program's capabilities:
 - **Fully Object-Oriented database** (in `data_handling.py`) : each element in a subclass of *Table*
   is a subclass of *Row* (e.g. *Student* is a row object within *StudentTable*, which is itself
   stored in a *Database* object at runtime)
+  - Relational database in **third normal form**: *StudentLogin, Student, Section, Resource* and *
+    Staff*
   - Saving data to **text files** for permanent data storage including autoload/save on program
     start/exit
   - Secure login detail storage with **password salting + hashing** (in `password_logic.py`)

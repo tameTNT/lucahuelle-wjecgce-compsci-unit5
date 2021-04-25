@@ -9,7 +9,7 @@ from processes import datetime_logic, validation, make_readable_name
 
 
 class Enrollment(ui.GenericPage):
-    page_name = 'Student Award Enrollment'
+    page_name = 'USERNAME - Award Enrollment'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -35,7 +35,7 @@ class Enrollment(ui.GenericPage):
         # === end of frame ===
 
         # === info_submission_frame contents ===
-        # wouldbenice: temporary text in fields to guide user (e.g. 'Search...')
+        # wouldbenice: temporary text in fields to guide user (e.g. 'YYYY/MM/DD...')
         self.info_submission_frame = ttk.Frame(self)
         self.info_submission_frame.grid(row=2, column=1, padx=self.padx, pady=self.pady)
 
@@ -139,7 +139,10 @@ class Enrollment(ui.GenericPage):
         self.student = student
         self.student_username = username
 
+        self.page_name = f'{self.student_username} - Award Enrollment'
+
         for attr_name in ('student_id', 'centre_id', 'award_level', 'year_group'):
+            # wouldbenice: get rid of this confusing construct that makes code above unnecessary
             # self.student.student_id, self.student.centre_id,
             # self.student.award_level, self.student.year_group
             current_val = self.student.__getattribute__(attr_name)
