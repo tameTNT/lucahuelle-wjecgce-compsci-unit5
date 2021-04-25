@@ -93,7 +93,8 @@ these to get a feel for the program's capabilities:
     - **Student overview table** to view award progress of all students at a glance
       - **Refine** student **views** by award level
       - **Search** by student name/username
-    - TODO: Specific student data
+    - **View all stored data** for a selected student and **approve/manage students on an individual
+      basis**
 
 ## Additional functionality
 

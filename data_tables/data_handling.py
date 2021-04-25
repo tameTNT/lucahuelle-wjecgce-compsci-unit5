@@ -327,9 +327,6 @@ class Student(Row):
         logging.debug(f'New Student object fully created '
                       f'- student_id={self.student_id} fullname={self.fullname!r}')
 
-        # todo: method for staff to 'approve' student -
-        #  approval sets self.is_approved = 1, deny clears fullname attr
-
     def __repr__(self):
         return f'<Student object student_id={self.student_id} ' \
                f'fullname={self.fullname!r} year_group={self.year_group!r} ' \

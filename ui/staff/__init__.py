@@ -7,6 +7,7 @@ from typing import List
 import ui
 import ui.landing
 from data_tables import data_handling
+from ui.staff import student_info
 
 
 class StudentOverview(ui.GenericPage):
@@ -258,6 +259,12 @@ class StudentOverview(ui.GenericPage):
 
         self.change_to_student_page(clicked_name, clicked_student_id)
 
-    def change_to_student_page(self, student_name: str, student_id: int):
-        # todo: change to student page clicked
-        pass
+    def change_to_student_page(self, clicked_name: str, student_id: int):
+        student_obj = self.student_table.row_dict[student_id]
+
+        self.pager_frame.change_to_page(
+            destination_page=student_info.StudentInfo,
+            clicked_name=clicked_name,
+            student=student_obj,
+            staff_origin=self.staff
+        )
