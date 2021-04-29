@@ -85,11 +85,9 @@ class Enrollment(ui.GenericPage):
         self.phone_primary_label = ttk.Label(self.info_submission_frame, text='Phone number:')
         self.phone_primary_label.grid(row=0, column=2, pady=self.pady, sticky='e')
 
-        self.phone_primary_var = tk.StringVar()
-        self.phone_primary = ttk.Entry(self.info_submission_frame,
-                                       textvariable=self.phone_primary_var)
+        self.phone_primary = ui.IntEntry(0, self.info_submission_frame)
         self.phone_primary.grid(row=0, column=3, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.phone_primary, 'Do not include plus signs or spaces')
+        ui.create_tooltip(self.phone_primary, 'Do not include country codes or spaces')
 
         # -email
         self.email_label = ttk.Label(self.info_submission_frame, text='Email address:')
@@ -105,11 +103,9 @@ class Enrollment(ui.GenericPage):
                                                text='Emergency phone number:')
         self.phone_emergency_label.grid(row=2, column=2, pady=self.pady, sticky='e')
 
-        self.phone_emergency_var = tk.StringVar()
-        self.phone_emergency = ttk.Entry(self.info_submission_frame,
-                                         textvariable=self.phone_emergency_var)
+        self.phone_emergency = ui.IntEntry(0, self.info_submission_frame)
         self.phone_emergency.grid(row=2, column=3, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.phone_emergency, 'Do not include plus signs or spaces')
+        ui.create_tooltip(self.phone_emergency, 'Do not include country codes or spaces')
 
         # -primary language
         self.language_selection_label = ttk.Label(self.info_submission_frame,
@@ -175,9 +171,9 @@ class Enrollment(ui.GenericPage):
                 gender=self.gender_selection_var.get().lower(),
                 date_of_birth=self.date_of_birth_var.get(),
                 address=self.address_var.get(),
-                phone_primary=self.phone_primary_var.get().replace(' ', ''),  # remove spaces
+                phone_primary=self.phone_primary.get(),
                 email_primary=self.email_var.get(),
-                phone_emergency=self.phone_emergency_var.get().replace(' ', ''),
+                phone_emergency=self.phone_emergency.get(),
                 primary_lang=self.language_selection_var.get().lower(),
             )
         except validation.ValidationError as e:

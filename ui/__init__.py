@@ -98,7 +98,29 @@ def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable)
     l_widget.bind('<Leave>', leave)
 
 
-# By CC attribution, this 'page-based approach' is based on the framework provided at
+# Class design adapted from
+# https://www.reddit.com/r/learnpython/comments/985umy/limit_user_input_to_only_int_with_tkinter/e4dj9k9
+class IntEntry(ttk.Entry):
+    def __init__(self, initial_value: int, master: tk.Widget = None, **kwargs):
+        start_string = f'{initial_value if initial_value else ""}'
+        self.var = tk.StringVar(value=start_string)
+        ttk.Entry.__init__(self, master, textvariable=self.var, **kwargs)
+        self.old_value = start_string
+        self.var.trace('w', self.check)  # calls self.check() when self.var is written to
+        self.get, self.set = self.var.get, self.var.set
+
+    # noinspection PyUnusedLocal
+    def check(self, *args):
+        current_value = self.get()
+        if current_value.isdigit() or current_value == '':
+            # the current value is only digits (or an empty string); allow this
+            self.old_value = self.get()
+        else:
+            # there's non-digit characters in the input; reject this
+            self.set(self.old_value)
+
+
+# 'Page-based approach' adapted from the framework provided at
 # https://pythonprogramming.net/change-show-new-frame-tkinter/ and
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 class RootWindow:
