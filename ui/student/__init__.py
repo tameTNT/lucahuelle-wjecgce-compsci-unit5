@@ -4,7 +4,7 @@ import tkinter.ttk as ttk
 
 import ui
 import ui.landing
-import ui.student.enrollment
+import ui.student.enrolment
 import ui.student.section_info
 from data_tables import data_handling, SECTION_NAME_MAPPING
 
@@ -32,8 +32,8 @@ class StudentAwardDashboard(ui.GenericPage):
 
         # button only shown if student has not yet registered/fully enrolled
         # this button and following frame are not packed until the frame is shown to the user
-        self.complete_enrollment_button = ttk.Button(self, text='Complete Enrollment',
-                                                     command=self.enrol_fully)
+        self.complete_enrolment_button = ttk.Button(self, text='Complete Enrolment',
+                                                    command=self.enrol_fully)
 
         # frame packed into window later depending on registration status
         self.fully_enrolled_info_frame = ttk.Frame(self)
@@ -123,19 +123,19 @@ class StudentAwardDashboard(ui.GenericPage):
 
         # === updates tkinter StringVar with new information received ===
         if self.student.fullname:  # registration complete
-            self.complete_enrollment_button.pack_forget()
+            self.complete_enrolment_button.pack_forget()
             if self.student.is_approved:  # teacher has approved enrolment
                 self.welcome_text_var.set(f'Welcome, {self.student.fullname}!')
                 self.fully_enrolled_info_frame.pack(padx=self.padx, pady=self.pady)
             else:  # pending teacher approval
                 self.welcome_text_var.set(f'Welcome!\n Your teacher has not yet approved '
-                                          f'your enrollment, {username}.')
+                                          f'your enrolment, {username}.')
                 self.fully_enrolled_info_frame.pack_forget()
 
         else:  # if the student's details aren't complete, they have yet to register
             self.welcome_text_var.set(f'Welcome!\n'
                                       f'You have not yet completed your registration, {username}.')
-            self.complete_enrollment_button.pack(padx=self.padx, pady=self.pady)
+            self.complete_enrolment_button.pack(padx=self.padx, pady=self.pady)
             self.fully_enrolled_info_frame.pack_forget()
 
         self.current_level_var.set(f'Current level: {self.student.award_level.capitalize()}')
@@ -160,7 +160,7 @@ class StudentAwardDashboard(ui.GenericPage):
 
         logging.info(f'Username "{self.student_username}" entered the student dashboard. '
                      f'They have {"already" if self.student.fullname else "not yet"} '
-                     f'completed their enrollment.')
+                     f'completed their enrolment.')
 
     def logout(self):
         """
@@ -173,7 +173,7 @@ class StudentAwardDashboard(ui.GenericPage):
 
     def enrol_fully(self):
         self.pager_frame.change_to_page(
-            destination_page=ui.student.enrollment.Enrollment,
+            destination_page=ui.student.enrolment.Enrolment,
             student=self.student,
             username=self.student_username,
         )

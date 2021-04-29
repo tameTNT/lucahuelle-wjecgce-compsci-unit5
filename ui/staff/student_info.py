@@ -83,6 +83,10 @@ class StudentInfo(ui.GenericPage):
         if not self.student.fullname:
             no_activity_details_label.pack()
 
+            student_needs_to_enrol_label = ttk.Label(self.action_button_frame, text='Student must complete enrolment',
+                                                     font=ui.ITALIC_CAPTION_FONT)
+            student_needs_to_enrol_label.pack()
+
         else:
             fullname_label = ttk.Label(self.student_information_frame, text='Full name:')
             fullname_label.grid(row=0, column=2, padx=self.padx, pady=self.pady, sticky='e')
@@ -139,9 +143,9 @@ class StudentInfo(ui.GenericPage):
             if not self.student.is_approved:
                 no_activity_details_label.pack()
 
-                approve_enrollment_button = ttk.Button(self.action_button_frame, text='Approve Enrolment',
-                                                       command=self.approve_student)
-                approve_enrollment_button.pack(side='left', padx=self.padx, pady=self.pady)
+                approve_enrolment_button = ttk.Button(self.action_button_frame, text='Approve Enrolment',
+                                                      command=self.approve_student)
+                approve_enrolment_button.pack(side='left', padx=self.padx, pady=self.pady)
             else:
                 # todo: delete, edit and award panels/windows
                 # if no details no_activity_details_label.pack() again
@@ -158,22 +162,22 @@ class StudentInfo(ui.GenericPage):
 
     def approve_student(self):
         user_choice = msg.askyesnocancel(
-            'Student Approval',
+            'Student Enrolment Approval',
             "Are you sure you want to approve this student's submitted details?\n\n"
             "Selecting 'No' will force the student to re-enter their details. "
             "You can also select 'Cancel' to abort this choice."
         )
 
         if user_choice is None:
-            msg.showinfo('Student Approval', 'Student details approval aborted. '
-                                             'No changes made to database.')
+            msg.showinfo('Student Enrolment Approval', 'Student details approval aborted. '
+                                                       'No changes made to database.')
         elif user_choice:
             self.student.is_approved = 1
-            msg.showinfo('Student Approval', 'Student details approved.')
+            msg.showinfo('Student Enrolment Approval', 'Student details approved.')
 
         else:
             # clearing the fullname attribute means the student has to enter all data again
             self.student.fullname = ''
-            msg.showinfo('Student Approval', 'Student details rejected.')
+            msg.showinfo('Student Enrolment Approval', 'Student details rejected.')
 
         self.page_back()

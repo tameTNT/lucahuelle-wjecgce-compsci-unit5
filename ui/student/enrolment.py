@@ -8,8 +8,8 @@ from data_tables import data_handling
 from processes import datetime_logic, validation, make_readable_name
 
 
-class Enrollment(ui.GenericPage):
-    page_name = 'USERNAME - Award Enrollment'
+class Enrolment(ui.GenericPage):
+    page_name = 'USERNAME - Award Enrolment'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -17,7 +17,7 @@ class Enrollment(ui.GenericPage):
         self.back_button = ttk.Button(self, text='Back', command=self.page_back)
         self.back_button.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
-        self.sign_up_label = ttk.Label(self, text='Complete Enrollment',
+        self.sign_up_label = ttk.Label(self, text='Complete Enrolment',
                                        font=ui.HEADING_FONT)
         self.sign_up_label.grid(row=1, column=0, padx=self.padx, pady=self.pady)
 
@@ -123,8 +123,8 @@ class Enrollment(ui.GenericPage):
         self.current_date = ttk.Label(self, text=f'Current Date: {datetime_logic.datetime_to_str()}')
         self.current_date.grid(row=3, column=0, padx=self.padx, pady=self.pady)
 
-        self.complete_button = ttk.Button(self, text='Complete Enrollment',
-                                          command=self.attempt_enrollment)
+        self.complete_button = ttk.Button(self, text='Complete Enrolment',
+                                          command=self.attempt_enrolment)
         self.complete_button.grid(row=3, column=1, padx=self.padx, pady=self.pady)
 
         self.student = None
@@ -135,7 +135,7 @@ class Enrollment(ui.GenericPage):
         self.student = student
         self.student_username = username
 
-        self.page_name = f'{self.student_username} - Award Enrollment'
+        self.page_name = f'{self.student_username} - Award Enrolment'
 
         for attr_name in ('student_id', 'centre_id', 'award_level', 'year_group'):
             # wouldbenice: get rid of this confusing construct that makes code above unnecessary
@@ -164,7 +164,7 @@ class Enrollment(ui.GenericPage):
             username=self.student_username,
         )
 
-    def attempt_enrollment(self):
+    def attempt_enrolment(self):
         try:
             self.student.complete_enrolment(
                 fullname=self.fullname_var.get(),
@@ -179,6 +179,6 @@ class Enrollment(ui.GenericPage):
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
         else:
-            msg.showinfo('Enrollment successful',
-                         'Your enrollment information was successfully saved and submitted to staff for approval.')
+            msg.showinfo('Enrolment successful',
+                         'Your enrolment information was successfully saved and submitted to staff for approval.')
             self.page_back()

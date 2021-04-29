@@ -137,7 +137,7 @@ class StudentOverview(ui.GenericPage):
 
     # def import_export(self):  # todo: import/export data GUI - add command to button above
     #     self.pager_frame.change_to_page(
-    #         destination_page=ui.student.enrollment.Enrollment,
+    #         destination_page=ui.student.enrolment.Enrolment,
     #         student=self.student,
     #         username=self.student_username,
     #     )

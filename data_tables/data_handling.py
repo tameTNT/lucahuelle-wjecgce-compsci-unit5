@@ -5,6 +5,7 @@ import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List, Optional  # type hints in function and class definitions
+
 from typing.io import TextIO
 
 from data_tables import SECTION_NAME_MAPPING
@@ -312,7 +313,7 @@ class Student(Row):
         primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
                                        'Primary Language')
 
-        logging.debug('All validation checks passed on input data for student enrollment.')
+        logging.debug('All validation checks passed on input data for student enrolment.')
 
         self.fullname = fullname
         self.gender = gender
