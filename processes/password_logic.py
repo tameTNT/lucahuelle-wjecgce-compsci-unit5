@@ -32,7 +32,7 @@ class PasswordError(Exception):
         super().__init__(self.message)
 
 
-# By CC attribution, the functions for hashing and verifying password are based on code at
+# Functions for hashing and verifying password adapted from code at
 # https://www.vitoshacademy.com/hashing-passwords-in-python/
 def hash_pwd_str(provided_password: str) -> str:
     """

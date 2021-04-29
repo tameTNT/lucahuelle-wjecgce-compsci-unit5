@@ -17,7 +17,7 @@ TOOLTIP_FONT = 'TkTooltipFont 9'
 TEXT_ENTRY_FONT = 'TkTextFont 9'
 
 
-# By CC attribution, this Tooltip class and create_tooltip func are adapted from
+# Tooltip class and create_tooltip function adapted from
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
 class ToolTip:
     def __init__(self, widget: tk.Widget):
