@@ -2,9 +2,10 @@ import logging
 import tkinter.messagebox as msg
 import tkinter.ttk as ttk
 
+import data_tables
 import ui
 from data_tables import data_handling
-from processes import shorten_string
+from processes import shorten_string, make_multiline_string
 from processes.datetime_logic import datetime_to_str
 
 
@@ -17,18 +18,22 @@ class StudentInfo(ui.GenericPage):
         self.back_button = ttk.Button(self, text='Back', command=self.page_back)
         self.back_button.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
+        self.hover_info_label = ttk.Label(self, text='Hover over ... to view the full text',
+                                          font=ui.ITALIC_CAPTION_FONT, anchor='center')
+        self.hover_info_label.grid(row=1, column=0, columnspan=2, sticky='we', padx=self.padx, pady=self.pady)
+
         self.student_information_frame_top = ttk.Labelframe(self, text='Student Details')
-        self.student_information_frame_top.grid(row=1, column=0, padx=self.padx, pady=self.pady)
+        self.student_information_frame_top.grid(row=2, column=0, padx=self.padx, pady=self.pady)
         self.student_information_frame = ttk.Frame(self.student_information_frame_top)
         self.student_information_frame.pack()
 
-        self.award_detail_frame_top = ttk.Labelframe(self, text='Award details')
-        self.award_detail_frame_top.grid(row=1, column=1, padx=self.padx, pady=self.pady)
-        self.award_detail_frame = ttk.Frame(self.award_detail_frame_top)
-        self.award_detail_frame.pack()
+        self.award_sections_frame_top = ttk.Labelframe(self, text='Award details')
+        self.award_sections_frame_top.grid(row=2, column=1, padx=self.padx, pady=self.pady)
+        self.award_sections_frame = ttk.Frame(self.award_sections_frame_top)
+        self.award_sections_frame.pack()
 
         self.action_button_frame_top = ttk.Frame(self)
-        self.action_button_frame_top.grid(row=2, column=0, columnspan=2, padx=self.padx, pady=self.pady)
+        self.action_button_frame_top.grid(row=3, column=0, columnspan=2, padx=self.padx, pady=self.pady)
         self.action_button_frame = ttk.Frame(self.action_button_frame_top)
         self.action_button_frame.pack()
 
@@ -46,13 +51,13 @@ class StudentInfo(ui.GenericPage):
 
         # clear variable frames and recreate
         self.student_information_frame.destroy()
-        self.award_detail_frame.destroy()
+        self.award_sections_frame.destroy()
         self.action_button_frame.destroy()
 
         self.student_information_frame = ttk.Frame(self.student_information_frame_top)
         self.student_information_frame.pack(padx=self.padx, pady=self.pady)
-        self.award_detail_frame = ttk.Frame(self.award_detail_frame_top)
-        self.award_detail_frame.pack(padx=self.padx, pady=self.pady)
+        self.award_sections_frame = ttk.Frame(self.award_sections_frame_top)
+        self.award_sections_frame.pack(padx=self.padx, pady=self.pady)
         self.action_button_frame = ttk.Frame(self.action_button_frame_top)
         self.action_button_frame.pack(padx=self.padx, pady=self.pady)
 
@@ -78,8 +83,8 @@ class StudentInfo(ui.GenericPage):
         year_group_val_label = ttk.Label(self.student_information_frame, text=self.student.year_group)
         year_group_val_label.grid(row=3, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
-        # populate student information frame with details and buttons depending on state of student enrollment
-        no_activity_details_label = ttk.Label(self.award_detail_frame, text='None', font=ui.BOLD_CAPTION_FONT)
+        # populate student information frame with details and buttons depending on state of student enrolment
+        no_activity_details_label = ttk.Label(self.award_sections_frame, text='None', font=ui.BOLD_CAPTION_FONT)
         if not self.student.fullname:
             no_activity_details_label.pack()
 
@@ -109,6 +114,7 @@ class StudentInfo(ui.GenericPage):
             address_val_label = ttk.Label(self.student_information_frame,
                                           text=shorten_string(self.student.address, 20))
             address_val_label.grid(row=3, column=3, padx=self.padx, pady=self.pady, sticky='w')
+            ui.create_tooltip(address_val_label, make_multiline_string(self.student.address, 20))
 
             phone_primary_label = ttk.Label(self.student_information_frame, text='Primary phone:')
             phone_primary_label.grid(row=4, column=2, padx=self.padx, pady=self.pady, sticky='e')
@@ -134,11 +140,10 @@ class StudentInfo(ui.GenericPage):
             date_separator = ttk.Separator(self.student_information_frame, orient='horizontal')
             date_separator.grid(row=8, column=0, columnspan=4, padx=self.padx, pady=self.pady, sticky='we')
 
-            enrolment_date_label = ttk.Label(self.student_information_frame, text='Info submitted on:')
-            enrolment_date_label.grid(row=9, column=0, columnspan=2, padx=self.padx, pady=self.pady, sticky='e')
-            enrolment_date_val_label = ttk.Label(self.student_information_frame,
-                                                 text=datetime_to_str(self.student.submission_date))
-            enrolment_date_val_label.grid(row=9, column=2, columnspan=2, padx=self.padx, pady=self.pady, sticky='w')
+            enrolment_date_label = ttk.Label(self.student_information_frame,
+                                             text=f'Info submitted on: {datetime_to_str(self.student.submission_date)}',
+                                             anchor='center')
+            enrolment_date_label.grid(row=9, column=0, columnspan=4, padx=self.padx, pady=self.pady, sticky='we')
 
             if not self.student.is_approved:
                 no_activity_details_label.pack()

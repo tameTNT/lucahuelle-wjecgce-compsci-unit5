@@ -499,7 +499,7 @@ class Section(Row):
 
         if date_in_past(proposed_end_date):
             # todo: GENERATE SECTION STATUS method
-            self._activity_status = 'Not Implemented'
+            self._activity_status = 'Not Implemented - TODO'
         else:
             self._activity_status = 'In Progress'
 

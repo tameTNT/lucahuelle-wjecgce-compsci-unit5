@@ -16,3 +16,27 @@ def shorten_string(s: str, max_length: int):
         return s[:max_length - 3] + '...'
     else:
         return s
+
+
+def make_multiline_string(s: str, max_line_length: int):
+    """
+    Converts string s into a string with \n separators that ensure
+    that each line of text is no longer than line_length characters long.
+    Line breaks only occur on spaces, not within words.
+    """
+    if max_line_length < 15:
+        raise ValueError('Please use a line_length value of at least 15')
+    words = s.split(' ')
+    final_string = ''
+    current_line_length = 0
+    for w in words:
+        word_length = len(w)
+
+        if current_line_length + word_length > max_line_length:
+            final_string = final_string[:-1] + '\n'  # [:-1] removes trailing space
+            current_line_length = 0
+
+        current_line_length += word_length
+        final_string += w + ' '
+
+    return final_string[:-1]  # removes trailing space
