@@ -29,8 +29,8 @@ class StudentInfo(ui.GenericPage):
 
         self.award_sections_frame_top = ttk.Labelframe(self, text='Award details')
         self.award_sections_frame_top.grid(row=2, column=1, padx=self.padx, pady=self.pady)
-        self.award_sections_frame = ttk.Frame(self.award_sections_frame_top)
-        self.award_sections_frame.pack()
+        self.award_sections_notebook = ttk.Frame(self.award_sections_frame_top)
+        self.award_sections_notebook.pack()
 
         self.action_button_frame_top = ttk.Frame(self)
         self.action_button_frame_top.grid(row=3, column=0, columnspan=2, padx=self.padx, pady=self.pady)
@@ -51,13 +51,13 @@ class StudentInfo(ui.GenericPage):
 
         # clear variable frames and recreate
         self.student_information_frame.destroy()
-        self.award_sections_frame.destroy()
+        self.award_sections_notebook.destroy()
         self.action_button_frame.destroy()
 
         self.student_information_frame = ttk.Frame(self.student_information_frame_top)
         self.student_information_frame.pack(padx=self.padx, pady=self.pady)
-        self.award_sections_frame = ttk.Frame(self.award_sections_frame_top)
-        self.award_sections_frame.pack(padx=self.padx, pady=self.pady)
+        self.award_sections_notebook = ttk.Notebook(self.award_sections_frame_top)
+        self.award_sections_notebook.pack(padx=self.padx, pady=self.pady)
         self.action_button_frame = ttk.Frame(self.action_button_frame_top)
         self.action_button_frame.pack(padx=self.padx, pady=self.pady)
 
@@ -84,7 +84,7 @@ class StudentInfo(ui.GenericPage):
         year_group_val_label.grid(row=3, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
         # populate student information frame with details and buttons depending on state of student enrolment
-        no_activity_details_label = ttk.Label(self.award_sections_frame, text='None', font=ui.BOLD_CAPTION_FONT)
+        no_activity_details_label = ttk.Label(self.award_sections_notebook, text='None', font=ui.BOLD_CAPTION_FONT)
         if not self.student.fullname:
             no_activity_details_label.pack()
 
@@ -162,8 +162,8 @@ class StudentInfo(ui.GenericPage):
                 for section_type in section_map:
                     section_obj = self.student.get_section_obj(section_type, section_table)
                     if section_obj:
-                        section_frame = ttk.LabelFrame(self.award_sections_frame, text=section_map[section_type])
-                        section_frame.pack(side='left', padx=self.padx, pady=self.pady)
+                        section_frame = ttk.Frame(self.award_sections_notebook)
+                        self.award_sections_notebook.add(section_frame, text=section_map[section_type])
 
                         activity_start_date_label = ttk.Label(section_frame, text='Start Date:')
                         activity_start_date_label.grid(row=0, column=0, padx=self.padx, pady=self.pady, sticky='e')
@@ -234,10 +234,10 @@ class StudentInfo(ui.GenericPage):
 
                         resource_number_label = ttk.Label(section_frame,
                                                           text=f'{len(added_resource_list)} resource(s) added:')
-                        resource_number_label.grid(row=9, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        resource_number_label.grid(row=9, column=0, padx=self.padx, pady=self.pady, sticky='ne')
                         resource_list_label = ttk.Label(section_frame,
                                                         text=make_multiline_string(resource_list_string, 20))
-                        resource_list_label.grid(row=9, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        resource_list_label.grid(row=9, column=1, padx=self.padx, pady=self.pady, sticky='nw')
 
                     else:
                         none_count += 1
