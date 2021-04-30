@@ -152,9 +152,70 @@ class StudentInfo(ui.GenericPage):
                                                       command=self.approve_student)
                 approve_enrolment_button.pack(side='left', padx=self.padx, pady=self.pady)
             else:
-                # todo: delete, edit and award panels/windows
-                # if no details no_activity_details_label.pack() again
-                pass
+                db = self.pager_frame.master_root.db
+                # noinspection PyTypeChecker
+                section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+
+                none_count = 0
+
+                section_map = data_tables.SECTION_NAME_MAPPING
+                for section_type in section_map:
+                    section_obj = self.student.get_section_obj(section_type, section_table)
+                    if section_obj:
+                        section_frame = ttk.LabelFrame(self.award_sections_frame, text=section_map[section_type])
+                        section_frame.pack(side='left', padx=self.padx, pady=self.pady)
+
+                        activity_start_date_label = ttk.Label(section_frame, text='Start Date:')
+                        activity_start_date_label.grid(row=0, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_start_date = ttk.Label(section_frame,
+                                                        text=datetime_to_str(section_obj.activity_start_date))
+                        activity_start_date.grid(row=0, column=1, padx=self.padx, pady=self.pady, sticky='w')
+
+                        activity_timescale_label = ttk.Label(section_frame, text='Timescale:')
+                        activity_timescale_label.grid(row=1, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_timescale = ttk.Label(section_frame,
+                                                       text=f'{section_obj.activity_timescale} days')
+                        activity_timescale.grid(row=1, column=1, padx=self.padx, pady=self.pady, sticky='w')
+
+                        activity_details_label = ttk.Label(section_frame, text='Details:')
+                        activity_details_label.grid(row=2, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_details = ttk.Label(section_frame,
+                                                     text=shorten_string(section_obj.activity_details, 20))
+                        activity_details.grid(row=2, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        ui.create_tooltip(activity_details, make_multiline_string(section_obj.activity_details, 20))
+
+                        activity_goals_label = ttk.Label(section_frame, text='Goals:')
+                        activity_goals_label.grid(row=3, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_goals = ttk.Label(section_frame,
+                                                   text=shorten_string(section_obj.activity_goals, 20))
+                        activity_goals.grid(row=3, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        ui.create_tooltip(activity_goals, make_multiline_string(section_obj.activity_goals, 20))
+
+                        assessor_fullname_label = ttk.Label(section_frame, text='Assessor Fullname:')
+                        assessor_fullname_label.grid(row=4, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        assessor_fullname = ttk.Label(section_frame,
+                                                      text=section_obj.assessor_fullname)
+                        assessor_fullname.grid(row=4, column=1, padx=self.padx, pady=self.pady, sticky='w')
+
+                        assessor_phone_label = ttk.Label(section_frame, text='Assessor Phone:')
+                        assessor_phone_label.grid(row=5, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        assessor_phone = ttk.Label(section_frame,
+                                                   text=section_obj.assessor_phone)
+                        assessor_phone.grid(row=5, column=1, padx=self.padx, pady=self.pady, sticky='w')
+
+                        assessor_email_label = ttk.Label(section_frame, text='Assessor Email:')
+                        assessor_email_label.grid(row=6, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        assessor_email = ttk.Label(section_frame,
+                                                   text=section_obj.assessor_email)
+                        assessor_email.grid(row=6, column=1, padx=self.padx, pady=self.pady, sticky='w')
+
+                    else:
+                        none_count += 1
+
+                # todo: delete, edit buttons
+
+                if none_count == 3:  # no activity details available yet
+                    no_activity_details_label.pack()
 
     def page_back(self):
         """
