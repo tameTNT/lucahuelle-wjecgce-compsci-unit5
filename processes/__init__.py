@@ -1,3 +1,6 @@
+import logging
+
+
 def make_readable_name(var_name: str):
     """
     Returns a more user-friendly/readable version of var_name.
@@ -23,9 +26,9 @@ def make_multiline_string(s: str, max_line_length: int):
     Converts string s into a string with \n separators that ensure
     that each line of text is no longer than line_length characters long.
     Line breaks only occur on spaces, not within words.
+    If a word is longer than the max_line_length, the word is abbreviated with
+    a '...'
     """
-    if max_line_length < 15:
-        raise ValueError('Please use a line_length value of at least 15')
     words = s.split(' ')
     final_string = ''
     current_line_length = 0
@@ -33,8 +36,13 @@ def make_multiline_string(s: str, max_line_length: int):
         word_length = len(w)
 
         if current_line_length + word_length > max_line_length:
-            final_string = final_string[:-1] + '\n'  # [:-1] removes trailing space
-            current_line_length = 0
+            if current_line_length == 0:  # no words on this line yet
+                logging.debug(f'First word in string longer than permitted line length ({max_line_length}). '
+                              f'Trimming word.')
+                w = shorten_string(w, max_line_length)
+            else:
+                final_string = final_string[:-1] + '\n'  # [:-1] removes trailing space
+                current_line_length = 0
 
         current_line_length += word_length
         final_string += w + ' '

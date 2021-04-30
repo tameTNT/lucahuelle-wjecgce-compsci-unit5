@@ -209,6 +209,36 @@ class StudentInfo(ui.GenericPage):
                                                    text=section_obj.assessor_email)
                         assessor_email.grid(row=6, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
+                        main_info_separator = ttk.Separator(section_frame, orient='horizontal')
+                        main_info_separator.grid(row=7, column=0, columnspan=2,
+                                                 padx=self.padx, pady=self.pady, sticky='we')
+
+                        section_status_label = ttk.Label(section_frame, anchor='center',
+                                                         text=f'Section status: {section_obj.activity_status}')
+                        section_status_label.grid(row=8, column=0, columnspan=2, padx=self.padx, pady=self.pady)
+
+                        # noinspection PyTypeChecker
+                        resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
+
+                        added_resource_list = list()
+                        for resource in resource_table.row_dict.values():
+                            is_section_evidence = resource.resource_type == 'section_evidence'
+                            is_id_match = resource.parent_link_id == section_obj.section_id
+                            if is_section_evidence and is_id_match:
+                                added_resource_list.append(resource.file_path.name)
+                                # wouldbenice: mark section report
+
+                        resource_list_string = ' , '.join(map(lambda x: f'"{x}"', added_resource_list))
+                        if not resource_list_string:  # no items added
+                            resource_list_string = 'None'
+
+                        resource_number_label = ttk.Label(section_frame,
+                                                          text=f'{len(added_resource_list)} resource(s) added:')
+                        resource_number_label.grid(row=9, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        resource_list_label = ttk.Label(section_frame,
+                                                        text=make_multiline_string(resource_list_string, 20))
+                        resource_list_label.grid(row=9, column=1, padx=self.padx, pady=self.pady, sticky='w')
+
                     else:
                         none_count += 1
 
