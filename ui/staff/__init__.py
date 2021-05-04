@@ -7,7 +7,7 @@ from typing import List
 import ui
 import ui.landing
 from data_tables import data_handling
-from ui.staff import student_info
+from ui.staff import student_info, create_student
 
 
 class StudentOverview(ui.GenericPage):
@@ -89,8 +89,8 @@ class StudentOverview(ui.GenericPage):
         self.student_info_treeview['yscrollcommand'] = self.treeview_scroll.set
         # == end table config ==
 
-        # todo: add functionality to add students
-        self.add_student_button = ttk.Button(self, text='New Student', command=lambda: None)
+        self.add_student_button = ttk.Button(self, text='Create new student',
+                                             command=self.change_to_create_student_page)
         self.add_student_button.grid(row=4, column=0, columnspan=5, padx=self.padx, pady=self.pady)
 
         # == calendar frame contents ==
@@ -266,5 +266,11 @@ class StudentOverview(ui.GenericPage):
             destination_page=student_info.StudentInfo,
             clicked_name=clicked_name,
             student=student_obj,
+            staff_origin=self.staff
+        )
+
+    def change_to_create_student_page(self):
+        self.pager_frame.change_to_page(
+            destination_page=create_student.CreateStudent,
             staff_origin=self.staff
         )
