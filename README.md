@@ -4,13 +4,12 @@ Luca Huelle (1902) - Rougemont School (68362)
 
 September 2020 - May 2021
 
-*README last updated 20/04/2021*
+*README last updated 04/05/2021*
 
 ## Installation
 
 Install **pipenv** (used to set up a clean Python virtual environment - a 'venv' - for this project)
-following the instructions at:
-https://pipenv.pypa.io/en/latest/install/#installing-pipenv.
+following the instructions at: https://pipenv.pypa.io/en/latest/install/#installing-pipenv.
 
 e.g.
 
@@ -27,10 +26,11 @@ e.g.
 C:\Users>cd "\path\to\this\dir"
 ```
 
-Then run the following command to create the venv for the project. This will automatically install all required
-dependencies and make the venv easier to clean up after use.
+Then run the following command to create the venv for the project. This will automatically install
+all required dependencies and make the venv easier to clean up after use.
 
-_NB: Please make sure that **at least Python 3.8** is installed on your system before running this command_
+_NB: Please make sure that **at least Python 3.8** is installed on your system before running this
+command_
 
 ```cmd
 C:\Users\path\to\this\dir>pipenv shell
@@ -38,16 +38,19 @@ C:\Users\path\to\this\dir>pipenv shell
 
 ### Additional notes on .run files
 
-A `.run\` directory is included within the project's files. These can be used in JetBrains' IDEs (including PyCharm),
-after setting up the venv, to automatically execute the `main.py` file with certain command line arguments. They can
-therefore be ignored for typical use and are merely included for reference/further testing.
+The `\.run\` directory is included within the project's files. These can be used in JetBrains'
+IDEs (including PyCharm), after setting up the venv, to automatically execute the `main.py` file
+with certain command line arguments. They can therefore be ignored for typical use and are merely
+included for reference/further testing.
 
 ## Typical Usage
 
-To run the application, execute the following command _within the created venv_ (which should already by running from
-the previous section).
+To run the application for typical usage, execute the command below _within the created venv_.
 
-_NB: Your venv name may be different from 'gce-unit-5'_
+(The venv should already by running from the previous section. However, should you need to restart
+the venv, simply navigate to the same directory as before and use the `pipenv shell` command again.)
+
+_NB: Your venv name may be different from `gce-unit-5`_
 
 ```cmd
 (gce-unit-5) C:\...\dir>python main.py --show-gui
@@ -59,7 +62,9 @@ For further help with using this project's `main.py` file, run the following com
 (gce-unit-5) C:\...\dir>python main.py --help
 ```
 
-Extra explanatory detail on these functions is provided further below.
+Extra explanatory detail on the functions listed from this help command are provided further below.
+
+_NB: To deactivate the venv and return to the normal command line simply type `exit`._
 
 ### _IMPORTANT_: Completed features
 
@@ -73,11 +78,11 @@ these to get a feel for the program's capabilities:
 - **Fully Object-Oriented database** (in `data_handling.py`) : each element in a subclass of *Table*
   is a subclass of *Row* (e.g. *Student* is a row object within *StudentTable*, which is itself
   stored in a *Database* object at runtime)
-  - Relational database in **third normal form**: *StudentLogin, Student, Section, Resource* and *
-    Staff*
-  - Saving data to **text files** for permanent data storage including autoload/save on program
-    start/exit
-  - Secure login detail storage with **password salting + hashing** (in `password_logic.py`)
+    - Relational database in **third normal form** with tables: *StudentLogin, Student, Section,
+      Resource* and *Staff*
+    - Saving data to **text files** for permanent data storage including autoload/save on program
+      start/exit
+    - Secure login detail storage with **password salting + hashing** (in `password_logic.py`)
 - Flexible **validation** procedures (in `validation.py`) for all user input across application
   including emails, dates, etc.
 - **Sample unit tests** (e.g. `test_password_logic.py`) which can be used to verify that certain
@@ -89,17 +94,18 @@ these to get a feel for the program's capabilities:
 - Scalable and modular **tkinter Graphical User Interface framework** (see `ui/__init__.py` for
   detailed, annotated implementation) using layered Frames to keep program within one window. The
   complete GUI features are as follows:
-  - **Login** functionality for students
-    - **Student dashboard** to view an overview of current award progress and general information
-    - Data entry **enrolment**
-    - Data entry and viewing for **section start/in progress**
-    - Section **evidence uploading** - including marking evidence as an assessor's report
-  - **Login** functionality for staff
-    - **Student overview table** to view award progress of all students at a glance
-      - **Refine** student **views** by award level
-      - **Search** by student name/username
-    - **View all stored data** (including **individual section data**) for a selected student and
-      **approve/manage students on an individual basis**
+    - **Login** functionality for students
+        - **Student dashboard** to view an overview of current award progress and general
+          information
+        - Data entry **enrolment**
+        - Data entry and viewing for **section start/in progress**
+        - Section **evidence uploading** - including marking evidence as an assessor's report
+    - **Login** functionality for staff
+        - **Student overview table** to view award progress of all students at a glance
+            - **Refine** student **views** by award level
+            - **Search** by student name/username
+        - **View all stored data** (including **individual section data**) for a selected student
+          and **approve/manage students on an individual basis**
 
 ## Additional functionality
 
