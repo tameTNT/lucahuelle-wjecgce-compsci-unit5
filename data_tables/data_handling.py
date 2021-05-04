@@ -5,7 +5,6 @@ import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List, Optional  # type hints in function and class definitions
-
 from typing.io import TextIO
 
 from data_tables import SECTION_NAME_MAPPING
@@ -235,7 +234,7 @@ class Student(Row):
 
         self.centre_id = validate_int(centre_id, 'Centre ID')
 
-        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'Award Level')
+        self.award_level = validate_lookup(award_level.lower(), {'bronze', 'silver', 'gold'}, 'Award Level')
 
         year_group = str(validate_int(year_group, 'Year Group'))
         self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'Year Group')
@@ -249,7 +248,7 @@ class Student(Row):
         self.fullname = validate_length(fullname, 2, 30, 'Fullname') if fullname else ''
 
         # pnts = prefer not to say
-        self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
+        self.gender = validate_lookup(gender.lower(), {'male', 'female', 'other', 'pnts'},
                                       'Gender') if fullname else ''
 
         if from_file:  # date range validation skipped if loading from file to allow for dates in the past
@@ -271,7 +270,7 @@ class Student(Row):
         self.phone_emergency = validate_length(phone_emergency, 9, 11,
                                                'Emergency Phone') if fullname else ''
 
-        self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
+        self.primary_lang = validate_lookup(primary_lang.lower(), {'english', 'welsh'},
                                             'Primary Language') if fullname else ''
 
         self.submission_date = dt.datetime(**str_to_date_dict(submission_date)) if fullname else ''
@@ -291,7 +290,7 @@ class Student(Row):
         fullname = validate_length(fullname, 2, 30, 'Fullname')
 
         # pnts = prefer not to say
-        gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
+        gender = validate_lookup(gender.lower(), {'male', 'female', 'other', 'pnts'},
                                  'Gender')
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
@@ -310,7 +309,7 @@ class Student(Row):
         phone_emergency = validate_length(phone_emergency, 9, 11,
                                           'Emergency Phone')
 
-        primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
+        primary_lang = validate_lookup(primary_lang.lower(), {'english', 'welsh'},
                                        'Primary Language')
 
         logging.debug('All validation checks passed on input data for student enrolment.')

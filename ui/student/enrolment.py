@@ -168,13 +168,13 @@ class Enrolment(ui.GenericPage):
         try:
             self.student.complete_enrolment(
                 fullname=self.fullname_var.get(),
-                gender=self.gender_selection_var.get().lower(),
+                gender=self.gender_selection_var.get(),
                 date_of_birth=self.date_of_birth_var.get(),
                 address=self.address_var.get(),
                 phone_primary=self.phone_primary.get(),
                 email_primary=self.email_var.get(),
                 phone_emergency=self.phone_emergency.get(),
-                primary_lang=self.language_selection_var.get().lower(),
+                primary_lang=self.language_selection_var.get(),
             )
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
