@@ -49,7 +49,7 @@ def validate_lookup(value: str, lookup_set: Set[str], attribute_name: str) -> st
         return value
     else:
         error_str = f'{attribute_name} provided ("{value}") ' \
-                    f'is not in the list of possible options: {", ".join(lookup_set)}'
+                    f'is not in the list of possible options: {", ".join(sorted(lookup_set))}'
         logging.error(error_str)
         raise ValidationError(error_str)
 
