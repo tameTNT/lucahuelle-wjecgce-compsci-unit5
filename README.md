@@ -27,20 +27,25 @@ e.g.
 C:\Users>cd "\path\to\this\dir"
 ```
 
-Then run the following command to create the venv for the project. This will automatically install
-all required dependencies and make the venv easier to clean up after use.
+Then run the following command to create the venv for the project. This will automatically install all required
+dependencies and make the venv easier to clean up after use.
 
-_NB: Please make sure that **at least Python 3.8** is installed on your system before running this
-command_
+_NB: Please make sure that **at least Python 3.8** is installed on your system before running this command_
 
 ```cmd
 C:\Users\path\to\this\dir>pipenv shell
 ```
 
+### Additional notes on .run files
+
+A `.run\` directory is included within the project's files. These can be used in JetBrains' IDEs (including PyCharm),
+after setting up the venv, to automatically execute the `main.py` file with certain command line arguments. They can
+therefore be ignored for typical use and are merely included for reference/further testing.
+
 ## Typical Usage
 
-To run the application, execute the following command _within the created venv_ (which should
-already by running from the previous section).
+To run the application, execute the following command _within the created venv_ (which should already by running from
+the previous section).
 
 _NB: Your venv name may be different from 'gce-unit-5'_
 
@@ -93,8 +98,8 @@ these to get a feel for the program's capabilities:
     - **Student overview table** to view award progress of all students at a glance
       - **Refine** student **views** by award level
       - **Search** by student name/username
-    - **View all stored data** for a selected student and **approve/manage students on an individual
-      basis**
+    - **View all stored data** (including **individual section data**) for a selected student and
+      **approve/manage students on an individual basis**
 
 ## Additional functionality
 
