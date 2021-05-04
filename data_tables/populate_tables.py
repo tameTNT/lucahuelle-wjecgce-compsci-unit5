@@ -19,9 +19,7 @@ def new_student_objs(username, id_num, centre_id, award_level, year_group) -> Tu
     login_obj = StudentLogin(
         username, password_logic.hash_pwd_str('password'), id_num
     )
-    student_obj = Student(
-        id_num, centre_id, award_level, year_group
-    )
+    student_obj = Student(id_num, centre_id, award_level, year_group)
     return login_obj, student_obj
 
 

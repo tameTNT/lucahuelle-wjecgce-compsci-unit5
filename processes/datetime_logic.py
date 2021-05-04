@@ -45,7 +45,7 @@ def date_dict_to_str(date_dict: DateInfoDict, sep: str = DATE_SEPARATOR) -> str:
 def datetime_to_str(datetime_obj: dt.datetime = dt.datetime.now(), sep: str = DATE_SEPARATOR) -> str:
     """
     Converts datetime_obj into string of format 'YYYY(sep)MM(sep)DD'
-    (always 10 chars long - sep should be a 1-char str)
+    (always 10 chars long - sep should be a 1-char str).
     If no datetime_obj argument is provided, the current date is returned as a string instead.
     If datetime_obj is not a datetime obj, returns an empty string (used in file handling).
     """

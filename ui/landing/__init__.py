@@ -123,7 +123,7 @@ class Login(ui.GenericPage):
 
         db = self.pager_frame.master_root.db  # gets database obj from main root of application
         user_type = ('Staff', 'Student')[int(self.is_student)]
-        logging.debug(f'A {user_type.lower()} attempted to log in with username "{input_username}"')
+        logging.debug(f'A {user_type.lower()} user attempted to log in with username "{input_username}"')
 
         if user_type == 'Staff':
             # noinspection PyTypeChecker

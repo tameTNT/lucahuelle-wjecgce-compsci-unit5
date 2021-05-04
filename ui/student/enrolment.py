@@ -8,8 +8,8 @@ from data_tables import data_handling
 from processes import datetime_logic, validation, make_readable_name
 
 
-class Enrollment(ui.GenericPage):
-    page_name = 'Student Award Enrollment'
+class Enrolment(ui.GenericPage):
+    page_name = 'USERNAME - Award Enrolment'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -17,7 +17,7 @@ class Enrollment(ui.GenericPage):
         self.back_button = ttk.Button(self, text='Back', command=self.page_back)
         self.back_button.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
-        self.sign_up_label = ttk.Label(self, text='Complete Enrollment',
+        self.sign_up_label = ttk.Label(self, text='Complete Enrolment',
                                        font=ui.HEADING_FONT)
         self.sign_up_label.grid(row=1, column=0, padx=self.padx, pady=self.pady)
 
@@ -35,7 +35,7 @@ class Enrollment(ui.GenericPage):
         # === end of frame ===
 
         # === info_submission_frame contents ===
-        # wouldbenice: temporary text in fields to guide user (e.g. 'Search...')
+        # wouldbenice: temporary text in fields to guide user (e.g. 'YYYY/MM/DD...')
         self.info_submission_frame = ttk.Frame(self)
         self.info_submission_frame.grid(row=2, column=1, padx=self.padx, pady=self.pady)
 
@@ -85,11 +85,9 @@ class Enrollment(ui.GenericPage):
         self.phone_primary_label = ttk.Label(self.info_submission_frame, text='Phone number:')
         self.phone_primary_label.grid(row=0, column=2, pady=self.pady, sticky='e')
 
-        self.phone_primary_var = tk.StringVar()
-        self.phone_primary = ttk.Entry(self.info_submission_frame,
-                                       textvariable=self.phone_primary_var)
+        self.phone_primary = ui.IntEntry(0, self.info_submission_frame)
         self.phone_primary.grid(row=0, column=3, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.phone_primary, 'Do not include plus signs or spaces')
+        ui.create_tooltip(self.phone_primary, 'Do not include country codes or spaces')
 
         # -email
         self.email_label = ttk.Label(self.info_submission_frame, text='Email address:')
@@ -105,11 +103,9 @@ class Enrollment(ui.GenericPage):
                                                text='Emergency phone number:')
         self.phone_emergency_label.grid(row=2, column=2, pady=self.pady, sticky='e')
 
-        self.phone_emergency_var = tk.StringVar()
-        self.phone_emergency = ttk.Entry(self.info_submission_frame,
-                                         textvariable=self.phone_emergency_var)
+        self.phone_emergency = ui.IntEntry(0, self.info_submission_frame)
         self.phone_emergency.grid(row=2, column=3, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.phone_emergency, 'Do not include plus signs or spaces')
+        ui.create_tooltip(self.phone_emergency, 'Do not include country codes or spaces')
 
         # -primary language
         self.language_selection_label = ttk.Label(self.info_submission_frame,
@@ -127,8 +123,8 @@ class Enrollment(ui.GenericPage):
         self.current_date = ttk.Label(self, text=f'Current Date: {datetime_logic.datetime_to_str()}')
         self.current_date.grid(row=3, column=0, padx=self.padx, pady=self.pady)
 
-        self.complete_button = ttk.Button(self, text='Complete Enrollment',
-                                          command=self.attempt_enrollment)
+        self.complete_button = ttk.Button(self, text='Complete Enrolment',
+                                          command=self.attempt_enrolment)
         self.complete_button.grid(row=3, column=1, padx=self.padx, pady=self.pady)
 
         self.student = None
@@ -139,7 +135,10 @@ class Enrollment(ui.GenericPage):
         self.student = student
         self.student_username = username
 
+        self.page_name = f'{self.student_username} - Award Enrolment'
+
         for attr_name in ('student_id', 'centre_id', 'award_level', 'year_group'):
+            # wouldbenice: get rid of this confusing construct that makes code above unnecessary
             # self.student.student_id, self.student.centre_id,
             # self.student.award_level, self.student.year_group
             current_val = self.student.__getattribute__(attr_name)
@@ -165,21 +164,21 @@ class Enrollment(ui.GenericPage):
             username=self.student_username,
         )
 
-    def attempt_enrollment(self):
+    def attempt_enrolment(self):
         try:
             self.student.complete_enrolment(
                 fullname=self.fullname_var.get(),
                 gender=self.gender_selection_var.get().lower(),
                 date_of_birth=self.date_of_birth_var.get(),
                 address=self.address_var.get(),
-                phone_primary=self.phone_primary_var.get().replace(' ', ''),  # remove spaces
+                phone_primary=self.phone_primary.get(),
                 email_primary=self.email_var.get(),
-                phone_emergency=self.phone_emergency_var.get().replace(' ', ''),
+                phone_emergency=self.phone_emergency.get(),
                 primary_lang=self.language_selection_var.get().lower(),
             )
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))
         else:
-            msg.showinfo('Enrollment successful',
-                         'Your enrollment information was successfully saved and submitted to staff for approval.')
+            msg.showinfo('Enrolment successful',
+                         'Your enrolment information was successfully saved and submitted to staff for approval.')
             self.page_back()
