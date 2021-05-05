@@ -106,8 +106,11 @@ these to get a feel for the program's capabilities:
             - **Search** by student name/username
         - **View all stored data** (including **individual section data**) for a selected student
           and **approve/manage students on an individual basis**
+        - **Add new students** to the database with unique logins
 
 ## Additional functionality
+
+All the following commands should be run from within the venv created above.
 
 ### Creating admin/staff accounts
 
