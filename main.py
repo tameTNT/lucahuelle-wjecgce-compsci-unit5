@@ -61,8 +61,7 @@ def create_gui(file_save_suffix):
             page_obj_list.append(cls)
 
     # initialises actual tkinter window on Welcome page
-    # todo: change start_page back to ui.landing.Welcome
-    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StaffLogin)
+    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.Welcome)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
     root.resizable(width=False, height=False)
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root, file_save_suffix))
@@ -145,8 +144,7 @@ if __name__ == '__main__':
         if args.file_save_suffix:
             raise fe
         else:
-            # todo: test 'clean' startup with no txt files/database
-            # todo: set up example databases to be loaded using readme instructions
+            # fixme: set up example databases to be loaded using readme instructions
             print('No existing complete database. New files will be created on program termination.')
 
     if args.show_gui:
