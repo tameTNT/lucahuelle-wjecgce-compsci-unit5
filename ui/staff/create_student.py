@@ -28,6 +28,7 @@ class CreateStudent(ui.GenericPage):
 
         self.password_label = ttk.Label(self, text='Password:', justify='right')
         self.password_label.grid(row=3, column=0, pady=self.pady, sticky='e')
+        ui.create_tooltip(self.password_label, password_logic.PASSWORD_NOTICE)
         self.password_entry = ui.PasswordEntryFrame(self)
         self.password_entry.grid(row=3, column=1, pady=self.pady, sticky='we')
 

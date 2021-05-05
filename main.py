@@ -80,8 +80,7 @@ def create_staff_account(file_save_suffix):
         fullname = input(' Fullname: ')
         username = input(' Username: ')
 
-        print('Passwords should be between 6 and 100 characters long and contain one each of:\n'
-              'lowercase letter, uppercase letter, number.')
+        print(password_logic.PASSWORD_NOTICE)
         print('NB: No characters will be shown when entering passwords.')
         while True:  # ensure passwords match
             while True:  # enforce password strength on first entry
