@@ -32,26 +32,31 @@ class CreateStudent(ui.GenericPage):
         self.password_entry = ui.PasswordEntryFrame(self)
         self.password_entry.grid(row=3, column=1, pady=self.pady, sticky='we')
 
+        self.confirm_password_label = ttk.Label(self, text='Confirm Password:', justify='right')
+        self.confirm_password_label.grid(row=4, column=0, pady=self.pady, sticky='e')
+        self.confirm_password_entry = ui.PasswordEntryFrame(self)
+        self.confirm_password_entry.grid(row=4, column=1, pady=self.pady, sticky='we')
+
         self.centre_id_label = ttk.Label(self, text='Centre ID:', justify='right')
-        self.centre_id_label.grid(row=4, column=0, pady=self.pady, sticky='e')
+        self.centre_id_label.grid(row=5, column=0, pady=self.pady, sticky='e')
         self.centre_id_entry = ui.IntEntry(0, master=self)
-        self.centre_id_entry.grid(row=4, column=1, pady=self.pady, sticky='we')
+        self.centre_id_entry.grid(row=5, column=1, pady=self.pady, sticky='we')
 
         self.award_level_label = ttk.Label(self, text='Award level:', justify='right')
-        self.award_level_label.grid(row=5, column=0, pady=self.pady, sticky='e')
+        self.award_level_label.grid(row=6, column=0, pady=self.pady, sticky='e')
         self.award_level_var = tk.StringVar()
         self.award_level_selection = ttk.Combobox(self, state='readonly',
                                                   values=('Bronze', 'Silver', 'Gold'),
                                                   textvariable=self.award_level_var)
-        self.award_level_selection.grid(row=5, column=1, pady=self.pady, sticky='we')
+        self.award_level_selection.grid(row=6, column=1, pady=self.pady, sticky='we')
 
         self.year_group_label = ttk.Label(self, text='Year Group:', justify='right')
-        self.year_group_label.grid(row=6, column=0, pady=self.pady, sticky='e')
+        self.year_group_label.grid(row=7, column=0, pady=self.pady, sticky='e')
         self.year_group_entry = ui.IntEntry(0, master=self)
-        self.year_group_entry.grid(row=6, column=1, pady=self.pady, sticky='we')
+        self.year_group_entry.grid(row=7, column=1, pady=self.pady, sticky='we')
 
         self.create_button = ttk.Button(self, text='Create Student', command=self.attempt_creation)
-        self.create_button.grid(row=7, column=0, columnspan=2, padx=self.padx, pady=self.pady)
+        self.create_button.grid(row=8, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
         self.staff_origin = None
         self.staff_fullname = None
@@ -77,9 +82,14 @@ class CreateStudent(ui.GenericPage):
     def attempt_creation(self):
         username = self.username_entry_var.get()
         password = self.password_entry.get()
+        confirm_password = self.confirm_password_entry.get()
         centre_id = self.centre_id_entry.get()
         award_level = self.award_level_var.get()
         year_group = self.year_group_entry.get()
+
+        if password != confirm_password:
+            msg.showerror('Error with field data', 'Passwords do not match')
+            return
 
         db = self.pager_frame.master_root.db
         student_table = db.get_table_by_name('StudentTable')
