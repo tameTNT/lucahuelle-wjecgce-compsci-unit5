@@ -106,8 +106,8 @@ def create_staff_account(file_save_suffix):
         else:
             try:
                 staff_table.add_row(new_staff_user)
-            except KeyError as ke:
-                print(f'Error in entered data as follows:\n {str(ke)}\nPlease try again.')
+            except KeyError:
+                print(f'Staff user with that username already exists.')
             else:
                 print(f'New staff user added successfully:\n {str(new_staff_user)}')
                 break
