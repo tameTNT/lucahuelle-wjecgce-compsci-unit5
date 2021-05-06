@@ -10,7 +10,7 @@ from processes.datetime_logic import datetime_to_str
 
 
 class StudentInfo(ui.GenericPage):
-    page_name = "'STUDENT_NAME' - Detail"
+    page_name = "'STUDENT_NAME' - Student Detail"
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -44,7 +44,7 @@ class StudentInfo(ui.GenericPage):
                           student: data_handling.Student,
                           staff_origin: data_handling.Staff) -> None:
 
-        self.page_name = f"'{clicked_name}' - Detail"
+        self.page_name = f"'{clicked_name}' - Student Detail"
 
         self.student = student
         self.staff_origin = staff_origin
@@ -141,7 +141,8 @@ class StudentInfo(ui.GenericPage):
             date_separator.grid(row=8, column=0, columnspan=4, padx=self.padx, pady=self.pady, sticky='we')
 
             enrolment_date_label = ttk.Label(self.student_information_frame,
-                                             text=f'Info submitted on: {datetime_to_str(self.student.submission_date)}',
+                                             text='Info submitted on: '
+                                                  f'{datetime_to_str(self.student.submission_date)}',
                                              anchor='center')
             enrolment_date_label.grid(row=9, column=0, columnspan=4, padx=self.padx, pady=self.pady, sticky='we')
 

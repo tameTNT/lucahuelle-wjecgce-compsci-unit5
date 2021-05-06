@@ -19,7 +19,8 @@ class StudentOverview(ui.GenericPage):
         self.heading_label = ttk.Label(self, text='Student Overview', font=ui.HEADING_FONT)
         self.heading_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
 
-        self.import_export_button = ttk.Button(self, text='Import/Export data')
+        self.import_export_button = ttk.Button(self, text='Import/Export data',
+                                               command=lambda: msg.showinfo('Info', 'Not Implemented'))
         self.import_export_button.grid(row=0, column=1, padx=self.padx, pady=self.pady)
 
         self.logout_button = ttk.Button(self, text='Logout', command=self.logout)
@@ -98,7 +99,7 @@ class StudentOverview(ui.GenericPage):
         self.event_frame.grid(row=5, column=0, columnspan=5, padx=self.padx, pady=self.pady)
 
         # todo: event frame/'Coming Up' and ability to manage events with button
-        self.temp_event_label = ttk.Label(self.event_frame, text='Temp coming up text...')
+        self.temp_event_label = ttk.Label(self.event_frame, text='Not Implemented')
         self.temp_event_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # == end of self.event_frame contents ==
 
@@ -135,7 +136,7 @@ class StudentOverview(ui.GenericPage):
 
         self.pager_frame.change_to_page(ui.landing.Welcome)
 
-    # def import_export(self):  # todo: import/export data GUI - add command to button above
+    # def import_export(self):  # wouldbenice: import/export data GUI - add command to button above
     #     self.pager_frame.change_to_page(
     #         destination_page=ui.student.enrolment.Enrolment,
     #         student=self.student,
@@ -236,7 +237,7 @@ class StudentOverview(ui.GenericPage):
                 if should_insert_item:
                     tv.insert(
                         parent='', index='end', text=row_name,
-                        values=(approval_status, vol_status, skill_status, phys_status, 'Null - TODO',
+                        values=(approval_status, vol_status, skill_status, phys_status, 'Not Implemented - Null',
                                 # dictionary with extra info not shown - used within code.
                                 # tkinter saves this dict using repr() so use eval() to get the dict back
                                 {'id': student.student_id, 'username': username, 'fullname': student.fullname})

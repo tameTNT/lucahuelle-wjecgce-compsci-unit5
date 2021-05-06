@@ -110,7 +110,7 @@ these to get a feel for the program's capabilities:
 
 ## Additional functionality
 
-All the following commands should be run from within the venv created above.
+_All the following commands should be run from within the venv created above._
 
 ### Creating admin/staff accounts
 

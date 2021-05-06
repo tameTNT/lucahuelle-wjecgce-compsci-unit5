@@ -114,6 +114,6 @@ def validate_regex(value: str, pattern: str, attribute_name: str, pretty_format:
         return value
     else:
         error_str = f'Value entered for {attribute_name} ("{value}"), does not match ' \
-                    f'expected format: "{pretty_format}". (DEBUG - regex format: "{pattern}")'
-        logging.error(error_str)
+                    f'expected format: "{pretty_format}".\n(DEBUG regex format: "{pattern}")'
+        logging.error(error_str.replace('\n', ' '))
         raise ValidationError(error_str)

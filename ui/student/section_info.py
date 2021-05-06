@@ -31,12 +31,12 @@ class SectionInfo(ui.GenericPage):
         self.timescale_label = ttk.Label(self.detail_frame,
                                          text='Timescale (months):', justify='right')
         self.timescale_label.grid(row=0, column=0, pady=self.pady, sticky='e')
+        ui.create_tooltip(self.timescale_label, 'NB: Some options may be disabled based on your award level\n'
+                                                'and/or timescale choices in your other sections.')
 
         # == radio buttons for timescale selection ==
         self.radiobutton_frame = ttk.Frame(self.detail_frame)
         self.radiobutton_frame.grid(row=0, column=1, columnspan=2, pady=self.pady, sticky='we')
-        ui.create_tooltip(self.radiobutton_frame, 'NB: Some options may be disabled based on your award level\n'
-                                                  'and/or timescale choices in your other sections.')
 
         # Spreads out radio buttons evenly within frame
         self.radiobutton_frame.grid_columnconfigure(0, weight=1)

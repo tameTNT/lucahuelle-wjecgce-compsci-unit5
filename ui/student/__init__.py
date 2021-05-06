@@ -10,7 +10,7 @@ from data_tables import data_handling, SECTION_NAME_MAPPING
 
 
 class StudentAwardDashboard(ui.GenericPage):
-    page_name = 'STUDENT_NAME - Award Dashboard'
+    page_name = 'STUDENT_USERNAME - Award Dashboard'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -91,7 +91,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.expedition_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: expedition info frame in Student overview page
-        self.temp_expedition_label = ttk.Label(self.expedition_frame, text='Temp expedition text')
+        self.temp_expedition_label = ttk.Label(self.expedition_frame, text='Not Implemented')
         self.temp_expedition_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # == end of self.expedition_frame contents ==
 
@@ -100,7 +100,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.calendar_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: calendar info frame in Student overview page
-        self.temp_expedition_label = ttk.Label(self.calendar_frame, text='Temp calendar text')
+        self.temp_expedition_label = ttk.Label(self.calendar_frame, text='Not Implemented')
         self.temp_expedition_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # == end of self.calendar_frame contents ==
 
