@@ -85,8 +85,8 @@ class Table:
             for row_obj in start_table:
                 self.add_row(row_obj)
 
-            logging.info(f'{type(self).__name__} object successfully populated from iterable '
-                         f'argument - {len(start_table)} {self.row_class.__name__} object(s) added')
+            logging.debug(f'{type(self).__name__} object successfully populated from iterable '
+                          f'argument - {len(start_table)} {self.row_class.__name__} object(s) added')
 
     def __repr__(self) -> str:
         """
@@ -168,8 +168,8 @@ class Table:
             self.add_row(*obj_info)  # add new row/obj to table
 
         txt_file.close()
-        logging.info(f'{type(self).__name__} object successfully populated from file - '
-                     f'added {len(txt_lines)} {self.row_class.__name__} objects')
+        logging.debug(f'{type(self).__name__} object successfully populated from file - '
+                      f'added {len(txt_lines)} {self.row_class.__name__} objects')
 
     def save_to_file(self, txt_file: TextIO):
         """
@@ -228,7 +228,6 @@ class Student(Row):
         # The rest are filled in by the student at a later date
         # and hence default to '' on initial creation.
 
-        # todo: creation of students by staff
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'Student ID')
 
