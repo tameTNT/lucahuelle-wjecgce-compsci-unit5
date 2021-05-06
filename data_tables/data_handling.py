@@ -103,11 +103,11 @@ class Table:
         """
         taken_ids = {int(str_id) for str_id in self.row_dict.keys()}
         if taken_ids:
-            # range(max(taken_ids) + 2): a range of all possible ids between 0 and the max taken id+1
+            # range(1, max(taken_ids) + 2): a range of all possible ids between 1 and the max taken id+1
             # set.difference finds any unused ids in this range and min() finds the smallest such id
-            return min(set(range(max(taken_ids) + 2)).difference(taken_ids))
+            return min(set(range(1, max(taken_ids) + 2)).difference(taken_ids))
         else:
-            return 0  # ids should start at 0
+            return 1  # ids should start at 1 since sometimes converted to booleans
 
     def add_row(self, *args, **kwargs) -> None:
         """
