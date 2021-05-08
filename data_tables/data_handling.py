@@ -20,8 +20,8 @@ EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
-# fixme: what happens if the user enters this or quotes into strings? clean input in save function?
-FIELD_SEP_STR = r'\%s'
+FIELD_ESCAPE_STR = r'\e%f'  # used to separate fields in txt files
+LINEBREAK_ESCAPE_STR = r'\e%n'  # used to replace line breaks (\n) in strings
 
 
 class Row:
@@ -61,8 +61,15 @@ class Row:
                 str_func = str  # defaults to just using the str() func on the attribute
                 if attr_name in special_str_funcs:
                     str_func = special_str_funcs[attr_name]
-                return_string += str_func(attr_val).ljust(padding_values[attr_name]) + FIELD_SEP_STR
-        return return_string + '\n'
+                # converts attribute to a string (normally just with str() unless otherwise specified)
+                # also removes escape sequences FIELD_ESCAPE_STR and LINEBREAK_ESCAPE_STR entered maliciously by users
+                field_text = str_func(attr_val).replace(FIELD_ESCAPE_STR, '').replace(LINEBREAK_ESCAPE_STR, '')
+                return_string += field_text.ljust(padding_values[attr_name])  # pads into file to align fields
+                return_string += FIELD_ESCAPE_STR  # marks end of a field
+
+        # replaces 'real' line breaks with escape sequence so that fields are still confined to one line in txt file
+        return_string = return_string.replace('\n', LINEBREAK_ESCAPE_STR)
+        return return_string + '\n'  # newline marks end of row
 
 
 class Table:
@@ -160,10 +167,12 @@ class Table:
         for row in txt_lines:
             obj_info = list()
 
-            padded_fields = row.split(FIELD_SEP_STR)  # split line/row by separator
+            padded_fields = row.split(FIELD_ESCAPE_STR)  # split line/row by separator
             for field in padded_fields:
                 if field != '\n':
-                    obj_info.append(field.strip())  # remove padding whitespace
+                    field = field.strip()  # remove trailing/padding whitespace
+                    field = field.replace(LINEBREAK_ESCAPE_STR, '\n')  # re-insert escaped linebreaks
+                    obj_info.append(field)
 
             self.add_row(*obj_info)  # add new row/obj to table
 
