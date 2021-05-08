@@ -10,13 +10,24 @@ def make_readable_name(var_name: str):
     return ' '.join(var_name.split('_')).capitalize()
 
 
-def shorten_string(s: str, max_length: int):
+def shorten_string(s: str, max_length: int, no_multiline: bool = True):
     """
     If longer than max_length, truncates string s and appends '...'.
-    Final string length will always be <= max_length
+    Final string length will always be <= max_length.
+    If no_multiline=True, returned string can only be maximum of one line
     """
+    line_split = False
+    if '\n' in s and no_multiline:
+        s = s.split('\n', maxsplit=1)[0]  # reduces s to just one line
+        line_split = True
+
     if len(s) > max_length:
         return s[:max_length - 3] + '...'
+
+    # if s was more than one line long but shorter than max_length
+    elif line_split:
+        return s + '...'
+
     else:
         return s
 

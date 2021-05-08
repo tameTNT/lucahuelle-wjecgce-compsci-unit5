@@ -166,57 +166,61 @@ class StudentInfo(ui.GenericPage):
                         section_frame = ttk.Frame(self.award_sections_notebook)
                         self.award_sections_notebook.add(section_frame, text=section_map[section_type])
 
+                        section_status_label = ttk.Label(section_frame, anchor='center', font=ui.ITALIC_CAPTION_FONT,
+                                                         text=f'Section status: {section_obj.activity_status}')
+                        section_status_label.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
+
+                        main_info_separator = ttk.Separator(section_frame, orient='horizontal')
+                        main_info_separator.grid(row=1, column=0, columnspan=2,
+                                                 padx=self.padx, pady=self.pady, sticky='we')
+
                         activity_start_date_label = ttk.Label(section_frame, text='Start Date:')
-                        activity_start_date_label.grid(row=0, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_start_date_label.grid(row=2, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         activity_start_date = ttk.Label(section_frame,
                                                         text=datetime_to_str(section_obj.activity_start_date))
-                        activity_start_date.grid(row=0, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        activity_start_date.grid(row=2, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
                         activity_timescale_label = ttk.Label(section_frame, text='Timescale:')
-                        activity_timescale_label.grid(row=1, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_timescale_label.grid(row=3, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         activity_timescale = ttk.Label(section_frame,
                                                        text=f'{section_obj.activity_timescale} days')
-                        activity_timescale.grid(row=1, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        activity_timescale.grid(row=3, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
                         activity_details_label = ttk.Label(section_frame, text='Details:')
-                        activity_details_label.grid(row=2, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_details_label.grid(row=4, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         activity_details = ttk.Label(section_frame,
                                                      text=shorten_string(section_obj.activity_details, 20))
-                        activity_details.grid(row=2, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        activity_details.grid(row=4, column=1, padx=self.padx, pady=self.pady, sticky='w')
                         ui.create_tooltip(activity_details, make_multiline_string(section_obj.activity_details, 20))
 
                         activity_goals_label = ttk.Label(section_frame, text='Goals:')
-                        activity_goals_label.grid(row=3, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        activity_goals_label.grid(row=5, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         activity_goals = ttk.Label(section_frame,
                                                    text=shorten_string(section_obj.activity_goals, 20))
-                        activity_goals.grid(row=3, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        activity_goals.grid(row=5, column=1, padx=self.padx, pady=self.pady, sticky='w')
                         ui.create_tooltip(activity_goals, make_multiline_string(section_obj.activity_goals, 20))
 
                         assessor_fullname_label = ttk.Label(section_frame, text='Assessor Fullname:')
-                        assessor_fullname_label.grid(row=4, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        assessor_fullname_label.grid(row=6, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         assessor_fullname = ttk.Label(section_frame,
                                                       text=section_obj.assessor_fullname)
-                        assessor_fullname.grid(row=4, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        assessor_fullname.grid(row=6, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
                         assessor_phone_label = ttk.Label(section_frame, text='Assessor Phone:')
-                        assessor_phone_label.grid(row=5, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        assessor_phone_label.grid(row=7, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         assessor_phone = ttk.Label(section_frame,
                                                    text=section_obj.assessor_phone)
-                        assessor_phone.grid(row=5, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        assessor_phone.grid(row=7, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
                         assessor_email_label = ttk.Label(section_frame, text='Assessor Email:')
-                        assessor_email_label.grid(row=6, column=0, padx=self.padx, pady=self.pady, sticky='e')
+                        assessor_email_label.grid(row=8, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         assessor_email = ttk.Label(section_frame,
                                                    text=section_obj.assessor_email)
-                        assessor_email.grid(row=6, column=1, padx=self.padx, pady=self.pady, sticky='w')
+                        assessor_email.grid(row=8, column=1, padx=self.padx, pady=self.pady, sticky='w')
 
                         main_info_separator = ttk.Separator(section_frame, orient='horizontal')
-                        main_info_separator.grid(row=7, column=0, columnspan=2,
+                        main_info_separator.grid(row=9, column=0, columnspan=2,
                                                  padx=self.padx, pady=self.pady, sticky='we')
-
-                        section_status_label = ttk.Label(section_frame, anchor='center',
-                                                         text=f'Section status: {section_obj.activity_status}')
-                        section_status_label.grid(row=8, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
                         # noinspection PyTypeChecker
                         resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
@@ -235,10 +239,10 @@ class StudentInfo(ui.GenericPage):
 
                         resource_number_label = ttk.Label(section_frame,
                                                           text=f'{len(added_resource_list)} resource(s) added:')
-                        resource_number_label.grid(row=9, column=0, padx=self.padx, pady=self.pady, sticky='ne')
+                        resource_number_label.grid(row=10, column=0, padx=self.padx, pady=self.pady, sticky='ne')
                         resource_list_label = ttk.Label(section_frame,
                                                         text=make_multiline_string(resource_list_string, 20))
-                        resource_list_label.grid(row=9, column=1, padx=self.padx, pady=self.pady, sticky='nw')
+                        resource_list_label.grid(row=10, column=1, padx=self.padx, pady=self.pady, sticky='nw')
 
                     else:
                         none_count += 1
