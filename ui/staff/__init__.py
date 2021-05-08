@@ -253,12 +253,17 @@ class StudentOverview(ui.GenericPage):
         selected_item = self.student_info_treeview.selection()
 
         treeview_item_values = self.student_info_treeview.item(selected_item)
-        # 'text' value of row is username/fullname; last is the dictionary of extra info including student_id
-        clicked_name, clicked_student_id = treeview_item_values['text'], eval(treeview_item_values['values'][-1])['id']
+        try:
+            # 'text' value of row is username/fullname
+            clicked_name = treeview_item_values['text']
+            # the last item (index -1) of the 'values' tuple is the dictionary of extra info including student_id
+            clicked_student_id = eval(treeview_item_values['values'][-1])['id']
+            logging.debug(f'Student - {clicked_name} id:{clicked_student_id} - '
+                          f'double clicked by {self.staff_fullname}')
+            self.change_to_student_page(clicked_name, clicked_student_id)
 
-        logging.debug(f'Student - {clicked_name} id:{clicked_student_id} - double clicked by {self.staff_fullname}')
-
-        self.change_to_student_page(clicked_name, clicked_student_id)
+        except IndexError:  # occurs if user selects bottom of table
+            pass
 
     def change_to_student_page(self, clicked_name: str, student_id: int):
         student_obj = self.student_table.row_dict[student_id]
