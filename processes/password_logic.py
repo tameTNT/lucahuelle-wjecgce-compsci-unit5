@@ -73,6 +73,7 @@ def enforce_strength(provided_password: str, quiet: bool = False) -> (bool, Dict
     Returns a tuple containing:
         - boolean of whether provided_password meets the program's strength requirements
         - dictionary of bool specifying which tests passed: 'length', 'one_lower', 'one_upper', 'one_digit'
+
     :param provided_password: password string to test
     :param quiet: If True, no PasswordErrors are raised on test failure
     """
