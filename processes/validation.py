@@ -90,7 +90,7 @@ def validate_date(date_str: str, attribute_name: str, date_str_sep: str = DATE_S
         earliest_date = now + earliest_offset
         latest_offset = dt.timedelta(days=offset_range[1])
         latest_date = now + latest_offset
-        if earliest_date < valid_date < latest_date:
+        if earliest_date.date() <= valid_date.date() <= latest_date.date():
             return valid_date
         else:
             error_str = f'Date information provided for {attribute_name} ' \
