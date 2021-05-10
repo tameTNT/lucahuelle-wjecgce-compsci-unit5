@@ -40,6 +40,12 @@ class StudentInfo(ui.GenericPage):
         self.student = None
         self.staff_origin = None
 
+        db = self.pager_frame.master_root.db
+        # noinspection PyTypeChecker
+        self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+        # noinspection PyTypeChecker
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
+
     def update_attributes(self, clicked_name: str,
                           student: data_handling.Student,
                           staff_origin: data_handling.Staff) -> None:
@@ -153,21 +159,18 @@ class StudentInfo(ui.GenericPage):
                                                       command=self.approve_student)
                 approve_enrolment_button.pack(side='left', padx=self.padx, pady=self.pady)
             else:
-                db = self.pager_frame.master_root.db
-                # noinspection PyTypeChecker
-                section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
-
                 none_count = 0
-
                 section_map = data_tables.SECTION_NAME_MAPPING
                 for section_type in section_map:
-                    section_obj = self.student.get_section_obj(section_type, section_table)
+                    section_obj = self.student.get_section_obj(section_type, self.section_table)
                     if section_obj:
                         section_frame = ttk.Frame(self.award_sections_notebook)
                         self.award_sections_notebook.add(section_frame, text=section_map[section_type])
 
-                        section_status_label = ttk.Label(section_frame, anchor='center', font=ui.ITALIC_CAPTION_FONT,
-                                                         text=f'Section status: {section_obj.activity_status}')
+                        section_status_label = ttk.Label(
+                            section_frame, anchor='center', font=ui.ITALIC_CAPTION_FONT,
+                            text=f'Section status: {section_obj.get_activity_status(self.resource_table)}'
+                        )
                         section_status_label.grid(row=0, column=0, columnspan=2, padx=self.padx, pady=self.pady)
 
                         main_info_separator = ttk.Separator(section_frame, orient='horizontal')
@@ -222,11 +225,8 @@ class StudentInfo(ui.GenericPage):
                         main_info_separator.grid(row=9, column=0, columnspan=2,
                                                  padx=self.padx, pady=self.pady, sticky='we')
 
-                        # noinspection PyTypeChecker
-                        resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
-
                         added_resource_list = list()
-                        for resource in resource_table.row_dict.values():
+                        for resource in self.resource_table.row_dict.values():
                             is_section_evidence = resource.resource_type == 'section_evidence'
                             is_id_match = resource.parent_link_id == section_obj.section_id
                             if is_section_evidence and is_id_match:

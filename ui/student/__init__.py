@@ -111,9 +111,9 @@ class StudentAwardDashboard(ui.GenericPage):
 
         db = self.pager_frame.master_root.db
         # noinspection PyTypeChecker
-        self.student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
-        # noinspection PyTypeChecker
         self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+        # noinspection PyTypeChecker
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
 
     def update_attributes(self, student: data_handling.Student, username: str) -> None:
         # updates attributes with submitted parameters
@@ -153,7 +153,7 @@ class StudentAwardDashboard(ui.GenericPage):
                 # if get_student_section_obj() isn't None then the table exists and the section has been started
                 section_length = int(section_obj.activity_timescale) // 30
                 title_var.set(f'{long_name}\n({section_length} months)')
-                status_var.set(section_obj.activity_status)
+                status_var.set(section_obj.get_activity_status(self.resource_table))
             else:
                 title_var.set(long_name)
                 status_var.set('Not started')

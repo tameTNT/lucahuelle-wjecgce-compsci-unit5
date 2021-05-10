@@ -62,14 +62,14 @@ class StudentOverview(ui.GenericPage):
 
         self.student_info_treeview = ttk.Treeview(self.treeview_frame,
                                                   columns=(
-                                                      'approval_status', 'volunteering',
+                                                      'progress_summary', 'volunteering',
                                                       'skill', 'physical', 'expedition'
                                                   ))
 
         self.student_info_treeview.heading('#0', text='Fullname/Username', anchor='w')
         self.student_info_treeview.column('#0', anchor='w')
-        self.student_info_treeview.heading('approval_status', text='Approval status')
-        self.student_info_treeview.column('approval_status', anchor='center')
+        self.student_info_treeview.heading('progress_summary', text='Progress Summary')
+        self.student_info_treeview.column('progress_summary', anchor='center')
         self.student_info_treeview.heading('volunteering', text='Volunteering')
         self.student_info_treeview.column('volunteering', anchor='center')
         self.student_info_treeview.heading('skill', text='Skill')
@@ -113,6 +113,8 @@ class StudentOverview(ui.GenericPage):
         self.student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
         # noinspection PyTypeChecker
         self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+        # noinspection PyTypeChecker
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
 
         self.DEFAULT_SEARCH_PLACEHOLDER = 'Search names...'
 
@@ -216,14 +218,14 @@ class StudentOverview(ui.GenericPage):
                 username_display_str = f'(Username) {username}'
                 row_name = student.fullname if student.fullname else username_display_str
 
-                approval_status = student.get_progress_summary(self.section_table)
+                progress_summary = student.get_progress_summary(self.section_table, self.resource_table)
 
                 vol_status = student.get_section_obj('vol', self.section_table)
-                vol_status = vol_status.activity_status if vol_status else 'Not started'
+                vol_status = vol_status.get_activity_status(self.resource_table) if vol_status else 'Not started'
                 skill_status = student.get_section_obj('skill', self.section_table)
-                skill_status = skill_status.activity_status if skill_status else 'Not started'
+                skill_status = skill_status.get_activity_status(self.resource_table) if skill_status else 'Not started'
                 phys_status = student.get_section_obj('phys', self.section_table)
-                phys_status = phys_status.activity_status if phys_status else 'Not started'
+                phys_status = phys_status.get_activity_status(self.resource_table) if phys_status else 'Not started'
 
                 # todo: expedition status text and column
 
@@ -237,7 +239,7 @@ class StudentOverview(ui.GenericPage):
                 if should_insert_item:
                     tv.insert(
                         parent='', index='end', text=row_name,
-                        values=(approval_status, vol_status, skill_status, phys_status, 'Not Implemented - Null',
+                        values=(progress_summary, vol_status, skill_status, phys_status, 'Not Implemented - Null',
                                 # dictionary with extra info not shown - used within code.
                                 # tkinter saves this dict using repr() so use eval() to get the dict back
                                 {'id': student.student_id, 'username': username, 'fullname': student.fullname})

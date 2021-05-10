@@ -382,8 +382,15 @@ class Student(Row):
         else:
             return None
 
-    def get_progress_summary(self, section_table: SectionTable) -> str:
-        # todo: docstring
+    def get_progress_summary(self, section_table: SectionTable, resource_table: ResourceTable) -> str:
+        """
+        Returns a string summarising the student's current progress through the award.
+
+        :param section_table: Used to check the sections associated with the student
+        :param resource_table: Used to check if an assessor's report exists for a section
+        :return: One of 'Fully complete', 'Partially complete', 'All sections in progress',
+            'Partially in progress', 'None started', 'Pending enrolment' or 'Needs approval'
+        """
         if self.is_approved:
             section_started_count = 0
             section_finished_count = 0
@@ -393,15 +400,17 @@ class Student(Row):
                 if section_id:
                     section_started_count += 1
                     section_obj = section_table.row_dict[section_id]
-                    if section_obj.activity_status == '':  # fixme: finish status method to compare option here
+                    if section_obj.get_activity_status(resource_table) == 'Fully Completed':
                         section_finished_count += 1
 
-            if section_finished_count == 3:  # todo: doesn't include expeditions
+            if section_finished_count == 3:  # todo: doesn't consider expeditions
                 return 'Fully complete'
+            elif 1 <= section_finished_count < 3:
+                return 'Partially complete'
             elif section_started_count == 3:
-                return 'All in progress'
+                return 'All sections in progress'
             elif 1 <= section_started_count < 3:
-                return 'In progress'
+                return 'Partially in progress'
             else:
                 return 'None started'
 
@@ -463,10 +472,6 @@ class Section(Row):
         self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'Assessor Email',
                                              'abc@def.ghi')
 
-        # This is a private attribute and as such is only updated when it is accessed.
-        # This can not be set manually
-        self._activity_status = ''
-
         logging.debug(f'New Section object successfully created - section_id={self.section_id}')
 
     def __repr__(self):
@@ -495,22 +500,27 @@ class Section(Row):
         }
         return super().tabulate(padding_values, special_str_funcs)
 
-    @property
-    def activity_status(self):
-        return self._activity_status
+    def get_activity_status(self, resource_table: ResourceTable) -> str:
+        """
+        Returns a string describing the student's current progress through the section.
+        Note that a status of ‘Not Started’ must be set at call and not from this method
+        since there will be no Section obj to call this method from.
 
-    @activity_status.getter
-    def activity_status(self):
-        # this method is called every time this variable is accessed
+        :param resource_table: Needed to check for the presence of an assessor's report for the section
+        :return: One of 'Fully completed', 'Needs report' or 'In progress'
+        """
         proposed_end_date = calculate_end_date(int(self.activity_timescale), self.activity_start_date)
 
         if date_in_past(proposed_end_date):
-            # todo: GENERATE SECTION STATUS method
-            self._activity_status = 'Not Implemented'
+            section_resources = [r for r in resource_table.row_dict.values() if r.parent_link_id == self.section_id]
+            report_is_present = any([r.is_section_report for r in section_resources])
+            if report_is_present:
+                return 'Fully completed'
+            else:
+                return 'Needs report'
         else:
-            self._activity_status = 'In Progress'
-
-        return self._activity_status
+            return 'In progress'
+        # ‘Not Started’ status handled at method call (and not here) since section object won't exist in this case
 
 
 class SectionTable(Table):
