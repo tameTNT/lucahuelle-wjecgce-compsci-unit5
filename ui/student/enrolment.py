@@ -85,7 +85,7 @@ class Enrolment(ui.GenericPage):
         self.phone_primary_label = ttk.Label(self.info_submission_frame, text='Phone number:')
         self.phone_primary_label.grid(row=0, column=2, pady=self.pady, sticky='e')
 
-        self.phone_primary = ui.IntEntry(0, master=self.info_submission_frame)
+        self.phone_primary = ui.DigitEntry(0, master=self.info_submission_frame)
         self.phone_primary.grid(row=0, column=3, pady=self.pady, sticky='we')
         ui.create_tooltip(self.phone_primary, 'Do not include country codes or spaces')
 
@@ -103,7 +103,7 @@ class Enrolment(ui.GenericPage):
                                                text='Emergency phone number:')
         self.phone_emergency_label.grid(row=2, column=2, pady=self.pady, sticky='e')
 
-        self.phone_emergency = ui.IntEntry(0, master=self.info_submission_frame)
+        self.phone_emergency = ui.DigitEntry(0, master=self.info_submission_frame)
         self.phone_emergency.grid(row=2, column=3, pady=self.pady, sticky='we')
         ui.create_tooltip(self.phone_emergency, 'Do not include country codes or spaces')
 

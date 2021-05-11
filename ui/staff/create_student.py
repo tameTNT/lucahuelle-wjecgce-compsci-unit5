@@ -39,7 +39,7 @@ class CreateStudent(ui.GenericPage):
 
         self.centre_id_label = ttk.Label(self, text='Centre ID:', justify='right')
         self.centre_id_label.grid(row=5, column=0, pady=self.pady, sticky='e')
-        self.centre_id_entry = ui.IntEntry(0, master=self)
+        self.centre_id_entry = ui.DigitEntry(0, master=self)
         self.centre_id_entry.grid(row=5, column=1, pady=self.pady, sticky='we')
 
         self.award_level_label = ttk.Label(self, text='Award level:', justify='right')
@@ -52,7 +52,7 @@ class CreateStudent(ui.GenericPage):
 
         self.year_group_label = ttk.Label(self, text='Year Group:', justify='right')
         self.year_group_label.grid(row=7, column=0, pady=self.pady, sticky='e')
-        self.year_group_entry = ui.IntEntry(0, master=self)
+        self.year_group_entry = ui.DigitEntry(0, master=self)
         self.year_group_entry.grid(row=7, column=1, pady=self.pady, sticky='we')
 
         self.create_button = ttk.Button(self, text='Create Student', command=self.attempt_creation)

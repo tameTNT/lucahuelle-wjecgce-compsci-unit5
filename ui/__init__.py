@@ -100,7 +100,12 @@ def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable)
 
 # Class design adapted from
 # https://www.reddit.com/r/learnpython/comments/985umy/limit_user_input_to_only_int_with_tkinter/e4dj9k9
-class IntEntry(ttk.Entry):
+class DigitEntry(ttk.Entry):
+    """
+    An adapted Entry widget that only allows numerical digits to be entered (i.e. 0,1,...,9).
+    Retrieve and store values (as *strings*) using .get() and .set() methods.
+    """
+
     def __init__(self, initial_value: int, master: tk.Widget = None, **kwargs):
         start_string = f'{initial_value if initial_value else ""}'
         self.var = tk.StringVar(value=start_string)
