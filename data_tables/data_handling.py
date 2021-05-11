@@ -5,6 +5,7 @@ import logging  # logging functionality
 import shutil
 from pathlib import Path  # file handling
 from typing import Collection, Union, Dict, List, Optional  # type hints in function and class definitions
+
 from typing.io import TextIO
 
 from data_tables import SECTION_NAME_MAPPING
@@ -400,7 +401,7 @@ class Student(Row):
                 if section_id:
                     section_started_count += 1
                     section_obj = section_table.row_dict[section_id]
-                    if section_obj.get_activity_status(resource_table) == 'Fully Completed':
+                    if section_obj.get_activity_status(resource_table) == 'Fully completed':
                         section_finished_count += 1
 
             if section_finished_count == 3:  # todo: doesn't consider expeditions
