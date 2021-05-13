@@ -133,8 +133,8 @@ class StudentAwardDashboard(ui.GenericPage):
                 self.fully_enrolled_info_frame.pack_forget()
 
         else:  # if the student's details aren't complete, they have yet to register
-            self.welcome_text_var.set(f'Welcome!\n'
-                                      f'You have not yet completed your registration, {username}.')
+            self.welcome_text_var.set('Welcome!\n'
+                                      f'You have not yet completed your enrolment, {username}.')
             self.complete_enrolment_button.pack(padx=self.padx, pady=self.pady)
             self.fully_enrolled_info_frame.pack_forget()
 
