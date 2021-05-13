@@ -16,8 +16,8 @@ from processes.validation import validate_int, validate_length, validate_lookup,
 
 # simplistic and naive regular expression for validating emails
 EMAIL_MAX_LEN = 50  # should match 5,??? above
-# matches abc@def.ghi
-EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
+# matches abc@def.ghi(.jk)
+EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+(?:|\.[^@.]+)$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
@@ -274,7 +274,7 @@ class Student(Row):
                                              'Primary Phone') if fullname else ''
 
         self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
-                                            'abc@def.ghi') if fullname else ''
+                                            'abc@def.ghi(.jk)') if fullname else ''
 
         self.phone_emergency = validate_length(phone_emergency, 9, 11,
                                                'Emergency Phone') if fullname else ''
@@ -313,7 +313,7 @@ class Student(Row):
                                         'Primary Phone')
 
         email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
-                                       'abc@def.ghi')
+                                       'abc@def.ghi(.jk)')
 
         phone_emergency = validate_length(phone_emergency, 9, 11,
                                           'Emergency Phone')
@@ -471,7 +471,7 @@ class Section(Row):
         self.assessor_phone = validate_length(assessor_phone, 9, 11, 'Assessor Phone')
 
         self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'Assessor Email',
-                                             'abc@def.ghi')
+                                             'abc@def.ghi(.jk)')
 
         logging.debug(f'New Section object successfully created - section_id={self.section_id}')
 
