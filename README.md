@@ -129,7 +129,8 @@ passwords cannot be entered securely within the latter_
 ### Loading specific database files
 
 The `-f SUFFIX` (or `--file-save-suffix SUFFIX`) argument allows custom database tables to be
-loaded. By default, no extra string is appended to table names on loading.
+loaded. By default, no extra string is appended to table names on loading
+_NB: do not include `-` characters in suffixes._
 
 For example, not supplying the argument means the file `ResourceTable.txt` is loaded and later saved
 on program termination. However, if you instead run the following command.

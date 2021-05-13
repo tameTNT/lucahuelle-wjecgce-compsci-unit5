@@ -69,7 +69,7 @@ def create_gui(file_save_suffix):
 
 
 def create_staff_account(file_save_suffix):
-    print('Abort entry process with break command (Ctrl+Z).'
+    print('Abort entry process with break command (Ctrl+C and Enter).'
           '\nCreating a new staff account...'
           '\nPlease enter the following details:')
 
@@ -141,7 +141,12 @@ if __name__ == '__main__':
         MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
     except FileNotFoundError as fe:
         if args.file_save_suffix:
-            raise fe
+            create_new_tables = input('No existing complete database detected.\n'
+                                      f'Create new tables for file suffix "{args.file_save_suffix}"? y/n ')
+            if create_new_tables.lower() == 'y':
+                print('No existing complete database. New txt files will be created on program termination.')
+            else:
+                raise fe
         else:
             # fixme: set up example databases to be loaded using readme instructions
             print('No existing complete database. New files will be created on program termination.')
