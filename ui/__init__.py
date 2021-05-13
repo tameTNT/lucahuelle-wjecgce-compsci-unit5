@@ -307,12 +307,13 @@ class PagedMainFrame(ttk.Frame):
             for str_var in str_var_list:
                 str_var.set('')  # clears each field collected above in turn
 
-            # collects all password fields in current page
-            pass_var_list = [var for var in self.current_page.__dict__.values()
-                             if isinstance(var, PasswordEntryFrame)]
+            # collects all PasswordEntryFrame and DigitEntry frames in current page
+            custom_frame_list = [var for var in self.current_page.__dict__.values()
+                                 if isinstance(var, PasswordEntryFrame)
+                                 or isinstance(var, DigitEntry)]
 
-            for pass_var in pass_var_list:
-                pass_var.set('')  # clears each password field collected above in turn
+            for custom_field in custom_frame_list:
+                custom_field.set('')  # clears the fields in the widgets collected above
 
             # collects all tk.Text fields in current page
             text_field_list = [var for var in self.current_page.__dict__.values()
