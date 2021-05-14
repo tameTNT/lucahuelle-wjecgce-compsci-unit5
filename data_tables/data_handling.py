@@ -62,14 +62,18 @@ class Row:
                 str_func = str  # defaults to just using the str() func on the attribute
                 if attr_name in special_str_funcs:
                     str_func = special_str_funcs[attr_name]
+
                 # converts attribute to a string (normally just with str() unless otherwise specified)
                 # also removes escape sequences FIELD_ESCAPE_STR and LINEBREAK_ESCAPE_STR entered maliciously by users
                 field_text = str_func(attr_val).replace(FIELD_ESCAPE_STR, '').replace(LINEBREAK_ESCAPE_STR, '')
+
+                # replaces 'real' line breaks with escape sequence
+                # so that fields are still confined to one line in txt file
+                field_text = field_text.replace('\n', LINEBREAK_ESCAPE_STR)
+
                 return_string += field_text.ljust(padding_values[attr_name])  # pads into file to align fields
                 return_string += FIELD_ESCAPE_STR  # marks end of a field
 
-        # replaces 'real' line breaks with escape sequence so that fields are still confined to one line in txt file
-        return_string = return_string.replace('\n', LINEBREAK_ESCAPE_STR)
         return return_string + '\n'  # newline marks end of row
 
 

@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     MAIN_DATABASE_OBJ = data_handling.Database()
     try:
-        # loads last database state from file into memory
+        # attempts to load last database state from files into memory
         MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
     except FileNotFoundError as fe:
         if args.file_save_suffix:
@@ -150,6 +150,8 @@ if __name__ == '__main__':
         else:
             # fixme: set up example databases to be loaded using readme instructions
             print('No existing complete database. New files will be created on program termination.')
+    else:
+        print(f'Loaded complete database from txt files with suffix "{args.file_save_suffix}"')
 
     if args.show_gui:
         logging.debug('show-gui argument provided: creating tkinter instance')

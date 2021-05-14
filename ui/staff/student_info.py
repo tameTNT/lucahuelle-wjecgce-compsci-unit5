@@ -120,7 +120,7 @@ class StudentInfo(ui.GenericPage):
             address_val_label = ttk.Label(self.student_information_frame,
                                           text=shorten_string(self.student.address, 20))
             address_val_label.grid(row=3, column=3, padx=self.padx, pady=self.pady, sticky='w')
-            ui.create_tooltip(address_val_label, make_multiline_string(self.student.address, 20))
+            ui.create_tooltip(address_val_label, make_multiline_string(self.student.address, 40))
 
             phone_primary_label = ttk.Label(self.student_information_frame, text='Primary phone:')
             phone_primary_label.grid(row=4, column=2, padx=self.padx, pady=self.pady, sticky='e')
@@ -194,14 +194,14 @@ class StudentInfo(ui.GenericPage):
                         activity_details = ttk.Label(section_frame,
                                                      text=shorten_string(section_obj.activity_details, 20))
                         activity_details.grid(row=4, column=1, padx=self.padx, pady=self.pady, sticky='w')
-                        ui.create_tooltip(activity_details, make_multiline_string(section_obj.activity_details, 20))
+                        ui.create_tooltip(activity_details, make_multiline_string(section_obj.activity_details, 40))
 
                         activity_goals_label = ttk.Label(section_frame, text='Goals:')
                         activity_goals_label.grid(row=5, column=0, padx=self.padx, pady=self.pady, sticky='e')
                         activity_goals = ttk.Label(section_frame,
                                                    text=shorten_string(section_obj.activity_goals, 20))
                         activity_goals.grid(row=5, column=1, padx=self.padx, pady=self.pady, sticky='w')
-                        ui.create_tooltip(activity_goals, make_multiline_string(section_obj.activity_goals, 20))
+                        ui.create_tooltip(activity_goals, make_multiline_string(section_obj.activity_goals, 40))
 
                         assessor_fullname_label = ttk.Label(section_frame, text='Assessor Fullname:')
                         assessor_fullname_label.grid(row=6, column=0, padx=self.padx, pady=self.pady, sticky='e')
@@ -241,7 +241,7 @@ class StudentInfo(ui.GenericPage):
                                                           text=f'{len(added_resource_list)} resource(s) added:')
                         resource_number_label.grid(row=10, column=0, padx=self.padx, pady=self.pady, sticky='ne')
                         resource_list_label = ttk.Label(section_frame,
-                                                        text=make_multiline_string(resource_list_string, 20))
+                                                        text=make_multiline_string(resource_list_string, 40))
                         resource_list_label.grid(row=10, column=1, padx=self.padx, pady=self.pady, sticky='nw')
 
                     else:
