@@ -4,7 +4,9 @@ Luca Huelle (1902) - Rougemont School (68362)
 
 September 2020 - May 2021
 
-*Last updated 14/05/2021*
+**Full project report (`.docx` and `.pdf`) available in this base directory**
+
+*README last updated 14/05/2021*
 
 ## Installation
 

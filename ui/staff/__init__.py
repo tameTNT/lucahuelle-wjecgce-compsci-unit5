@@ -159,7 +159,7 @@ class StudentOverview(ui.GenericPage):
 
         if query:
             # wouldbenice: use detach and reattach instead (see link)
-            # https://stackoverflow.com/questions/44565358/how-to-filter-a-ttk-treeview-in-python/47055786#47055786
+            #   https://stackoverflow.com/questions/44565358/how-to-filter-a-ttk-treeview-in-python/47055786#47055786
             self.repopulate_treeview_table()  # reset table so all values are searched
 
             tv = self.student_info_treeview
