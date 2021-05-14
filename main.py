@@ -148,7 +148,6 @@ if __name__ == '__main__':
             else:
                 raise fe
         else:
-            # fixme: set up example databases to be loaded using readme instructions
             print('No existing complete database. New files will be created on program termination.')
     else:
         print(f'Loaded complete database from txt files with suffix "{args.file_save_suffix}"')

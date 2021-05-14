@@ -36,7 +36,7 @@ command_
 C:\Users\path\to\this\dir>pipenv shell
 ```
 
-### Additional notes on .run files
+### Additional notes on included .run files
 
 The `\.run\` directory is included within the project's files. These can be used in JetBrains'
 IDEs (including PyCharm), after setting up the venv, to automatically execute the `main.py` file
@@ -62,11 +62,12 @@ For further help with using this project's `main.py` file, run the following com
 (gce-unit-5) C:\...\dir>python main.py --help
 ```
 
-Extra explanatory detail on the functions listed from this help command are provided further below.
+Extra explanatory detail on the functions listed from this help command are provided further below
+in **Additional functionality**.
 
 _NB: To deactivate the venv and return to the normal command line simply type `exit`._
 
-### _IMPORTANT_: Completed features
+### Fully completed features
 
 Many parts of this project are **not fully complete** (*see the abundance of '`todo`'
 / '`wouldbenice`'s in the source code*).
@@ -103,11 +104,36 @@ these to get a feel for the program's capabilities:
           _Evidence is saved in `\uploads\student\id-??`._
     - **Login** functionality for staff
         - **Student overview table** to view award progress of all students at a glance
-            - **Refine** student **views** by award level
+            - **Separate students** by award level
             - **Search** by student name/username
         - **View all stored data** (including **individual section data**) for a selected student
           and **approve/manage students on an individual basis**
         - **Add new students** to the database with unique logins
+
+### Exemplar database
+
+An exemplar database is provided alongside this project for easy trialing of key features. It
+includes several pre-filled-in student accounts at varying stages in their theoretical award.
+
+The database is available in the program by including `-f "(example)"` in any commands (see
+**Loading specific database files** below for more information on using this argument).
+
+e.g.
+
+```cmd
+(gce-unit-5) C:\...\dir>python main.py -f "(example)" -g
+```
+
+The usernames and current states for these pre-created accounts are included below. All accounts use
+the password `Passw0rd`.
+
+- **Staff account**
+    - `staff_am`
+- **Student accounts**
+    - `student1` - _not yet fully enrolled_
+    - `student2` - _enrolled but not yet approved by staff_
+    - `student3` - _one section in progress_
+    - `student4` - _evidence uploaded across 2 sections with 1 assessor's report_
 
 ## Additional functionality
 
