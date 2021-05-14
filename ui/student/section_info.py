@@ -130,8 +130,7 @@ class SectionInfo(ui.GenericPage):
         self.assessor_phone_label = ttk.Label(self.assessor_info_frame, text='Phone number:', justify='right')
         self.assessor_phone_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
-        self.assessor_phone_var = tk.StringVar()
-        self.assessor_phone = ttk.Entry(self.assessor_info_frame, textvariable=self.assessor_phone_var)
+        self.assessor_phone = ui.DigitEntry(0, self.assessor_info_frame)
         self.assessor_phone.grid(row=1, column=1, pady=self.pady, sticky='we')
 
         self.assessor_email_label = ttk.Label(self.assessor_info_frame, text='Email:', justify='right')
@@ -205,7 +204,7 @@ class SectionInfo(ui.GenericPage):
             self.activity_details_text.insert('1.0', self.section_obj.activity_details)
             self.activity_goals_text.insert('1.0', self.section_obj.activity_goals)
             self.assessor_fullname_var.set(self.section_obj.assessor_fullname)
-            self.assessor_phone_var.set(self.section_obj.assessor_phone)
+            self.assessor_phone.set(self.section_obj.assessor_phone)
             self.assessor_email_var.set(self.section_obj.assessor_email)
 
             self.timescale_select_3['state'] = 'disabled'
@@ -224,6 +223,7 @@ class SectionInfo(ui.GenericPage):
                 self.section_table
             )
 
+            # booleans are automatically converted to either index 0 (False) or 1 (True)
             self.timescale_select_3['state'] = state_dict[3 in available_timescale_options]
             self.timescale_select_6['state'] = state_dict[6 in available_timescale_options]
             self.timescale_select_12['state'] = state_dict[12 in available_timescale_options]
@@ -331,7 +331,7 @@ class SectionInfo(ui.GenericPage):
                     activity_details=self.activity_details_text.get('1.0', 'end').strip(),
                     activity_goals=self.activity_goals_text.get('1.0', 'end').strip(),
                     assessor_fullname=self.assessor_fullname_var.get(),
-                    assessor_phone=self.assessor_phone_var.get().replace(' ', ''),
+                    assessor_phone=self.assessor_phone.get(),
                     assessor_email=self.assessor_email_var.get(),
                     from_file=False,
                 )
@@ -419,7 +419,7 @@ class SectionInfo(ui.GenericPage):
                 msg.showwarning('Mark as section report',
                                 'This section already has a resource marked as a section report. '
                                 'You may only have one section report per section.\n'
-                                'Please delete that resource before trying to mark another'
+                                'Please delete that resource before trying to mark another '
                                 'as your section report.')
             else:
                 resource_obj.is_section_report = 1
