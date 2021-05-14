@@ -4,7 +4,7 @@ Luca Huelle (1902) - Rougemont School (68362)
 
 September 2020 - May 2021
 
-*README last updated 04/05/2021*
+*Last updated 14/05/2021*
 
 ## Installation
 
@@ -99,7 +99,8 @@ these to get a feel for the program's capabilities:
           information
         - Data entry **enrolment**
         - Data entry and viewing for **section start/in progress**
-        - Section **evidence uploading** - including marking evidence as an assessor's report
+        - Section **evidence uploading** - including marking evidence as an assessor's report.
+          _Evidence is saved in `\uploads\student\id-??`._
     - **Login** functionality for staff
         - **Student overview table** to view award progress of all students at a glance
             - **Refine** student **views** by award level

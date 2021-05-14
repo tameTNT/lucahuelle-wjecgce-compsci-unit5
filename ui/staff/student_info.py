@@ -230,16 +230,20 @@ class StudentInfo(ui.GenericPage):
                             is_section_evidence = resource.resource_type == 'section_evidence'
                             is_id_match = resource.parent_link_id == section_obj.section_id
                             if is_section_evidence and is_id_match:
-                                added_resource_list.append(resource.file_path.name)
-                                # wouldbenice: mark section report
+                                added_resource_list.append(
+                                    (resource.is_section_report, resource.file_path.name)
+                                )
 
-                        resource_list_string = ' , '.join(map(lambda x: f'"{x}"', added_resource_list))
+                        resource_list_string = ' , '.join(
+                            map(lambda x: f'{"📝" if x[0] else ""}"{x[1]}"', added_resource_list)
+                        )
                         if not resource_list_string:  # no items added
                             resource_list_string = 'None'
 
                         resource_number_label = ttk.Label(section_frame,
                                                           text=f'{len(added_resource_list)} resource(s) added:')
                         resource_number_label.grid(row=10, column=0, padx=self.padx, pady=self.pady, sticky='ne')
+                        ui.create_tooltip(resource_number_label, "📝 denotes an assessor's/section report")
                         resource_list_label = ttk.Label(section_frame,
                                                         text=make_multiline_string(resource_list_string, 40))
                         resource_list_label.grid(row=10, column=1, padx=self.padx, pady=self.pady, sticky='nw')
