@@ -49,7 +49,7 @@ def validate_lookup(value: str, lookup_set: Set[str], attribute_name: str) -> st
         return value
     else:
         error_str = f'{attribute_name} provided ("{value}") ' \
-                    f'is not in the list of possible options: {", ".join(lookup_set)}'
+                    f'is not in the list of possible options: {", ".join(sorted(lookup_set))}'
         logging.error(error_str)
         raise ValidationError(error_str)
 
@@ -90,7 +90,7 @@ def validate_date(date_str: str, attribute_name: str, date_str_sep: str = DATE_S
         earliest_date = now + earliest_offset
         latest_offset = dt.timedelta(days=offset_range[1])
         latest_date = now + latest_offset
-        if earliest_date < valid_date < latest_date:
+        if earliest_date.date() <= valid_date.date() <= latest_date.date():
             return valid_date
         else:
             error_str = f'Date information provided for {attribute_name} ' \
@@ -114,6 +114,6 @@ def validate_regex(value: str, pattern: str, attribute_name: str, pretty_format:
         return value
     else:
         error_str = f'Value entered for {attribute_name} ("{value}"), does not match ' \
-                    f'expected format: "{pretty_format}". (DEBUG - regex format: "{pattern}")'
-        logging.error(error_str)
+                    f'expected format: "{pretty_format}".\n(DEBUG regex format: "{pattern}")'
+        logging.error(error_str.replace('\n', ' '))
         raise ValidationError(error_str)

@@ -64,11 +64,16 @@ def verify_pwd_str(provided_password: str, stored_hash: str) -> bool:
     return pwdhash == stored_password
 
 
+PASSWORD_NOTICE = """Passwords should be between 6 and 100 characters long and contain at least one each of:
+  lowercase letter, uppercase letter, number."""
+
+
 def enforce_strength(provided_password: str, quiet: bool = False) -> (bool, Dict[str, bool]):
     """
     Returns a tuple containing:
         - boolean of whether provided_password meets the program's strength requirements
         - dictionary of bool specifying which tests passed: 'length', 'one_lower', 'one_upper', 'one_digit'
+
     :param provided_password: password string to test
     :param quiet: If True, no PasswordErrors are raised on test failure
     """

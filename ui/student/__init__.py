@@ -10,7 +10,7 @@ from data_tables import data_handling, SECTION_NAME_MAPPING
 
 
 class StudentAwardDashboard(ui.GenericPage):
-    page_name = 'STUDENT_NAME - Award Dashboard'
+    page_name = 'STUDENT_USERNAME - Award Dashboard'
 
     def __init__(self, pager_frame: ui.PagedMainFrame):
         super().__init__(pager_frame=pager_frame)
@@ -91,7 +91,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.expedition_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: expedition info frame in Student overview page
-        self.temp_expedition_label = ttk.Label(self.expedition_frame, text='Temp expedition text')
+        self.temp_expedition_label = ttk.Label(self.expedition_frame, text='Not Implemented')
         self.temp_expedition_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # == end of self.expedition_frame contents ==
 
@@ -100,7 +100,7 @@ class StudentAwardDashboard(ui.GenericPage):
         self.calendar_frame.pack(padx=self.padx, pady=self.pady)
 
         # todo: calendar info frame in Student overview page
-        self.temp_expedition_label = ttk.Label(self.calendar_frame, text='Temp calendar text')
+        self.temp_expedition_label = ttk.Label(self.calendar_frame, text='Not Implemented')
         self.temp_expedition_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # == end of self.calendar_frame contents ==
 
@@ -111,9 +111,9 @@ class StudentAwardDashboard(ui.GenericPage):
 
         db = self.pager_frame.master_root.db
         # noinspection PyTypeChecker
-        self.student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
-        # noinspection PyTypeChecker
         self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+        # noinspection PyTypeChecker
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
 
     def update_attributes(self, student: data_handling.Student, username: str) -> None:
         # updates attributes with submitted parameters
@@ -133,8 +133,8 @@ class StudentAwardDashboard(ui.GenericPage):
                 self.fully_enrolled_info_frame.pack_forget()
 
         else:  # if the student's details aren't complete, they have yet to register
-            self.welcome_text_var.set(f'Welcome!\n'
-                                      f'You have not yet completed your registration, {username}.')
+            self.welcome_text_var.set('Welcome!\n'
+                                      f'You have not yet completed your enrolment, {username}.')
             self.complete_enrolment_button.pack(padx=self.padx, pady=self.pady)
             self.fully_enrolled_info_frame.pack_forget()
 
@@ -153,7 +153,7 @@ class StudentAwardDashboard(ui.GenericPage):
                 # if get_student_section_obj() isn't None then the table exists and the section has been started
                 section_length = int(section_obj.activity_timescale) // 30
                 title_var.set(f'{long_name}\n({section_length} months)')
-                status_var.set(section_obj.activity_status)
+                status_var.set(section_obj.get_activity_status(self.resource_table))
             else:
                 title_var.set(long_name)
                 status_var.set('Not started')

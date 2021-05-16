@@ -9,6 +9,7 @@ from processes import password_logic
 def new_student_objs(username, id_num, centre_id, award_level, year_group) -> Tuple[StudentLogin, Student]:
     """
     Creates and returns a StudentLogin and a Student object
+
     :param username: username of new student to be created (for login)
     :param id_num: id number to use for object creation
     :param centre_id: centre number to use for object creation

@@ -16,13 +16,13 @@ from processes.validation import validate_int, validate_length, validate_lookup,
 
 # simplistic and naive regular expression for validating emails
 EMAIL_MAX_LEN = 50  # should match 5,??? above
-# matches abc@def.ghi
-EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+$' % EMAIL_MAX_LEN
+# matches abc@def.ghi(.jk)
+EMAIL_RE_PATTERN = r'^(?=.{5,%s}$)[^@]+@[^@.]+\.[^@.]+(?:|\.[^@.]+)$' % EMAIL_MAX_LEN
 # length of internal student_id, etc. Allows for 10^INTERNAL_ID_LEN unique items
 INTERNAL_ID_LEN = 5
 
-# fixme: what happens if the user enters this or quotes into strings? clean input in save function?
-FIELD_SEP_STR = r'\%s'
+FIELD_ESCAPE_STR = r'\e%f'  # used to separate fields in txt files
+LINEBREAK_ESCAPE_STR = r'\e%n'  # used to replace line breaks (\n) in strings
 
 
 class Row:
@@ -62,8 +62,19 @@ class Row:
                 str_func = str  # defaults to just using the str() func on the attribute
                 if attr_name in special_str_funcs:
                     str_func = special_str_funcs[attr_name]
-                return_string += str_func(attr_val).ljust(padding_values[attr_name]) + FIELD_SEP_STR
-        return return_string + '\n'
+
+                # converts attribute to a string (normally just with str() unless otherwise specified)
+                # also removes escape sequences FIELD_ESCAPE_STR and LINEBREAK_ESCAPE_STR entered maliciously by users
+                field_text = str_func(attr_val).replace(FIELD_ESCAPE_STR, '').replace(LINEBREAK_ESCAPE_STR, '')
+
+                # replaces 'real' line breaks with escape sequence
+                # so that fields are still confined to one line in txt file
+                field_text = field_text.replace('\n', LINEBREAK_ESCAPE_STR)
+
+                return_string += field_text.ljust(padding_values[attr_name])  # pads into file to align fields
+                return_string += FIELD_ESCAPE_STR  # marks end of a field
+
+        return return_string + '\n'  # newline marks end of row
 
 
 class Table:
@@ -86,8 +97,8 @@ class Table:
             for row_obj in start_table:
                 self.add_row(row_obj)
 
-            logging.info(f'{type(self).__name__} object successfully populated from iterable '
-                         f'argument - {len(start_table)} {self.row_class.__name__} object(s) added')
+            logging.debug(f'{type(self).__name__} object successfully populated from iterable '
+                          f'argument - {len(start_table)} {self.row_class.__name__} object(s) added')
 
     def __repr__(self) -> str:
         """
@@ -108,7 +119,7 @@ class Table:
             # set.difference finds any unused ids in this range and min() finds the smallest such id
             return min(set(range(1, max(taken_ids) + 2)).difference(taken_ids))
         else:
-            return 1  # ids should start at 1
+            return 1  # ids should start at 1 since sometimes converted to booleans
 
     def add_row(self, *args, **kwargs) -> None:
         """
@@ -161,16 +172,18 @@ class Table:
         for row in txt_lines:
             obj_info = list()
 
-            padded_fields = row.split(FIELD_SEP_STR)  # split line/row by separator
+            padded_fields = row.split(FIELD_ESCAPE_STR)  # split line/row by separator
             for field in padded_fields:
                 if field != '\n':
-                    obj_info.append(field.strip())  # remove padding whitespace
+                    field = field.strip()  # remove trailing/padding whitespace
+                    field = field.replace(LINEBREAK_ESCAPE_STR, '\n')  # re-insert escaped linebreaks
+                    obj_info.append(field)
 
             self.add_row(*obj_info)  # add new row/obj to table
 
         txt_file.close()
-        logging.info(f'{type(self).__name__} object successfully populated from file - '
-                     f'added {len(txt_lines)} {self.row_class.__name__} objects')
+        logging.debug(f'{type(self).__name__} object successfully populated from file - '
+                      f'added {len(txt_lines)} {self.row_class.__name__} objects')
 
     def save_to_file(self, txt_file: TextIO):
         """
@@ -229,13 +242,12 @@ class Student(Row):
         # The rest are filled in by the student at a later date
         # and hence default to '' on initial creation.
 
-        # todo: creation of students by staff
         # student_id should be int but when parsed from txt file will be str so needs conversion
         self.student_id = validate_int(student_id, 'Student ID')
 
         self.centre_id = validate_int(centre_id, 'Centre ID')
 
-        self.award_level = validate_lookup(award_level, {'bronze', 'silver', 'gold'}, 'Award Level')
+        self.award_level = validate_lookup(award_level.lower(), {'bronze', 'silver', 'gold'}, 'Award Level')
 
         year_group = str(validate_int(year_group, 'Year Group'))
         self.year_group = validate_lookup(year_group, set(map(str, range(7, 14))), 'Year Group')
@@ -249,7 +261,7 @@ class Student(Row):
         self.fullname = validate_length(fullname, 2, 30, 'Fullname') if fullname else ''
 
         # pnts = prefer not to say
-        self.gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
+        self.gender = validate_lookup(gender.lower(), {'male', 'female', 'other', 'pnts'},
                                       'Gender') if fullname else ''
 
         if from_file:  # date range validation skipped if loading from file to allow for dates in the past
@@ -266,12 +278,12 @@ class Student(Row):
                                              'Primary Phone') if fullname else ''
 
         self.email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
-                                            'abc@def.ghi') if fullname else ''
+                                            'abc@def.ghi(.jk)') if fullname else ''
 
         self.phone_emergency = validate_length(phone_emergency, 9, 11,
                                                'Emergency Phone') if fullname else ''
 
-        self.primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
+        self.primary_lang = validate_lookup(primary_lang.lower(), {'english', 'welsh'},
                                             'Primary Language') if fullname else ''
 
         self.submission_date = dt.datetime(**str_to_date_dict(submission_date)) if fullname else ''
@@ -291,7 +303,7 @@ class Student(Row):
         fullname = validate_length(fullname, 2, 30, 'Fullname')
 
         # pnts = prefer not to say
-        gender = validate_lookup(gender, {'male', 'female', 'other', 'pnts'},
+        gender = validate_lookup(gender.lower(), {'male', 'female', 'other', 'pnts'},
                                  'Gender')
 
         # -365.25*25 = -25 years (-ve=in the past); -365.25*10 = -10 years (-ve=in the past)
@@ -305,12 +317,12 @@ class Student(Row):
                                         'Primary Phone')
 
         email_primary = validate_regex(email_primary, EMAIL_RE_PATTERN, 'Primary Email',
-                                       'abc@def.ghi')
+                                       'abc@def.ghi(.jk)')
 
         phone_emergency = validate_length(phone_emergency, 9, 11,
                                           'Emergency Phone')
 
-        primary_lang = validate_lookup(primary_lang, {'english', 'welsh'},
+        primary_lang = validate_lookup(primary_lang.lower(), {'english', 'welsh'},
                                        'Primary Language')
 
         logging.debug('All validation checks passed on input data for student enrolment.')
@@ -375,8 +387,15 @@ class Student(Row):
         else:
             return None
 
-    def get_progress_summary(self, section_table: SectionTable) -> str:
-        # todo: docstring
+    def get_progress_summary(self, section_table: SectionTable, resource_table: ResourceTable) -> str:
+        """
+        Returns a string summarising the student's current progress through the award.
+
+        :param section_table: Used to check the sections associated with the student
+        :param resource_table: Used to check if an assessor's report exists for a section
+        :return: One of 'Fully complete', 'Partially complete', 'All sections in progress',
+            'Partially in progress', 'None started', 'Pending enrolment' or 'Needs approval'
+        """
         if self.is_approved:
             section_started_count = 0
             section_finished_count = 0
@@ -386,15 +405,17 @@ class Student(Row):
                 if section_id:
                     section_started_count += 1
                     section_obj = section_table.row_dict[section_id]
-                    if section_obj.activity_status == '':  # fixme: finish status method to compare option here
+                    if section_obj.get_activity_status(resource_table) == 'Fully completed':
                         section_finished_count += 1
 
-            if section_finished_count == 3:  # todo: doesn't include expeditions
+            if section_finished_count == 3:  # todo: doesn't consider expeditions
                 return 'Fully complete'
+            elif 1 <= section_finished_count < 3:
+                return 'Partially complete'
             elif section_started_count == 3:
-                return 'All in progress'
+                return 'All sections in progress'
             elif 1 <= section_started_count < 3:
-                return 'In progress'
+                return 'Partially in progress'
             else:
                 return 'None started'
 
@@ -454,11 +475,7 @@ class Section(Row):
         self.assessor_phone = validate_length(assessor_phone, 9, 11, 'Assessor Phone')
 
         self.assessor_email = validate_regex(assessor_email, EMAIL_RE_PATTERN, 'Assessor Email',
-                                             'abc@def.ghi')
-
-        # This is a private attribute and as such is only updated when it is accessed.
-        # This can not be set manually
-        self._activity_status = ''
+                                             'abc@def.ghi(.jk)')
 
         logging.debug(f'New Section object successfully created - section_id={self.section_id}')
 
@@ -488,22 +505,27 @@ class Section(Row):
         }
         return super().tabulate(padding_values, special_str_funcs)
 
-    @property
-    def activity_status(self):
-        return self._activity_status
+    def get_activity_status(self, resource_table: ResourceTable) -> str:
+        """
+        Returns a string describing the student's current progress through the section.
+        Note that a status of ‘Not Started’ must be set at call and not from this method
+        since there will be no Section obj to call this method from.
 
-    @activity_status.getter
-    def activity_status(self):
-        # this method is called every time this variable is accessed
+        :param resource_table: Needed to check for the presence of an assessor's report for the section
+        :return: One of 'Fully completed', 'Needs report' or 'In progress'
+        """
         proposed_end_date = calculate_end_date(int(self.activity_timescale), self.activity_start_date)
 
         if date_in_past(proposed_end_date):
-            # todo: GENERATE SECTION STATUS method
-            self._activity_status = 'Not Implemented - TODO'
+            section_resources = [r for r in resource_table.row_dict.values() if r.parent_link_id == self.section_id]
+            report_is_present = any([r.is_section_report for r in section_resources])
+            if report_is_present:
+                return 'Fully completed'
+            else:
+                return 'Needs report'
         else:
-            self._activity_status = 'In Progress'
-
-        return self._activity_status
+            return 'In progress'
+        # ‘Not Started’ status handled at method call (and not here) since section object won't exist in this case
 
 
 class SectionTable(Table):

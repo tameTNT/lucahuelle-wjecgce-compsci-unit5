@@ -100,7 +100,12 @@ def add_underline_link_on_hover(l_widget: ttk.Label, change_page_func: Callable)
 
 # Class design adapted from
 # https://www.reddit.com/r/learnpython/comments/985umy/limit_user_input_to_only_int_with_tkinter/e4dj9k9
-class IntEntry(ttk.Entry):
+class DigitEntry(ttk.Entry):
+    """
+    An adapted Entry widget that only allows numerical digits to be entered (i.e. 0,1,...,9).
+    Retrieve and store values (as *strings*) using .get() and .set() methods.
+    """
+
     def __init__(self, initial_value: int, master: tk.Widget = None, **kwargs):
         start_string = f'{initial_value if initial_value else ""}'
         self.var = tk.StringVar(value=start_string)
@@ -118,6 +123,44 @@ class IntEntry(ttk.Entry):
         else:
             # there's non-digit characters in the input; reject this
             self.set(self.old_value)
+
+
+class PasswordEntryFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget = None, **kwargs):
+        """
+        A ttk.Frame object containing a password entry field (which shows dots while typing)
+        and a button to toggle password visibility.
+        The entered data can be get/set as usual using .get()/.set().
+        The password's visibility can also be toggled, shown and hidden using the methods below.
+        """
+        super().__init__(master, **kwargs)
+
+        self.password_var = tk.StringVar()
+        self.password_entry = ttk.Entry(self,  # \u2022 is a unicode bullet pt/dot
+                                        textvariable=self.password_var, show='\u2022')
+        self.password_entry.grid(row=0, column=1, sticky='we')
+
+        self.get, self.set = self.password_var.get, self.password_var.set
+
+        self.show_pwd_button = ttk.Button(self, text='👁',
+                                          width=2, command=self.toggle_password_visibility)
+        self.show_pwd_button.grid(row=0, column=2, sticky='w')
+        create_tooltip(self.show_pwd_button, 'Show/Hide password')
+
+    def toggle_password_visibility(self):
+        """
+        Show/hide password with unicode dot characters by changing Entry widget's show option
+        """
+        if self.password_entry['show'] == '\u2022':  # password currently hidden
+            self.show_password()
+        else:  # password currently revealed
+            self.hide_password()
+
+    def show_password(self):
+        self.password_entry.config(show='')
+
+    def hide_password(self):
+        self.password_entry.config(show='\u2022')
 
 
 # 'Page-based approach' adapted from the framework provided at
@@ -251,7 +294,7 @@ class PagedMainFrame(ttk.Frame):
         """
         Changes the page displayed in the tkinter window to destination_page.
         This page must be present in the page_obj_list given when this object was initialised.
-        If clear_fields, then text variable (tk.StringVar) field values are
+        If clear_fields, then text variable (e.g. tk.StringVar) field values are
         also cleared as the frame is left by the user.
         kwargs are required if destination_page is in any way dynamic
         and hence has an update_attributes method that requires additional parameters.
@@ -263,6 +306,14 @@ class PagedMainFrame(ttk.Frame):
 
             for str_var in str_var_list:
                 str_var.set('')  # clears each field collected above in turn
+
+            # collects all PasswordEntryFrame and DigitEntry frames in current page
+            custom_frame_list = [var for var in self.current_page.__dict__.values()
+                                 if isinstance(var, PasswordEntryFrame)
+                                 or isinstance(var, DigitEntry)]
+
+            for custom_field in custom_frame_list:
+                custom_field.set('')  # clears the fields in the widgets collected above
 
             # collects all tk.Text fields in current page
             text_field_list = [var for var in self.current_page.__dict__.values()

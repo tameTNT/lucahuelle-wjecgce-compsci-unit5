@@ -85,7 +85,7 @@ class Enrolment(ui.GenericPage):
         self.phone_primary_label = ttk.Label(self.info_submission_frame, text='Phone number:')
         self.phone_primary_label.grid(row=0, column=2, pady=self.pady, sticky='e')
 
-        self.phone_primary = ui.IntEntry(0, self.info_submission_frame)
+        self.phone_primary = ui.DigitEntry(0, master=self.info_submission_frame)
         self.phone_primary.grid(row=0, column=3, pady=self.pady, sticky='we')
         ui.create_tooltip(self.phone_primary, 'Do not include country codes or spaces')
 
@@ -103,7 +103,7 @@ class Enrolment(ui.GenericPage):
                                                text='Emergency phone number:')
         self.phone_emergency_label.grid(row=2, column=2, pady=self.pady, sticky='e')
 
-        self.phone_emergency = ui.IntEntry(0, self.info_submission_frame)
+        self.phone_emergency = ui.DigitEntry(0, master=self.info_submission_frame)
         self.phone_emergency.grid(row=2, column=3, pady=self.pady, sticky='we')
         ui.create_tooltip(self.phone_emergency, 'Do not include country codes or spaces')
 
@@ -168,13 +168,13 @@ class Enrolment(ui.GenericPage):
         try:
             self.student.complete_enrolment(
                 fullname=self.fullname_var.get(),
-                gender=self.gender_selection_var.get().lower(),
+                gender=self.gender_selection_var.get(),
                 date_of_birth=self.date_of_birth_var.get(),
                 address=self.address_var.get(),
                 phone_primary=self.phone_primary.get(),
                 email_primary=self.email_var.get(),
                 phone_emergency=self.phone_emergency.get(),
-                primary_lang=self.language_selection_var.get().lower(),
+                primary_lang=self.language_selection_var.get(),
             )
         except validation.ValidationError as e:
             msg.showerror('Error with field data', str(e))

@@ -78,7 +78,7 @@ class Login(ui.GenericPage):
 
         self.user_detail_frame = ttk.Frame(self)
         self.user_detail_frame.grid(row=3, column=0, columnspan=2, pady=self.pady)
-        # === username/password entry and show/hide button frame contents ===
+
         self.username_label = ttk.Label(self.user_detail_frame, text='Username:', justify='right')
         self.username_label.grid(row=0, column=0, pady=self.pady, sticky='e')
 
@@ -89,28 +89,11 @@ class Login(ui.GenericPage):
         self.password_label = ttk.Label(self.user_detail_frame, text='Password:', justify='right')
         self.password_label.grid(row=1, column=0, pady=self.pady, sticky='e')
 
-        self.password_var = tk.StringVar()
-        self.password_entry = ttk.Entry(self.user_detail_frame,  # \u2022 is a unicode bullet pt/dot
-                                        textvariable=self.password_var, show='\u2022')
-        self.password_entry.grid(row=1, column=1, sticky='we')
-
-        self.show_pwd_button = ttk.Button(self.user_detail_frame, text='👁',
-                                          width=2, command=self.toggle_show_password)
-        self.show_pwd_button.grid(row=1, column=2, sticky='w')
-        ui.create_tooltip(self.show_pwd_button, 'Show/Hide password')
-        # === end of frame ===
+        self.password_entry = ui.PasswordEntryFrame(self.user_detail_frame)
+        self.password_entry.grid(row=1, column=1, pady=self.pady, sticky='e')
 
         self.login_button = ttk.Button(self, text='Login', command=self.login)
         self.login_button.grid(row=4, column=1, padx=self.padx, pady=self.pady, sticky='e')
-
-    def toggle_show_password(self):
-        """
-        Show/hide password with unicode dot characters by changing Entry widget's show option
-        """
-        if self.password_entry['show'] == '\u2022':  # password currently hid
-            self.password_entry.config(show='')  # reveal password
-        else:  # password currently revealed
-            self.password_entry.config(show='\u2022')
 
     def login(self):
         """
@@ -119,7 +102,7 @@ class Login(ui.GenericPage):
         (for student or for staff member)
         """
         input_username = self.username_var.get()
-        input_password = self.password_var.get()
+        input_password = self.password_entry.get()
 
         db = self.pager_frame.master_root.db  # gets database obj from main root of application
         user_type = ('Staff', 'Student')[int(self.is_student)]
@@ -169,7 +152,7 @@ class Login(ui.GenericPage):
         """
         Returns the user back to the Welcome page after resetting the pwd visibility
         """
-        self.password_entry.config(show='\u2022')
+        self.password_entry.hide_password()
         self.pager_frame.change_to_page(Welcome)
 
 

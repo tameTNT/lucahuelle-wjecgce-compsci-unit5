@@ -61,8 +61,7 @@ def create_gui(file_save_suffix):
             page_obj_list.append(cls)
 
     # initialises actual tkinter window on Welcome page
-    # todo: change start_page back to ui.landing.Welcome
-    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.StaffLogin)
+    main_window.initialise_window(page_obj_list=page_obj_list, start_page=ui.landing.Welcome)
     # binds above function to action of closing window - i.e. tkinter triggers func on close
     root.resizable(width=False, height=False)
     root.protocol("WM_DELETE_WINDOW", lambda: close_window_call(MAIN_DATABASE_OBJ, root, file_save_suffix))
@@ -70,7 +69,7 @@ def create_gui(file_save_suffix):
 
 
 def create_staff_account(file_save_suffix):
-    print('Abort entry process with break command (Ctrl+Z).'
+    print('Abort entry process with break command (Ctrl+C and Enter).'
           '\nCreating a new staff account...'
           '\nPlease enter the following details:')
 
@@ -81,8 +80,7 @@ def create_staff_account(file_save_suffix):
         fullname = input(' Fullname: ')
         username = input(' Username: ')
 
-        print('Passwords should be between 6 and 100 characters long and contain one each of:\n'
-              'lowercase letter, uppercase letter, number.')
+        print(password_logic.PASSWORD_NOTICE)
         print('NB: No characters will be shown when entering passwords.')
         while True:  # ensure passwords match
             while True:  # enforce password strength on first entry
@@ -108,8 +106,8 @@ def create_staff_account(file_save_suffix):
         else:
             try:
                 staff_table.add_row(new_staff_user)
-            except KeyError as ke:
-                print(f'Error in entered data as follows:\n {str(ke)}\nPlease try again.')
+            except KeyError:
+                print(f'Staff user with that username already exists.')
             else:
                 print(f'New staff user added successfully:\n {str(new_staff_user)}')
                 break
@@ -139,15 +137,20 @@ if __name__ == '__main__':
 
     MAIN_DATABASE_OBJ = data_handling.Database()
     try:
-        # loads last database state from file into memory
+        # attempts to load last database state from files into memory
         MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
     except FileNotFoundError as fe:
         if args.file_save_suffix:
-            raise fe
+            create_new_tables = input('No existing complete database detected.\n'
+                                      f'Create new tables for file suffix "{args.file_save_suffix}"? y/n ')
+            if create_new_tables.lower() == 'y':
+                print('No existing complete database. New txt files will be created on program termination.')
+            else:
+                raise fe
         else:
-            # todo: test 'clean' startup with no txt files/database
-            # todo: set up example databases to be loaded using readme instructions
             print('No existing complete database. New files will be created on program termination.')
+    else:
+        print(f'Loaded complete database from txt files with suffix "{args.file_save_suffix}"')
 
     if args.show_gui:
         logging.debug('show-gui argument provided: creating tkinter instance')

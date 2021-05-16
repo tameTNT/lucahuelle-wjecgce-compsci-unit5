@@ -7,7 +7,7 @@ from typing import List
 import ui
 import ui.landing
 from data_tables import data_handling
-from ui.staff import student_info
+from ui.staff import student_info, create_student
 
 
 class StudentOverview(ui.GenericPage):
@@ -19,7 +19,8 @@ class StudentOverview(ui.GenericPage):
         self.heading_label = ttk.Label(self, text='Student Overview', font=ui.HEADING_FONT)
         self.heading_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
 
-        self.import_export_button = ttk.Button(self, text='Import/Export data')
+        self.import_export_button = ttk.Button(self, text='Import/Export data',
+                                               command=lambda: msg.showinfo('Info', 'Not Implemented'))
         self.import_export_button.grid(row=0, column=1, padx=self.padx, pady=self.pady)
 
         self.logout_button = ttk.Button(self, text='Logout', command=self.logout)
@@ -61,14 +62,14 @@ class StudentOverview(ui.GenericPage):
 
         self.student_info_treeview = ttk.Treeview(self.treeview_frame,
                                                   columns=(
-                                                      'approval_status', 'volunteering',
+                                                      'progress_summary', 'volunteering',
                                                       'skill', 'physical', 'expedition'
                                                   ))
 
         self.student_info_treeview.heading('#0', text='Fullname/Username', anchor='w')
         self.student_info_treeview.column('#0', anchor='w')
-        self.student_info_treeview.heading('approval_status', text='Approval status')
-        self.student_info_treeview.column('approval_status', anchor='center')
+        self.student_info_treeview.heading('progress_summary', text='Progress Summary')
+        self.student_info_treeview.column('progress_summary', anchor='center')
         self.student_info_treeview.heading('volunteering', text='Volunteering')
         self.student_info_treeview.column('volunteering', anchor='center')
         self.student_info_treeview.heading('skill', text='Skill')
@@ -89,8 +90,8 @@ class StudentOverview(ui.GenericPage):
         self.student_info_treeview['yscrollcommand'] = self.treeview_scroll.set
         # == end table config ==
 
-        # todo: add functionality to add students
-        self.add_student_button = ttk.Button(self, text='New Student', command=lambda: None)
+        self.add_student_button = ttk.Button(self, text='Create new student',
+                                             command=self.change_to_create_student_page)
         self.add_student_button.grid(row=4, column=0, columnspan=5, padx=self.padx, pady=self.pady)
 
         # == calendar frame contents ==
@@ -98,7 +99,7 @@ class StudentOverview(ui.GenericPage):
         self.event_frame.grid(row=5, column=0, columnspan=5, padx=self.padx, pady=self.pady)
 
         # todo: event frame/'Coming Up' and ability to manage events with button
-        self.temp_event_label = ttk.Label(self.event_frame, text='Temp coming up text...')
+        self.temp_event_label = ttk.Label(self.event_frame, text='Not Implemented')
         self.temp_event_label.grid(row=0, column=0, padx=self.padx, pady=self.pady)
         # == end of self.event_frame contents ==
 
@@ -112,6 +113,8 @@ class StudentOverview(ui.GenericPage):
         self.student_table: data_handling.StudentTable = db.get_table_by_name('StudentTable')
         # noinspection PyTypeChecker
         self.section_table: data_handling.SectionTable = db.get_table_by_name('SectionTable')
+        # noinspection PyTypeChecker
+        self.resource_table: data_handling.ResourceTable = db.get_table_by_name('ResourceTable')
 
         self.DEFAULT_SEARCH_PLACEHOLDER = 'Search names...'
 
@@ -135,7 +138,7 @@ class StudentOverview(ui.GenericPage):
 
         self.pager_frame.change_to_page(ui.landing.Welcome)
 
-    # def import_export(self):  # todo: import/export data GUI - add command to button above
+    # def import_export(self):  # wouldbenice: import/export data GUI - add command to button above
     #     self.pager_frame.change_to_page(
     #         destination_page=ui.student.enrolment.Enrolment,
     #         student=self.student,
@@ -156,7 +159,7 @@ class StudentOverview(ui.GenericPage):
 
         if query:
             # wouldbenice: use detach and reattach instead (see link)
-            # https://stackoverflow.com/questions/44565358/how-to-filter-a-ttk-treeview-in-python/47055786#47055786
+            #   https://stackoverflow.com/questions/44565358/how-to-filter-a-ttk-treeview-in-python/47055786#47055786
             self.repopulate_treeview_table()  # reset table so all values are searched
 
             tv = self.student_info_treeview
@@ -215,14 +218,14 @@ class StudentOverview(ui.GenericPage):
                 username_display_str = f'(Username) {username}'
                 row_name = student.fullname if student.fullname else username_display_str
 
-                approval_status = student.get_progress_summary(self.section_table)
+                progress_summary = student.get_progress_summary(self.section_table, self.resource_table)
 
                 vol_status = student.get_section_obj('vol', self.section_table)
-                vol_status = vol_status.activity_status if vol_status else 'Not started'
+                vol_status = vol_status.get_activity_status(self.resource_table) if vol_status else 'Not started'
                 skill_status = student.get_section_obj('skill', self.section_table)
-                skill_status = skill_status.activity_status if skill_status else 'Not started'
+                skill_status = skill_status.get_activity_status(self.resource_table) if skill_status else 'Not started'
                 phys_status = student.get_section_obj('phys', self.section_table)
-                phys_status = phys_status.activity_status if phys_status else 'Not started'
+                phys_status = phys_status.get_activity_status(self.resource_table) if phys_status else 'Not started'
 
                 # todo: expedition status text and column
 
@@ -236,7 +239,7 @@ class StudentOverview(ui.GenericPage):
                 if should_insert_item:
                     tv.insert(
                         parent='', index='end', text=row_name,
-                        values=(approval_status, vol_status, skill_status, phys_status, 'Null - TODO',
+                        values=(progress_summary, vol_status, skill_status, phys_status, 'Not Implemented - Null',
                                 # dictionary with extra info not shown - used within code.
                                 # tkinter saves this dict using repr() so use eval() to get the dict back
                                 {'id': student.student_id, 'username': username, 'fullname': student.fullname})
@@ -252,12 +255,17 @@ class StudentOverview(ui.GenericPage):
         selected_item = self.student_info_treeview.selection()
 
         treeview_item_values = self.student_info_treeview.item(selected_item)
-        # 'text' value of row is username/fullname; last is the dictionary of extra info including student_id
-        clicked_name, clicked_student_id = treeview_item_values['text'], eval(treeview_item_values['values'][-1])['id']
+        try:
+            # 'text' value of row is username/fullname
+            clicked_name = treeview_item_values['text']
+            # the last item (index -1) of the 'values' tuple is the dictionary of extra info including student_id
+            clicked_student_id = eval(treeview_item_values['values'][-1])['id']
+            logging.debug(f'Student - {clicked_name} id:{clicked_student_id} - '
+                          f'double clicked by {self.staff_fullname}')
+            self.change_to_student_page(clicked_name, clicked_student_id)
 
-        logging.debug(f'Student - {clicked_name} id:{clicked_student_id} - double clicked by {self.staff_fullname}')
-
-        self.change_to_student_page(clicked_name, clicked_student_id)
+        except IndexError:  # occurs if user selects bottom of table
+            pass
 
     def change_to_student_page(self, clicked_name: str, student_id: int):
         student_obj = self.student_table.row_dict[student_id]
@@ -266,5 +274,11 @@ class StudentOverview(ui.GenericPage):
             destination_page=student_info.StudentInfo,
             clicked_name=clicked_name,
             student=student_obj,
+            staff_origin=self.staff
+        )
+
+    def change_to_create_student_page(self):
+        self.pager_frame.change_to_page(
+            destination_page=create_student.CreateStudent,
             staff_origin=self.staff
         )
