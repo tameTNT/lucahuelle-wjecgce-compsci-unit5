@@ -141,12 +141,18 @@ if __name__ == '__main__':
         MAIN_DATABASE_OBJ.load_state_from_file(suffix=args.file_save_suffix)
     except FileNotFoundError as fe:
         if args.file_save_suffix:
-            create_new_tables = input('No existing complete database detected.\n'
-                                      f'Create new tables for file suffix "{args.file_save_suffix}"? y/n ')
+            print(f'Tried looking for the following file:\n{fe}\n')
+
+            print('No existing complete database detected.\n'
+                  'NB: You may running this command in the wrong directory.\n'
+                  '    Make sure you are in the same directory as the README.md file.\n')
+            create_new_tables = input(
+                f'Create new tables for file suffix "{args.file_save_suffix}"? y/n '
+            )
             if create_new_tables.lower() == 'y':
                 print('No existing complete database. New txt files will be created on program termination.')
             else:
-                raise fe
+                raise Exception('No existing complete database. User chose to abort txt file table load.')
         else:
             print('No existing complete database. New files will be created on program termination.')
     else:
